@@ -34,7 +34,11 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>We need your location to calculate accurate prayer times for your area</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to send prayer time notifications at the correct times for your area</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to send prayer time notifications even when the app is not in use</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

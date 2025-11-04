@@ -1,44 +1,390 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
+ * Salaty App - Testing Version
+ * Basic app to test prayer times and location services
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  View,
+  Alert,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  PaperProvider,
+  Text,
+  Button,
+  Card,
+  ActivityIndicator,
+  Divider,
+  Icon,
+} from 'react-native-paper';
+import { lightTheme } from './src/theme';
+import { useLocation } from './src/hooks/useLocation';
+import { PrayerService } from './src/services/prayer';
+import type { PrayerTimes, PrayerName } from './src/types';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+const PRAYER_NAMES = {
+  fajr: { english: 'Fajr', arabic: 'الفجر', icon: 'weather-sunset-up' },
+  dhuhr: { english: 'Dhuhr', arabic: 'الظهر', icon: 'white-balance-sunny' },
+  asr: { english: 'Asr', arabic: 'العصر', icon: 'weather-partly-cloudy' },
+  maghrib: { english: 'Maghrib', arabic: 'المغرب', icon: 'weather-sunset-down' },
+  isha: { english: 'Isha', arabic: 'العشاء', icon: 'weather-night' },
+};
+
+function App(): React.JSX.Element {
+  const { location, loading: locationLoading, error: locationError, requestPermission } = useLocation(false);
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
+  const [currentPrayer, setCurrentPrayer] = useState<PrayerName | null>(null);
+  const [nextPrayer, setNextPrayer] = useState<{ name: PrayerName; time: Date } | null>(null);
+
+  // Fetch location and calculate prayer times
+  const fetchPrayerTimes = async () => {
+    try {
+      const perm = await requestPermission();
+
+      if (!perm || !perm.granted) {
+        Alert.alert(
+          'Location Permission Required',
+          'Please enable location permissions to calculate accurate prayer times.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    }
+  };
+
+  // Calculate prayer times when location is available
+  useEffect(() => {
+    if (location) {
+      try {
+        const times = PrayerService.getPrayerTimes(
+          location,
+          new Date(),
+          'UmmAlQura', // Umm Al-Qura as requested
+          'shafi'
+        );
+        setPrayerTimes(times);
+
+        const current = PrayerService.getCurrentPrayer(times);
+        setCurrentPrayer(current);
+
+        const next = PrayerService.getNextPrayer(times);
+        setNextPrayer(next);
+      } catch (error) {
+        console.error('Error calculating prayer times:', error);
+      }
+    }
+  }, [location]);
+
+  // Format time in 12-hour format as requested
+  const formatTime = (date: Date): string => {
+    return PrayerService.formatPrayerTime(date, false);
+  };
+
+  // Format countdown
+  const formatCountdown = (ms: number): string => {
+    const hours = Math.floor(ms / (1000 * 60 * 60));
+    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+  };
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
+    <PaperProvider theme={lightTheme}>
+      <StatusBar barStyle="dark-content" backgroundColor={lightTheme.colors.background} />
+      <SafeAreaView style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text variant="headlineMedium" style={styles.title}>
+              Salaty
+            </Text>
+            <Text variant="bodyMedium" style={styles.subtitle}>
+              Prayer Times & Qibla
+            </Text>
+          </View>
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+          {/* Location Status */}
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text variant="titleMedium">📍 Location Status</Text>
+              <Divider style={styles.divider} />
 
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+              {locationLoading && (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={lightTheme.colors.primary} />
+                  <Text style={styles.loadingText}>Getting location...</Text>
+                </View>
+              )}
+
+              {locationError && (
+                <Text style={styles.errorText}>Error: {locationError}</Text>
+              )}
+
+              {location && (
+                <View>
+                  <Text>Latitude: {location.latitude.toFixed(4)}</Text>
+                  <Text>Longitude: {location.longitude.toFixed(4)}</Text>
+                  <Text style={styles.successText}>✓ Location acquired</Text>
+                </View>
+              )}
+
+              {!location && !locationLoading && (
+                <Button
+                  mode="contained"
+                  onPress={fetchPrayerTimes}
+                  style={styles.button}
+                >
+                  Get Location & Prayer Times
+                </Button>
+              )}
+            </Card.Content>
+          </Card>
+
+          {/* Next Prayer */}
+          {nextPrayer && prayerTimes && (
+            <Card style={[styles.card, styles.nextPrayerCard]}>
+              <Card.Content>
+                <Text variant="labelLarge" style={styles.nextPrayerLabel}>
+                  NEXT PRAYER
+                </Text>
+                <Text variant="headlineLarge" style={styles.nextPrayerName}>
+                  {PRAYER_NAMES[nextPrayer.name].english}
+                </Text>
+                <Text variant="displaySmall" style={styles.nextPrayerTime}>
+                  {formatTime(nextPrayer.time)}
+                </Text>
+                <Text variant="bodyLarge" style={styles.countdown}>
+                  In {formatCountdown(PrayerService.getTimeUntilNextPrayer(prayerTimes))}
+                </Text>
+              </Card.Content>
+            </Card>
+          )}
+
+          {/* Prayer Times */}
+          {prayerTimes && (
+            <Card style={styles.card}>
+              <Card.Content>
+                <Text variant="titleLarge">Today's Prayer Times</Text>
+                <Text variant="bodySmall" style={styles.methodText}>
+                  Method: Umm Al-Qura (Makkah)
+                </Text>
+                <Divider style={styles.divider} />
+
+                {Object.entries(PRAYER_NAMES).map(([key, prayer]) => {
+                  const prayerKey = key as PrayerName;
+                  const time = prayerTimes[prayerKey];
+                  const isCurrent = currentPrayer === prayerKey;
+                  const isNext = nextPrayer?.name === prayerKey;
+
+                  return (
+                    <View
+                      key={key}
+                      style={[
+                        styles.prayerRow,
+                        isCurrent && styles.currentPrayerRow,
+                        isNext && styles.nextPrayerRow,
+                      ]}
+                    >
+                      <View style={styles.prayerInfo}>
+                        <Icon source={prayer.icon} size={24} color={lightTheme.colors.primary} />
+                        <View style={styles.prayerNames}>
+                          <Text variant="titleMedium" style={styles.prayerEnglish}>
+                            {prayer.english}
+                          </Text>
+                          <Text variant="bodySmall" style={styles.prayerArabic}>
+                            {prayer.arabic}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.prayerTimeContainer}>
+                        <Text
+                          variant="titleLarge"
+                          style={[
+                            styles.prayerTime,
+                            isCurrent && styles.currentPrayerTime,
+                          ]}
+                        >
+                          {formatTime(time)}
+                        </Text>
+                        {isCurrent && (
+                          <Text style={styles.currentLabel}>NOW</Text>
+                        )}
+                        {isNext && !isCurrent && (
+                          <Text style={styles.nextLabel}>NEXT</Text>
+                        )}
+                      </View>
+                    </View>
+                  );
+                })}
+
+                {/* Sunrise & Sunset */}
+                {prayerTimes.sunrise && (
+                  <View style={styles.sunTimeRow}>
+                    <Text variant="bodyMedium">☀️ Sunrise</Text>
+                    <Text variant="bodyMedium">{formatTime(prayerTimes.sunrise)}</Text>
+                  </View>
+                )}
+                {prayerTimes.sunset && (
+                  <View style={styles.sunTimeRow}>
+                    <Text variant="bodyMedium">🌅 Sunset</Text>
+                    <Text variant="bodyMedium">{formatTime(prayerTimes.sunset)}</Text>
+                  </View>
+                )}
+              </Card.Content>
+            </Card>
+          )}
+
+          {/* Test Info */}
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text variant="titleMedium">ℹ️ Test Information</Text>
+              <Divider style={styles.divider} />
+              <Text variant="bodySmall">• Using Umm Al-Qura calculation method</Text>
+              <Text variant="bodySmall">• 12-hour time format</Text>
+              <Text variant="bodySmall">• Shafi'i madhab for Asr</Text>
+              <Text variant="bodySmall">• Material Design 3 Expressive theme</Text>
+            </Card.Content>
+          </Card>
+        </ScrollView>
+      </SafeAreaView>
+    </PaperProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAFDFD',
+  },
+  scrollContent: {
+    padding: 16,
+  },
+  header: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  title: {
+    fontWeight: '700',
+    color: '#006A6A',
+  },
+  subtitle: {
+    color: '#4A6363',
+    marginTop: 4,
+  },
+  card: {
+    marginBottom: 16,
+    borderRadius: 16,
+  },
+  nextPrayerCard: {
+    backgroundColor: '#E5F1F1',
+    borderRadius: 24,
+  },
+  nextPrayerLabel: {
+    color: '#4A6363',
+    marginBottom: 4,
+  },
+  nextPrayerName: {
+    fontWeight: '700',
+    color: '#006A6A',
+    marginBottom: 8,
+  },
+  nextPrayerTime: {
+    fontWeight: '700',
+    color: '#006A6A',
+  },
+  countdown: {
+    color: '#FFA726',
+    marginTop: 8,
+  },
+  divider: {
+    marginVertical: 12,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#4A6363',
+  },
+  errorText: {
+    color: '#BA1A1A',
+  },
+  successText: {
+    color: '#00C853',
+    marginTop: 8,
+  },
+  button: {
+    marginTop: 12,
+    borderRadius: 100,
+  },
+  methodText: {
+    color: '#4A6363',
+    marginTop: 4,
+  },
+  prayerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    marginVertical: 4,
+  },
+  currentPrayerRow: {
+    backgroundColor: '#B9F6CA',
+  },
+  nextPrayerRow: {
+    backgroundColor: '#FFE0B2',
+  },
+  prayerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  prayerNames: {
+    marginLeft: 12,
+  },
+  prayerEnglish: {
+    fontWeight: '600',
+  },
+  prayerArabic: {
+    color: '#4A6363',
+    marginTop: 2,
+  },
+  prayerTimeContainer: {
+    alignItems: 'flex-end',
+  },
+  prayerTime: {
+    fontWeight: '600',
+  },
+  currentPrayerTime: {
+    color: '#00C853',
+  },
+  currentLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#00C853',
+    marginTop: 2,
+  },
+  nextLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#F57C00',
+    marginTop: 2,
+  },
+  sunTimeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#DAE5E4',
   },
 });
 
