@@ -1,197 +1,277 @@
 # Salaty - Islamic Prayer Times App
 
-A modern React Native application for displaying accurate Islamic prayer times, Qibla direction, and daily salat tracking. Built with Material Design 3 Expressive theme.
+A modern React Native application for displaying accurate Islamic prayer times, Qibla direction, and daily salat tracking. Built with Material Design 3 Expressive theme and offline-first architecture.
 
-## Features
+## ✨ Features
 
-### ✅ Implemented
-- **Prayer Times Display**: Shows all 5 daily prayers (Fajr, Dhuhr, Asr, Maghrib, Isha)
-- **Multiple Calculation Methods**: Support for 10 calculation methods including Umm Al-Qura (Makkah)
+### ✅ Currently Implemented
+
+#### Navigation & Structure
+- **Bottom Tab Navigation**: Material 3 styled tabs (Home, Tracking, Qibla, Settings)
+- **Cross-Platform**: Works seamlessly on iOS and Android
+
+#### Prayer Times (Home Screen)
+- **Accurate Prayer Times**: All 5 daily prayers (Fajr, Dhuhr, Asr, Maghrib, Isha)
+- **10 Calculation Methods**: Including Umm Al-Qura (Makkah) as default
+- **Current & Next Prayer**: Automatic detection with countdown timer
+- **Sunrise & Sunset**: Additional Islamic times
+- **12-Hour Format**: Time display with AM/PM
 - **Location Services**: Automatic location detection with permission handling
-- **Current & Next Prayer**: Highlights the current prayer and shows countdown to next prayer
-- **Sunrise & Sunset Times**: Additional Islamic times displayed
-- **12/24 Hour Format**: Time display in 12-hour format with AM/PM
-- **Material Design 3 Expressive**: Modern UI with enhanced shapes, colors, and typography
-- **Cross-Platform**: Works on both iOS and Android
+- **5-Minute Caching**: Optimized battery usage
 
-### 🚧 Planned Features
+#### Prayer Tracking System
+- **Daily Checklist**: Interactive checkboxes for all 5 prayers
+- **Status Management**: Pending, Completed, Missed, Delayed
+- **Today's Statistics**: Completion rate and counts
+- **Pull-to-Refresh**: Update tracking data
+- **Local Storage**: AsyncStorage persistence
+- **Export/Import**: Backup functionality ready
 
-#### Phase 1: Prayer Tracking System
-- [ ] Daily prayer tracking with checkboxes
-- [ ] Mark prayers as completed/missed
-- [ ] Add notes to each prayer
-- [ ] Custom prayer management (Taraweeh, Qiyam, Witr, Sunnah)
-- [ ] Weekly prayer overview
+#### Design System
+- **Material Design 3 Expressive**: Enhanced shapes, colors, and typography
+- **Islamic Theme**: Teal primary color (#006A6A)
+- **Color-Coded Status**:
+  - Green: Completed prayers
+  - Orange: Delayed prayers
+  - Red: Missed prayers
+  - Gray: Pending prayers
+- **24px Rounded Corners**: Modern card design
+- **Bold Typography**: Enhanced readability
 
-#### Phase 2: Statistics & History
-- [ ] Monthly prayer completion statistics
-- [ ] Streak tracking (current & best)
-- [ ] Per-prayer breakdown charts
-- [ ] Historical data view
-- [ ] Export statistics
+### 📋 See [TODO.md](./TODO.md) for Complete Roadmap
 
-#### Phase 3: Qibla Compass
-- [ ] Live compass pointing to Kaaba
-- [ ] Distance to Kaaba display
-- [ ] Calibration instructions
-- [ ] Haptic feedback when aligned
+Key upcoming features:
+- Prayer calculation API integration & Shafi'i madhab for Asr
+- Hijri calendar display
+- Offline-first architecture (cache 30+ days)
+- Cloud backup (Google Cloud & iCloud)
+- Qibla compass
+- Prayer notifications with Adhan
+- Statistics & history tracking
+- Full settings screen
 
-#### Phase 4: Notifications
-- [ ] Prayer time notifications
-- [ ] Adhan sound playback
-- [ ] Reminder notifications (5 min before)
-- [ ] Customizable notification settings
-
-#### Phase 5: Navigation & Settings
-- [ ] Bottom tab navigation
-- [ ] Calculation method selection
-- [ ] Madhab selection (Shafi'i/Hanafi)
-- [ ] Time format toggle (12/24 hour)
-- [ ] Dark mode support
-- [ ] Language selection
-
-## Tech Stack
+## 🛠 Tech Stack
 
 - **React Native**: 0.82.1
 - **TypeScript**: 5.8.3
 - **React Native Paper**: 5.14.5 (Material Design 3)
-- **React Navigation**: 7.x
+- **React Navigation**: 7.x (Bottom Tabs)
 - **Adhan**: 4.4.3 (Prayer time calculations)
-- **Geolocation Service**: 5.3.1
+- **React Native Geolocation Service**: 5.3.1
+- **AsyncStorage**: 2.1.0 (Local storage)
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
-├── components/       # Reusable UI components
-├── features/         # Feature-specific code
-├── hooks/           # Custom React hooks (useLocation)
-├── navigation/      # Navigation configuration
-├── services/        # Business logic services
-│   ├── location/    # Location & permissions
-│   ├── prayer/      # Prayer time calculations
-│   └── storage/     # AsyncStorage wrapper
-├── theme/           # Material 3 Expressive theme
-│   ├── colors.ts    # Color tokens
-│   ├── typography.ts # Typography system
-│   ├── shapes.ts    # Shape configurations
-│   └── index.ts     # Main theme export
-└── types/           # TypeScript type definitions
+├── components/
+│   └── tracking/         # Prayer tracking UI components
+├── hooks/
+│   └── useLocation.ts    # Location permission hook
+├── navigation/
+│   ├── TabNavigator.tsx  # Bottom tab navigation
+│   └── types.ts          # Navigation type definitions
+├── screens/
+│   ├── HomeScreen.tsx    # Prayer times display
+│   ├── TrackingScreen.tsx # Prayer tracking
+│   ├── QiblaScreen.tsx   # Qibla compass (placeholder)
+│   └── SettingsScreen.tsx # Settings (placeholder)
+├── services/
+│   ├── location/         # LocationService (singleton)
+│   ├── prayer/           # PrayerService (Adhan wrapper)
+│   ├── storage/          # StorageService (AsyncStorage wrapper)
+│   └── tracking/         # TrackingService (prayer tracking)
+├── theme/
+│   ├── colors.ts         # Material 3 color tokens
+│   ├── typography.ts     # Typography system
+│   ├── shapes.ts         # Shape configurations
+│   └── index.ts          # Main theme export
+└── types/
+    ├── prayer.ts         # Prayer-related types
+    ├── location.ts       # Location types
+    └── tracking.ts       # Tracking types
 ```
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- React Native development environment setup
-- For iOS: Xcode and CocoaPods
-- For Android: Android Studio and JDK 17+
+- **Node.js**: 20+
+- **React Native CLI**: Global installation
+- **iOS Development**:
+  - macOS with Xcode 15+
+  - CocoaPods 1.11+
+- **Android Development**:
+  - Android Studio
+  - JDK 17+
+  - Android SDK 33+
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**:
 ```bash
 git clone <repository-url>
 cd Salaty
 ```
 
-2. Install dependencies:
+2. **Install dependencies**:
 ```bash
 npm install
 ```
 
-3. For iOS, install CocoaPods dependencies:
+3. **iOS: Install CocoaPods dependencies**:
 ```bash
 cd ios && pod install && cd ..
 ```
 
 ### Running the App
 
+#### Start Metro Bundler
+```bash
+npm start
+```
+
 #### iOS
 ```bash
 npm run ios
 ```
 
+Or open `ios/Salaty.xcworkspace` in Xcode and run.
+
 #### Android
 ```bash
-# Make sure JAVA_HOME is set to JDK 17
-export JAVA_HOME=$(/usr/libexec/java_home)
+# Set JAVA_HOME to JDK 17
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 npm run android
 ```
 
-#### Metro Bundler
-If not already running:
-```bash
-npm start
-```
+## ⚙️ Configuration
 
-## Configuration
+### Prayer Calculation Methods (10 Available)
 
-### Prayer Calculation Methods
+The app currently supports:
+1. **Umm Al-Qura, Makkah** (Default) ⭐
+2. Muslim World League
+3. Egyptian General Authority
+4. University of Islamic Sciences, Karachi
+5. Dubai
+6. Moonsighting Committee
+7. ISNA (Islamic Society of North America)
+8. Kuwait
+9. Qatar
+10. Singapore
 
-The app supports the following calculation methods:
-- Muslim World League
-- Egyptian General Authority
-- University of Islamic Sciences, Karachi
-- **Umm Al-Qura, Makkah** (Default)
-- Dubai
-- Moonsighting Committee
-- ISNA (North America)
-- Kuwait
-- Qatar
-- Singapore
+*Note: Method selection UI coming in Settings screen.*
 
 ### Madhab Settings
 
-Choose between:
-- **Shafi'i** (Default) - Asr when shadow equals object length
-- **Hanafi** - Asr when shadow equals twice object length
+- **Shafi'i** (Default): Asr when shadow = object length
+- **Hanafi**: Asr when shadow = 2× object length
 
-## Design
+*Note: Currently using Shafi'i. Selector UI coming soon.*
 
-The app follows **Material Design 3 Expressive** guidelines with:
-- Enhanced rounded corners (24px for cards)
-- Bold typography for emphasis
-- Teal primary color (#006A6A) for Islamic theme
-- Prayer-specific colors (green for active, orange for upcoming)
-- Smooth animations and transitions
+### Time Format
 
-See `DESIGN_MOCKUPS.md` for detailed UI mockups.
+- Currently: **12-hour format** with AM/PM
+- Future: Toggle between 12/24 hour in Settings
 
-## Troubleshooting
+## 🎨 Design Philosophy
 
-### Android Build Issues
+Salaty follows **Material Design 3 Expressive** principles:
 
-If you encounter build errors:
+- **Teal Islamic Theme**: Primary color #006A6A
+- **Large Rounded Corners**: 24px for cards
+- **Bold Typography**: Emphasized prayer names and times
+- **Color-Coded Status**: Visual feedback for prayer states
+- **Smooth Animations**: Spring-based transitions
+- **Elevated Cards**: Depth and hierarchy
+
+See [TODO.md](./TODO.md) for detailed design mockups and specifications.
+
+## 🐛 Troubleshooting
+
+### iOS Issues
+
+**Build Errors:**
+```bash
+cd ios && rm -rf build && pod install && cd ..
+npm run ios
+```
+
+**Permission Errors:**
+Check `ios/Salaty/Info.plist` contains:
+- `NSLocationWhenInUseUsageDescription`
+- `NSLocationAlwaysAndWhenInUseUsageDescription`
+
+### Android Issues
+
+**Build Errors:**
 ```bash
 cd android && ./gradlew clean && cd ..
 npm run android
 ```
 
-### iOS Permission Issues
+**Java Version:**
+```bash
+# Check Java version
+java -version  # Should be 17.x
 
-Make sure location permissions are properly configured in `Info.plist`:
-- `NSLocationWhenInUseUsageDescription`
-- `NSLocationAlwaysAndWhenInUseUsageDescription`
+# Set JAVA_HOME
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+```
 
-### Metro Bundler Cache
+### General Issues
 
-Clear Metro cache if you experience issues:
+**Clear Metro Cache:**
 ```bash
 npm start -- --reset-cache
 ```
 
-## Contributing
+**Reset Everything:**
+```bash
+# Clean all caches
+rm -rf node_modules ios/Pods ios/build android/build
+npm install
+cd ios && pod install && cd ..
+```
 
-This is an active development project. Contributions are welcome!
+## 📱 Supported Platforms
 
-## License
+- **iOS**: 13.0+
+- **Android**: API 21+ (Android 5.0+)
+
+## 🔐 Permissions
+
+The app requires:
+
+- **Location (iOS & Android)**: For accurate prayer time calculations
+- **Notifications (iOS & Android)**: For prayer time alerts *(coming soon)*
+
+## 🤝 Contributing
+
+This is an active development project. See [TODO.md](./TODO.md) for the roadmap.
+
+To contribute:
+1. Check TODO.md for open tasks
+2. Create a feature branch
+3. Follow Material 3 design guidelines
+4. Test on both iOS and Android
+5. Submit a pull request
+
+## 📄 License
 
 [Add your license here]
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-- Prayer time calculations powered by [Adhan](https://github.com/batoulapps/adhan-js)
-- Design inspired by Material Design 3 Expressive
-- Islamic prayer time standards from various Islamic authorities
+- Prayer time calculations: [Adhan JavaScript Library](https://github.com/batoulapps/adhan-js)
+- Design inspiration: Material Design 3 Expressive
+- Islamic standards: Various Islamic authorities worldwide
+
+---
+
+**Current Version**: 1.0.0-beta
+**Last Updated**: November 2025
+**Status**: Active Development
+
+For detailed feature roadmap and design mockups, see [TODO.md](./TODO.md)
