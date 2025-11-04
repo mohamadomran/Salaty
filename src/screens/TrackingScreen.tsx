@@ -11,12 +11,14 @@ import { PrayerCheckbox, StatsCard } from '@/components/tracking';
 import { TrackingService } from '@/services/tracking';
 import { PrayerService } from '@/services/prayer';
 import { LocationService } from '@/services/location';
-import { DailyPrayerRecord, PrayerStatus, PrayerTimes } from '@types';
+import { SettingsService } from '@/services/settings';
+import { DailyPrayerRecord, PrayerStatus, PrayerTimes, AppSettings } from '@types';
 import { lightTheme } from '@theme';
 
 export default function TrackingScreen() {
   const [dailyRecord, setDailyRecord] = useState<DailyPrayerRecord | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
+  const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -24,17 +26,20 @@ export default function TrackingScreen() {
     try {
       setLoading(true);
 
+      // Load user settings
+      const userSettings = await SettingsService.getSettings();
+      setSettings(userSettings);
+
       // Load today's tracking record
       const record = await TrackingService.getDailyRecord(new Date());
       setDailyRecord(record);
 
-      // Load prayer times for displaying times
+      // Load prayer times for displaying times (uses settings automatically)
       const location = await LocationService.getCurrentLocation();
       if (location) {
-        const times = PrayerService.getPrayerTimes(
+        const times = await PrayerService.getPrayerTimes(
           location.coordinates,
-          new Date(),
-          'UmmAlQura'
+          new Date()
         );
         setPrayerTimes(times);
       }
@@ -72,11 +77,8 @@ export default function TrackingScreen() {
   };
 
   const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    if (!settings) return '';
+    return PrayerService.formatPrayerTimeSync(date, settings.timeFormat === '24h');
   };
 
   const calculateTodayStats = () => {

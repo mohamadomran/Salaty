@@ -17,17 +17,25 @@ import type {
   CalculationMethod,
   PrayerName,
 } from '@types';
+import { SettingsService } from '../settings/SettingsService';
 
 class PrayerService {
   /**
    * Get prayer times for a specific date and location
+   * Uses settings from SettingsService by default
    */
-  getPrayerTimes(
+  async getPrayerTimes(
     coordinates: Coordinates,
     date: Date = new Date(),
-    method: CalculationMethod = 'MuslimWorldLeague',
-    madhab: 'shafi' | 'hanafi' = 'shafi'
-  ): PrayerTimes {
+    method?: CalculationMethod,
+    madhab?: 'shafi' | 'hanafi'
+  ): Promise<PrayerTimes> {
+    // Load settings if method or madhab not provided
+    if (!method || !madhab) {
+      const settings = await SettingsService.getSettings();
+      method = method || settings.calculationMethod;
+      madhab = madhab || settings.madhab;
+    }
     // Convert our coordinates to Adhan format
     const adhanCoords = new AdhanCoordinates(
       coordinates.latitude,
@@ -80,10 +88,13 @@ class PrayerService {
   /**
    * Get next prayer
    */
-  getNextPrayer(prayerTimes: PrayerTimes): {
+  async getNextPrayer(
+    prayerTimes: PrayerTimes,
+    coordinates: Coordinates
+  ): Promise<{
     name: PrayerName;
     time: Date;
-  } | null {
+  } | null> {
     const now = new Date();
     const times = prayerTimes;
 
@@ -101,13 +112,7 @@ class PrayerService {
       // After Isha, next prayer is Fajr tomorrow
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowTimes = this.getPrayerTimes(
-        {
-          latitude: 0,
-          longitude: 0,
-        }, // Will be replaced with actual coords
-        tomorrow
-      );
+      const tomorrowTimes = await this.getPrayerTimes(coordinates, tomorrow);
       return { name: 'fajr', time: tomorrowTimes.fajr };
     }
   }
@@ -124,8 +129,31 @@ class PrayerService {
 
   /**
    * Format time for display
+   * Uses user's time format preference by default
    */
-  formatPrayerTime(time: Date, use24Hour = false): string {
+  async formatPrayerTime(time: Date, use24Hour?: boolean): Promise<string> {
+    // Load user preference if not provided
+    if (use24Hour === undefined) {
+      const settings = await SettingsService.getSettings();
+      use24Hour = settings.timeFormat === '24h';
+    }
+
+    const hours = time.getHours();
+    const minutes = time.getMinutes();
+
+    if (use24Hour) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    } else {
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+    }
+  }
+
+  /**
+   * Format time for display (synchronous version for when settings are already loaded)
+   */
+  formatPrayerTimeSync(time: Date, use24Hour: boolean): string {
     const hours = time.getHours();
     const minutes = time.getMinutes();
 

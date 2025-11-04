@@ -3,7 +3,7 @@
  * Manages prayer completion tracking, statistics, and custom prayers
  */
 
-import { StorageService } from '../storage/StorageService';
+import StorageService from '../storage/StorageService';
 import {
   DailyPrayerRecord,
   PrayerRecord,
@@ -17,7 +17,7 @@ import {
 
 class TrackingServiceClass {
   private static instance: TrackingServiceClass;
-  private storageService: StorageService;
+  private storageService: typeof StorageService;
 
   // Storage keys
   private readonly DAILY_RECORDS_KEY = '@salaty:daily_records';
@@ -25,7 +25,7 @@ class TrackingServiceClass {
   private readonly CUSTOM_PRAYERS_KEY = '@salaty:custom_prayers';
 
   private constructor() {
-    this.storageService = StorageService.getInstance();
+    this.storageService = StorageService;
   }
 
   /**
