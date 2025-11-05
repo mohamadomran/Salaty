@@ -9,8 +9,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Card, List, Switch, SegmentedButtons, Divider, Button } from 'react-native-paper';
 import { SettingsService } from '@services';
 import { AppSettings, CalculationMethodInfo, Madhab, TimeFormat, ThemeMode } from '@types';
+import { useThemeContext } from '@/contexts';
 
 export default function SettingsScreen() {
+  const { setThemeMode } = useThemeContext();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [calculationMethods, setCalculationMethods] = useState<CalculationMethodInfo[]>([]);
@@ -86,7 +88,8 @@ export default function SettingsScreen() {
     if (!settings) return;
 
     try {
-      await SettingsService.setThemeMode(mode);
+      // Update theme context (this will also persist to storage)
+      await setThemeMode(mode);
       setSettings({ ...settings, themeMode: mode });
     } catch (error) {
       console.error('Failed to update theme mode:', error);
@@ -119,6 +122,8 @@ export default function SettingsScreen() {
           onPress: async () => {
             try {
               const defaults = await SettingsService.resetToDefaults();
+              // Reset theme mode in context
+              await setThemeMode(defaults.themeMode);
               setSettings(defaults);
               Alert.alert('Success', 'Settings have been reset to defaults');
             } catch (error) {
@@ -131,9 +136,11 @@ export default function SettingsScreen() {
     );
   };
 
+  const theme = useThemeContext().theme;
+
   if (loading || !settings) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
         <View style={styles.content}>
           <Text>Loading...</Text>
         </View>
@@ -142,7 +149,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
           <Text variant="headlineMedium" style={styles.title}>
@@ -354,14 +361,13 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFDFD',
   },
   scrollView: {
     flex: 1,
   },
   content: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 100,
   },
   title: {
     fontWeight: '700',

@@ -17,13 +17,14 @@ import {
   ActivityIndicator,
   Divider,
   Icon,
+  useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLocation } from '@hooks/useLocation';
 import { PrayerService } from '@services/prayer';
 import { SettingsService } from '@services/settings';
 import type { PrayerTimes, PrayerName, AppSettings } from '@types';
-import { lightTheme } from '@theme';
+import type { ExpressiveTheme } from '@theme';
 
 const PRAYER_NAMES = {
   fajr: { english: 'Fajr', arabic: 'الفجر', icon: 'weather-sunset-up' },
@@ -34,6 +35,7 @@ const PRAYER_NAMES = {
 };
 
 export default function HomeScreen() {
+  const theme = useTheme<ExpressiveTheme>();
   const { location, loading: locationLoading, error: locationError, requestPermission } = useLocation(false);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<PrayerName | null>(null);
@@ -106,7 +108,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
@@ -122,14 +124,14 @@ export default function HomeScreen() {
         <Card style={styles.card}>
           <Card.Content>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <MaterialCommunityIcons name="map-marker" size={24} color={lightTheme.colors.primary} />
+              <MaterialCommunityIcons name="map-marker" size={24} color={theme.colors.primary} />
               <Text variant="titleMedium">Location Status</Text>
             </View>
             <Divider style={styles.divider} />
 
             {locationLoading && (
               <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={lightTheme.colors.primary} />
+                <ActivityIndicator size="large" color={theme.colors.primary} />
                 <Text style={styles.loadingText}>Getting location...</Text>
               </View>
             )}
@@ -210,7 +212,7 @@ export default function HomeScreen() {
                     ]}
                   >
                     <View style={styles.prayerInfo}>
-                      <Icon source={prayer.icon} size={24} color={lightTheme.colors.primary} />
+                      <Icon source={prayer.icon} size={24} color={theme.colors.primary} />
                       <View style={styles.prayerNames}>
                         <Text variant="titleMedium" style={styles.prayerEnglish}>
                           {prayer.english}
@@ -269,7 +271,7 @@ export default function HomeScreen() {
           <Card style={styles.card}>
             <Card.Content>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MaterialCommunityIcons name="cog" size={24} color={lightTheme.colors.primary} />
+                <MaterialCommunityIcons name="cog" size={24} color={theme.colors.primary} />
                 <Text variant="titleMedium">Current Settings</Text>
               </View>
               <Divider style={styles.divider} />
@@ -299,10 +301,10 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFDFD',
   },
   scrollContent: {
     padding: 16,
+    paddingBottom: 100,
   },
   header: {
     marginBottom: 24,

@@ -4,8 +4,9 @@
  */
 
 import React from 'react';
+import { StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Icon } from 'react-native-paper';
+import { Icon, useTheme } from 'react-native-paper';
 import type { RootTabParamList } from './types';
 import {
   HomeScreen,
@@ -13,28 +14,39 @@ import {
   QiblaScreen,
   SettingsScreen,
 } from '@/screens';
-import { lightTheme } from '@theme';
+import type { ExpressiveTheme } from '@theme';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export default function TabNavigator() {
+  const theme = useTheme<ExpressiveTheme>();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: lightTheme.colors.primary,
-        tabBarInactiveTintColor: '#4A6363',
+        tabBarActiveTintColor: '#00BFA5',
+        tabBarInactiveTintColor: '#78909C',
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopWidth: 1,
-          borderTopColor: '#DAE5E4',
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          right: 20,
+          backgroundColor: theme.dark ? '#1E2A2A' : '#FFFFFF',
+          borderRadius: 24,
+          height: 70,
+          paddingBottom: 12,
+          paddingTop: 12,
+          borderTopWidth: 0,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: '700',
         },
       }}
     >

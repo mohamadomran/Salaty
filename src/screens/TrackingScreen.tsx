@@ -6,16 +6,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Card, Divider, FAB } from 'react-native-paper';
+import { Text, Card, Divider, FAB, useTheme } from 'react-native-paper';
 import { PrayerCheckbox, StatsCard } from '@/components/tracking';
 import { TrackingService } from '@/services/tracking';
 import { PrayerService } from '@/services/prayer';
 import { LocationService } from '@/services/location';
 import { SettingsService } from '@/services/settings';
 import { DailyPrayerRecord, PrayerStatus, PrayerTimes, AppSettings } from '@types';
-import { lightTheme } from '@theme';
+import type { ExpressiveTheme } from '@theme';
 
 export default function TrackingScreen() {
+  const theme = useTheme<ExpressiveTheme>();
   const [dailyRecord, setDailyRecord] = useState<DailyPrayerRecord | null>(null);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -118,7 +119,7 @@ export default function TrackingScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -126,8 +127,8 @@ export default function TrackingScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={[lightTheme.colors.primary]}
-            tintColor={lightTheme.colors.primary}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
           />
         }
       >
@@ -153,17 +154,17 @@ export default function TrackingScreen() {
             {
               label: 'Completed',
               value: todayStats.completed,
-              color: lightTheme.colors.expressiveColors.prayerCompleted,
+              color: theme.expressiveColors.prayerCompleted,
             },
             {
               label: 'Rate',
               value: `${completionRate}%`,
-              color: lightTheme.colors.primary,
+              color: theme.colors.primary,
             },
             {
               label: 'Missed',
               value: todayStats.missed,
-              color: lightTheme.colors.expressiveColors.prayerMissed,
+              color: theme.expressiveColors.prayerMissed,
             },
           ]}
         />
@@ -239,7 +240,7 @@ export default function TrackingScreen() {
           // TODO: Navigate to statistics screen
           console.log('Navigate to statistics');
         }}
-        color={lightTheme.colors.onPrimary}
+        color={theme.colors.onPrimary}
       />
     </SafeAreaView>
   );
@@ -248,13 +249,13 @@ export default function TrackingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFDFD',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     padding: 16,
+    paddingBottom: 100,
   },
   content: {
     flex: 1,
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   loadingText: {
-    color: lightTheme.colors.primary,
+    color: '#006A6A',
   },
   header: {
     marginBottom: 24,
@@ -294,12 +295,10 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   infoCard: {
-    backgroundColor: lightTheme.colors.primaryContainer,
     borderRadius: 16,
     marginBottom: 80, // Space for FAB
   },
   infoText: {
-    color: lightTheme.colors.onPrimaryContainer,
     textAlign: 'center',
   },
   fab: {
@@ -307,6 +306,5 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: lightTheme.colors.primary,
   },
 });
