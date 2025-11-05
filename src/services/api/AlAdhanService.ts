@@ -31,41 +31,105 @@ class AlAdhanServiceClass {
   }
 
   /**
+   * Get Hijri date for a specific Gregorian date and location
+   */
+  public async getHijriDate(
+    coordinates: Coordinates,
+    date: Date = new Date(),
+  ): Promise<{
+    hijriDate?: PrayerTimes['hijriDate'];
+    locationName?: string;
+  }> {
+    // Format date as DD-MM-YYYY (AlAdhan API format)
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const dateStr = `${day}-${month}-${year}`;
+
+    // Build URL without trailing slash (API requires no trailing slash)
+    const urlStr = `${this.BASE_URL}/timings/${dateStr}?latitude=${coordinates.latitude}&longitude=${coordinates.longitude}`;
+
+    console.log('🔍 AlAdhan API URL:', urlStr);
+
+    try {
+      const response = await fetch(urlStr);
+
+      if (!response.ok) {
+        throw new Error(`AlAdhan API error: ${response.status}`);
+      }
+
+      const data: AlAdhanTimingsResponse = await response.json();
+
+      if (data.code !== 200) {
+        throw new Error(`AlAdhan API returned code ${data.code}`);
+      }
+
+      const result: {
+        hijriDate?: PrayerTimes['hijriDate'];
+        locationName?: string;
+      } = {};
+
+      if (data.data.date?.hijri) {
+        result.hijriDate = {
+          day: data.data.date.hijri.day,
+          month: data.data.date.hijri.month,
+          year: data.data.date.hijri.year,
+          weekday: data.data.date.hijri.weekday,
+          format: data.data.date.hijri.format,
+          date: data.data.date.hijri.date,
+        };
+      }
+
+      return result;
+    } catch (error) {
+      console.error('AlAdhan API error fetching Hijri date:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get prayer times for a specific date and location
    */
   public async getPrayerTimes(
     params: AlAdhanTimingsParams,
   ): Promise<PrayerTimes> {
     const date = params.date || new Date();
+
+    // Format date as DD-MM-YYYY (AlAdhan API format)
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
+    const dateStr = `${day}-${month}-${year}`;
 
-    const url = new URL(`${this.BASE_URL}/timings/${day}-${month}-${year}`);
-    url.searchParams.append('latitude', String(params.latitude));
-    url.searchParams.append('longitude', String(params.longitude));
+    // Build URL string manually to avoid trailing slash
+    const queryParams = new URLSearchParams({
+      latitude: String(params.latitude),
+      longitude: String(params.longitude),
+    });
 
     if (params.method !== undefined) {
-      url.searchParams.append('method', String(params.method));
+      queryParams.append('method', String(params.method));
     }
 
     if (params.school !== undefined) {
-      url.searchParams.append('school', String(params.school));
+      queryParams.append('school', String(params.school));
     }
 
     if (params.latitudeAdjustmentMethod !== undefined) {
-      url.searchParams.append(
+      queryParams.append(
         'latitudeAdjustmentMethod',
         String(params.latitudeAdjustmentMethod),
       );
     }
 
     if (params.tune) {
-      url.searchParams.append('tune', params.tune);
+      queryParams.append('tune', params.tune);
     }
 
+    const urlStr = `${this.BASE_URL}/timings/${dateStr}?${queryParams.toString()}`;
+
     try {
-      const response = await fetch(url.toString());
+      const response = await fetch(urlStr);
 
       if (!response.ok) {
         throw new Error(`AlAdhan API error: ${response.status}`);
@@ -228,7 +292,24 @@ class AlAdhanServiceClass {
     response: AlAdhanTimingsResponse,
     date: Date,
   ): PrayerTimes {
-    return this.convertTimingsToPrayerTimes(response.data.timings, date);
+    const prayerTimes = this.convertTimingsToPrayerTimes(
+      response.data.timings,
+      date,
+    );
+
+    // Add Hijri date if available
+    if (response.data.date?.hijri) {
+      prayerTimes.hijriDate = {
+        day: response.data.date.hijri.day,
+        month: response.data.date.hijri.month,
+        year: response.data.date.hijri.year,
+        weekday: response.data.date.hijri.weekday,
+        format: response.data.date.hijri.format,
+        date: response.data.date.hijri.date,
+      };
+    }
+
+    return prayerTimes;
   }
 
   /**

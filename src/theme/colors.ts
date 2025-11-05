@@ -31,13 +31,13 @@ export const lightColors = {
 
   // Background
   background: '#FAFAFA',
-  onBackground: '#2A1944',
+  onBackground: '#1A0F2A',
 
   // Surface / Card
   surface: '#FFFFFF',
-  onSurface: '#2A1944',
+  onSurface: '#1A0F2A',
   surfaceVariant: '#F3EFF7',
-  onSurfaceVariant: '#6B4E9B',
+  onSurfaceVariant: '#4A3570',
 
   // Outline / Border
   outline: 'rgba(107, 78, 155, 0.12)',
@@ -86,13 +86,13 @@ export const darkColors = {
 
   // Background - True Black for OLED
   background: '#000000',
-  onBackground: '#E8DFF5',
+  onBackground: '#FFFFFF',
 
   // Surface / Card - Elevated Dark Gray
   surface: '#1A1A1A',
-  onSurface: '#E8DFF5',
+  onSurface: '#FFFFFF',
   surfaceVariant: '#2D2435',
-  onSurfaceVariant: '#C4B1E0',
+  onSurfaceVariant: '#E0D0F0',
 
   // Outline / Border
   outline: 'rgba(196, 177, 224, 0.15)',
@@ -179,9 +179,9 @@ export const darkExpressiveColors = {
 
   // Semantic adjustments
   muted: '#2D2435',
-  mutedForeground: '#B5A8C7',
+  mutedForeground: '#D0C0E0',
   accent: '#4F3872',
-  accentForeground: '#E8DFF5',
+  accentForeground: '#FFFFFF',
   input: '#2D2435',
   inputBackground: '#1A1A1A',
   switchBackground: '#4F3872',

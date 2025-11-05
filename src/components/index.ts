@@ -21,3 +21,4 @@ export {
   FloatingActionBar,
   IslamicPattern,
 } from './PremiumComponents';
+export { PageHeader } from './PageHeader';

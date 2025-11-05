@@ -35,7 +35,7 @@ class SettingsServiceClass {
    * Get current app settings
    */
   public async getSettings(): Promise<AppSettings> {
-    const stored = await this.storageService.getItem(this.SETTINGS_KEY);
+    const stored = await this.storageService.getItem<string>(this.SETTINGS_KEY);
 
     if (stored) {
       return JSON.parse(stored);
@@ -99,6 +99,13 @@ class SettingsServiceClass {
   }
 
   /**
+   * Update language
+   */
+  public async setLanguage(language: string): Promise<void> {
+    await this.updateSettings({ language });
+  }
+
+  /**
    * Update notification settings
    */
   public async updateNotificationSettings(settings: {
@@ -131,6 +138,33 @@ class SettingsServiceClass {
       JSON.stringify(defaults),
     );
     return defaults;
+  }
+
+  /**
+   * Import settings from external source
+   */
+  public async importSettings(settings: AppSettings): Promise<AppSettings> {
+    // Validate and merge with defaults to ensure all fields are present
+    const defaults = this.getDefaultSettings();
+    const validated: AppSettings = {
+      ...defaults,
+      ...settings,
+      // Keep current version
+      version: defaults.version,
+    };
+
+    await this.storageService.setItem(
+      this.SETTINGS_KEY,
+      JSON.stringify(validated),
+    );
+    return validated;
+  }
+
+  /**
+   * Export current settings
+   */
+  public async exportSettings(): Promise<AppSettings> {
+    return await this.getSettings();
   }
 
   /**

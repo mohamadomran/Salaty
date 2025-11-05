@@ -40,23 +40,21 @@ export function PremiumCard({
     switch (variant) {
       case 'prayer':
         return {
-          backgroundColor: theme.expressiveColors?.prayerCard || '#FFFFFF',
+          backgroundColor: theme.colors.surface,
           borderRadius: 24,
           borderWidth: 1,
-          borderColor:
-            theme.expressiveColors?.outline || 'rgba(0, 106, 106, 0.1)',
+          borderColor: theme.colors.outline || 'rgba(0, 106, 106, 0.1)',
         };
       case 'nextPrayer':
         return {
-          backgroundColor:
-            theme.expressiveColors?.primaryContainer || '#B2E8E8',
+          backgroundColor: theme.colors.primaryContainer,
           borderRadius: 28,
           borderWidth: 2,
-          borderColor: theme.expressiveColors?.primary || '#006A6A',
+          borderColor: theme.colors.primary,
         };
       case 'stats':
         return {
-          backgroundColor: theme.expressiveColors?.surface || '#FFFFFF',
+          backgroundColor: theme.colors.surface,
           borderRadius: 20,
           borderWidth: 0,
         };
@@ -81,28 +79,13 @@ export function PremiumCard({
 
     switch (variant) {
       case 'prayer':
-        return (
-          theme.expressiveColors?.gradients?.prayerCard || [
-            '#FFFFFF',
-            '#F8FBFB',
-          ]
-        );
+        return [theme.colors.surface, theme.colors.surfaceVariant];
       case 'nextPrayer':
-        return (
-          theme.expressiveColors?.gradients?.tealGradient || [
-            '#006A6A',
-            '#4CDADA',
-          ]
-        );
+        return [theme.colors.primary, theme.colors.primaryContainer];
       case 'stats':
-        return (
-          theme.expressiveColors?.gradients?.goldGradient || [
-            '#FFD700',
-            '#FFED4E',
-          ]
-        );
+        return [theme.colors.secondary, theme.colors.secondaryContainer];
       default:
-        return ['#FFFFFF', '#F5F5F5'];
+        return [theme.colors.surface, theme.colors.surfaceVariant];
     }
   };
 
@@ -430,7 +413,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backdropFilter: 'blur(20px)',
   },
   bottomBar: {
     bottom: 20,

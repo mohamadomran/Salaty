@@ -21,6 +21,22 @@ export interface PrayerTime {
   arabicName: string;
 }
 
+export interface HijriDate {
+  day: string;
+  month: {
+    number: number;
+    en: string;
+    ar: string;
+  };
+  year: string;
+  weekday: {
+    en: string;
+    ar: string;
+  };
+  format: string; // e.g., "DD-MM-YYYY"
+  date: string; // e.g., "14-05-1446"
+}
+
 export interface PrayerTimes {
   fajr: Date;
   dhuhr: Date;
@@ -30,6 +46,8 @@ export interface PrayerTimes {
   sunrise?: Date;
   sunset?: Date;
   date: Date;
+  hijriDate?: HijriDate;
+  locationName?: string;
 }
 
 export interface CustomPrayer {

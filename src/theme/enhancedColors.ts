@@ -31,16 +31,16 @@ export const enhancedLightColors = {
 
   // Background - Warm White
   background: '#FFFBFE',
-  onBackground: '#191C1C',
+  onBackground: '#0D0F0F',
 
   // Surface - Pure White
   surface: '#FFFFFF',
-  onSurface: '#191C1C',
+  onSurface: '#0D0F0F',
   surfaceVariant: '#E5E5E5',
-  onSurfaceVariant: '#49454F',
+  onSurfaceVariant: '#2D2D2D',
 
   // Outline & Borders
-  outline: '#79747E',
+  outline: '#5A5A5A',
   outlineVariant: '#CAC4D0',
 
   // Enhanced elevation system
@@ -81,16 +81,16 @@ export const enhancedDarkColors = {
 
   // Background - True Black (OLED optimized)
   background: '#000000',
-  onBackground: '#E5F5F5',
+  onBackground: '#FFFFFF',
 
   // Surface - Dark Gray
   surface: '#1A1A1A',
-  onSurface: '#E5F5F5',
+  onSurface: '#FFFFFF',
   surfaceVariant: '#2F2F2F',
-  onSurfaceVariant: '#C4C7C7',
+  onSurfaceVariant: '#F0F0F0',
 
   // Outline & Borders
-  outline: '#938F99',
+  outline: '#B0B0B0',
   outlineVariant: '#49454F',
 
   // Dark elevation overlays
@@ -145,7 +145,7 @@ export const enhancedExpressiveColors = {
 
   // Additional semantic colors
   muted: '#E5E5E5',
-  mutedForeground: '#79747E',
+  mutedForeground: '#5A5A5A',
   accent: '#B2E8E8',
   accentForeground: '#001F1F',
   input: 'transparent',
@@ -169,8 +169,8 @@ export const enhancedDarkExpressiveColors = {
   // Dark mode adjustments
   geometricPattern: 'rgba(76, 218, 218, 0.08)',
   compassBackground: 'rgba(0, 106, 106, 0.15)',
-  prayerCompleted: '#7BA897', // Lighter sage for dark mode
-  success: '#7BA897',
+  prayerCompleted: '#A5D4BF', // Lighter sage for dark mode
+  success: '#A5D4BF',
   successContainer: '#1C3A32',
 
   // Dark mode gradients

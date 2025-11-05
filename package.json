@@ -7,7 +7,13 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "clean:watchman": "watchman watch-del-all",
+    "clean:metro": "rm -rf $TMPDIR/metro-* $TMPDIR/haste-map-* ~/.rncache",
+    "clean:cache": "yarn clean:watchman && yarn clean:metro",
+    "start:fresh": "yarn clean:cache && react-native start --reset-cache",
+    "rebuild:ios": "yarn clean:cache && react-native run-ios",
+    "rebuild:android": "yarn clean:cache && react-native run-android"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",

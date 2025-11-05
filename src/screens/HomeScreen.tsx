@@ -18,9 +18,18 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useLocation } from '../hooks/useLocation';
 import { PrayerService } from '../services/prayer';
 import { SettingsService } from '../services/settings';
-import { PremiumCard, PrayerTimeCard, IslamicPattern } from '../components';
-import type { PrayerTimes, PrayerName, AppSettings } from '../types';
+import { AlAdhanService } from '../services/api';
+import { LocationPreferenceService } from '../services/location';
+import {
+  PremiumCard,
+  PrayerTimeCard,
+  IslamicPattern,
+  PageHeader,
+  HomeScreenSkeleton,
+} from '../components';
+import type { PrayerTimes, PrayerName, AppSettings, HijriDate, Coordinates } from '../types';
 import type { ExpressiveTheme } from '../theme';
+import type { LocationSource } from '../services/location';
 
 const PRAYER_NAMES_WITH_ICONS: Record<
   string,
@@ -52,14 +61,24 @@ export default function HomeScreen() {
     time: Date;
   } | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [hijriDate, setHijriDate] = useState<HijriDate | null>(null);
+  const [storedLocation, setStoredLocation] = useState<Coordinates | null>(null);
+  const [locationSource, setLocationSource] = useState<LocationSource | null>(null);
 
-  // Load user settings
+  // Load user settings and stored location
   useEffect(() => {
-    const loadSettings = async () => {
+    const loadData = async () => {
       const userSettings = await SettingsService.getSettings();
       setSettings(userSettings);
+
+      // Load stored location
+      const preference = await LocationPreferenceService.getLocationPreference();
+      if (preference.coordinates) {
+        setStoredLocation(preference.coordinates);
+        setLocationSource(preference.source);
+      }
     };
-    loadSettings();
+    loadData();
   }, []);
 
   // Fetch location and calculate prayer times
@@ -80,14 +99,17 @@ export default function HomeScreen() {
     }
   };
 
-  // Calculate prayer times when location is available
+  // Calculate prayer times and fetch Hijri date when location is available
   useEffect(() => {
     const calculatePrayerTimes = async () => {
-      if (location) {
+      // Use stored location first, fallback to GPS location
+      const activeLocation = storedLocation || location;
+
+      if (activeLocation) {
         try {
           // Use settings from SettingsService (will use defaults if not set)
           const times = await PrayerService.getPrayerTimes(
-            location,
+            activeLocation,
             new Date(),
           );
           setPrayerTimes(times);
@@ -95,17 +117,28 @@ export default function HomeScreen() {
           const current = PrayerService.getCurrentPrayer(times);
           setCurrentPrayer(current);
 
-          const next = await PrayerService.getNextPrayer(times, location);
+          const next = await PrayerService.getNextPrayer(times, activeLocation);
           setNextPrayer(next);
+
+          // Fetch Hijri date
+          try {
+            const dateInfo = await AlAdhanService.getHijriDate(activeLocation);
+            if (dateInfo.hijriDate) {
+              setHijriDate(dateInfo.hijriDate);
+            }
+          } catch (error) {
+            console.error('Error fetching Hijri date:', error);
+          }
         } catch (error) {
           console.error('Error calculating prayer times:', error);
         }
       }
     };
     calculatePrayerTimes();
-  }, [location]);
+  }, [location, storedLocation]);
 
   // Format time using user's time format preference (memoized)
+  // MUST be before early return to maintain hook order
   const formatTime = useCallback(
     (date: Date): string => {
       if (!settings) return '';
@@ -158,6 +191,19 @@ export default function HomeScreen() {
     });
   }, [prayerTimes, settings, currentPrayer, nextPrayer, formatTime]);
 
+  // Show loading skeleton while settings are loading
+  // MUST be after ALL hooks (useState, useEffect, useCallback, useMemo)
+  if (!settings) {
+    return (
+      <SafeAreaView
+        edges={['top', 'left', 'right']}
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <HomeScreenSkeleton />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       edges={['top', 'left', 'right']}
@@ -165,74 +211,100 @@ export default function HomeScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
-        <View style={styles.header}>
-          <Text variant="headlineMedium" style={styles.title}>
-            Salaty
-          </Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>
-            Prayer Times & Qibla
-          </Text>
-        </View>
+        <PageHeader title="Salaty" subtitle="Prayer Times & Qibla" />
 
-        {/* Location Status */}
-        <Card style={styles.card}>
-          <Card.Content>
-            <View
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-            >
-              <MaterialCommunityIcons
-                name="map-marker"
-                size={24}
-                color={theme.colors.primary}
-              />
-              <Text variant="titleMedium">Location Status</Text>
-            </View>
-            <Divider style={styles.divider} />
-
-            {locationLoading && (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-                <Text style={styles.loadingText}>Getting location...</Text>
-              </View>
-            )}
-
-            {locationError && (
-              <Text style={styles.errorText}>Error: {locationError}</Text>
-            )}
-
-            {location && (
-              <View>
-                <Text>Latitude: {location.latitude.toFixed(4)}</Text>
-                <Text>Longitude: {location.longitude.toFixed(4)}</Text>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 4,
-                    marginTop: 8,
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="check-circle"
-                    size={16}
-                    color="#00C853"
-                  />
-                  <Text style={styles.successText}>Location acquired</Text>
+        {/* Islamic Date */}
+        {hijriDate && (
+          <Card style={[styles.card, styles.dateCard]}>
+            <Card.Content>
+              <View style={styles.dateContainer}>
+                <View style={styles.dateSection}>
+                  <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+                    TODAY
+                  </Text>
+                  <Text variant="headlineSmall" style={{ fontWeight: '600', marginTop: 4 }}>
+                    {new Date().toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </Text>
+                </View>
+                <Divider style={styles.dateDivider} />
+                <View style={styles.dateSection}>
+                  <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+                    HIJRI DATE
+                  </Text>
+                  <Text
+                    variant="headlineSmall"
+                    style={{
+                      fontWeight: '600',
+                      marginTop: 4,
+                      color: theme.colors.primary,
+                    }}
+                  >
+                    {hijriDate.day} {hijriDate.month.en} {hijriDate.year} AH
+                  </Text>
+                  <Text
+                    variant="bodyMedium"
+                    style={{
+                      marginTop: 2,
+                      color: theme.colors.onSurfaceVariant,
+                      textAlign: 'right',
+                      fontFamily: 'System',
+                    }}
+                  >
+                    {hijriDate.day} {hijriDate.month.ar} {hijriDate.year} هـ
+                  </Text>
                 </View>
               </View>
-            )}
+            </Card.Content>
+          </Card>
+        )}
 
-            {!location && !locationLoading && (
-              <Button
-                mode="contained"
-                onPress={fetchPrayerTimes}
-                style={styles.button}
+        {/* Location Status */}
+        {(storedLocation || location) && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
               >
-                Get Location & Prayer Times
-              </Button>
-            )}
-          </Card.Content>
-        </Card>
+                <MaterialCommunityIcons
+                  name={locationSource === 'gps' ? 'crosshairs-gps' : 'map-search'}
+                  size={24}
+                  color={theme.colors.primary}
+                />
+                <Text variant="titleMedium">
+                  {locationSource === 'gps' ? 'GPS Location' : 'Manual Location'}
+                </Text>
+              </View>
+              <Divider style={styles.divider} />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="check-circle"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+                <Text
+                  variant="bodyLarge"
+                  style={{ color: theme.colors.primary, fontWeight: '500' }}
+                >
+                  {locationSource === 'gps'
+                    ? 'Using GPS location'
+                    : 'Using manual location'}
+                </Text>
+              </View>
+            </Card.Content>
+          </Card>
+        )}
 
         {/* Next Prayer */}
         {nextPrayer && prayerTimes && (
@@ -250,7 +322,7 @@ export default function HomeScreen() {
               <Text variant="bodyLarge" style={styles.countdown}>
                 In{' '}
                 {formatCountdown(
-                  PrayerService.getTimeUntilNextPrayer(prayerTimes),
+                  nextPrayer.time.getTime() - new Date().getTime(),
                 )}
               </Text>
             </Card.Content>
@@ -280,7 +352,12 @@ export default function HomeScreen() {
 
               {/* Sunrise & Sunset */}
               {settings.showSunriseSunset && prayerTimes.sunrise && (
-                <View style={styles.sunTimeRow}>
+                <View
+                  style={[
+                    styles.sunTimeRow,
+                    { borderTopColor: theme.colors.outlineVariant },
+                  ]}
+                >
                   <View
                     style={{
                       flexDirection: 'row',
@@ -291,7 +368,7 @@ export default function HomeScreen() {
                     <MaterialCommunityIcons
                       name="weather-sunset-up"
                       size={20}
-                      color="#FFA726"
+                      color={theme.colors.secondary}
                     />
                     <Text variant="bodyMedium">Sunrise</Text>
                   </View>
@@ -301,7 +378,12 @@ export default function HomeScreen() {
                 </View>
               )}
               {settings.showSunriseSunset && prayerTimes.sunset && (
-                <View style={styles.sunTimeRow}>
+                <View
+                  style={[
+                    styles.sunTimeRow,
+                    { borderTopColor: theme.colors.outlineVariant },
+                  ]}
+                >
                   <View
                     style={{
                       flexDirection: 'row',
@@ -312,7 +394,7 @@ export default function HomeScreen() {
                     <MaterialCommunityIcons
                       name="weather-sunset-down"
                       size={20}
-                      color="#FFA726"
+                      color={theme.colors.secondary}
                     />
                     <Text variant="bodyMedium">Sunset</Text>
                   </View>
@@ -325,51 +407,48 @@ export default function HomeScreen() {
           </Card>
         )}
 
-        {/* Settings Info */}
-        {settings && (
+        {/* Quick Actions */}
+        {(storedLocation || location) && prayerTimes && (
           <Card style={styles.card}>
             <Card.Content>
               <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}
               >
                 <MaterialCommunityIcons
-                  name="cog"
+                  name="star-four-points"
                   size={24}
                   color={theme.colors.primary}
                 />
-                <Text variant="titleMedium">Current Settings</Text>
+                <Text variant="titleMedium">Quick Actions</Text>
               </View>
-              <Divider style={styles.divider} />
-              <Text variant="bodySmall">
-                •{' '}
-                {SettingsService.getCalculationMethods().find(
-                  m => m.id === settings.calculationMethod,
-                )?.name || settings.calculationMethod}
-              </Text>
-              <Text variant="bodySmall">
-                • {settings.timeFormat === '12h' ? '12-hour' : '24-hour'} time
-                format
-              </Text>
-              <Text variant="bodySmall">
-                •{' '}
-                {settings.madhab === 'shafi'
-                  ? 'Shafi/Maliki/Hanbali'
-                  : 'Hanafi'}{' '}
-                madhab for Asr
-              </Text>
-              <Text variant="bodySmall">
-                • Sunrise/Sunset:{' '}
-                {settings.showSunriseSunset ? 'Visible' : 'Hidden'}
-              </Text>
-              <Text
-                variant="bodySmall"
-                style={{ marginTop: 8, fontStyle: 'italic' }}
-              >
-                Go to Settings tab to change these preferences
-              </Text>
+              <View style={styles.quickActionsGrid}>
+                <Button
+                  mode="elevated"
+                  icon="compass"
+                  onPress={() => {
+                    Alert.alert('Qibla', 'Qibla compass feature coming soon!');
+                  }}
+                  style={styles.quickActionButton}
+                  contentStyle={styles.quickActionButtonContent}
+                >
+                  Find Qibla
+                </Button>
+                <Button
+                  mode="elevated"
+                  icon="check-circle-outline"
+                  onPress={() => {
+                    Alert.alert('Tracking', 'Navigate to Tracking tab to track your prayers');
+                  }}
+                  style={styles.quickActionButton}
+                  contentStyle={styles.quickActionButtonContent}
+                >
+                  Track Prayers
+                </Button>
+              </View>
             </Card.Content>
           </Card>
         )}
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -383,41 +462,36 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 100,
   },
-  header: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  title: {
-    fontWeight: '700',
-    color: '#006A6A',
-  },
-  subtitle: {
-    color: '#4A6363',
-    marginTop: 4,
-  },
   card: {
     marginBottom: 16,
     borderRadius: 16,
   },
+  dateCard: {
+    borderRadius: 20,
+  },
+  dateContainer: {
+    gap: 16,
+  },
+  dateSection: {
+    gap: 4,
+  },
+  dateDivider: {
+    marginVertical: 8,
+  },
   nextPrayerCard: {
-    backgroundColor: '#E5F1F1',
     borderRadius: 24,
   },
   nextPrayerLabel: {
-    color: '#4A6363',
     marginBottom: 4,
   },
   nextPrayerName: {
     fontWeight: '700',
-    color: '#006A6A',
     marginBottom: 8,
   },
   nextPrayerTime: {
     fontWeight: '700',
-    color: '#006A6A',
   },
   countdown: {
-    color: '#FFA726',
     marginTop: 8,
   },
   divider: {
@@ -429,13 +503,11 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     marginTop: 12,
-    color: '#4A6363',
   },
   errorText: {
-    color: '#BA1A1A',
+    // color handled inline with theme
   },
   successText: {
-    color: '#00C853',
     marginTop: 8,
   },
   button: {
@@ -443,7 +515,6 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   methodText: {
-    color: '#4A6363',
     marginTop: 4,
   },
   prayerRow: {
@@ -456,10 +527,10 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   currentPrayerRow: {
-    backgroundColor: '#B9F6CA',
+    // backgroundColor handled inline with theme
   },
   nextPrayerRow: {
-    backgroundColor: '#FFE0B2',
+    // backgroundColor handled inline with theme
   },
   prayerInfo: {
     flexDirection: 'row',
@@ -472,7 +543,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   prayerArabic: {
-    color: '#4A6363',
+    // color handled inline with theme
     marginTop: 2,
   },
   prayerTimeContainer: {
@@ -482,19 +553,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   currentPrayerTime: {
-    color: '#00C853',
+    // color handled inline with theme
   },
   currentLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#00C853',
     marginTop: 2,
+    // color handled inline with theme
   },
   nextLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#F57C00',
     marginTop: 2,
+    // color handled inline with theme
   },
   sunTimeRow: {
     flexDirection: 'row',
@@ -503,6 +574,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     marginTop: 8,
     borderTopWidth: 1,
-    borderTopColor: '#DAE5E4',
+    // borderTopColor handled inline with theme
+  },
+  quickActionsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  quickActionButton: {
+    flex: 1,
+    borderRadius: 12,
+  },
+  quickActionButtonContent: {
+    paddingVertical: 8,
   },
 });
