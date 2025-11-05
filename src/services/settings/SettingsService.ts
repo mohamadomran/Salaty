@@ -174,6 +174,21 @@ class SettingsServiceClass {
    */
 
   /**
+   * Complete onboarding
+   */
+  public async completeOnboarding(): Promise<void> {
+    await this.updateSettings({ onboardingCompleted: true });
+  }
+
+  /**
+   * Check if onboarding is completed
+   */
+  public async isOnboardingCompleted(): Promise<boolean> {
+    const settings = await this.getSettings();
+    return settings.onboardingCompleted;
+  }
+
+  /**
    * Get default settings
    */
   private getDefaultSettings(): AppSettings {
@@ -194,6 +209,7 @@ class SettingsServiceClass {
       // App
       themeMode: 'auto',
       language: 'en',
+      onboardingCompleted: false,
 
       // Advanced
       highLatitudeRule: 'middleOfNight',

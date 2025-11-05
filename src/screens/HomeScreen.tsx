@@ -15,7 +15,6 @@ import {
   useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useLocation } from '../hooks/useLocation';
 import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import { PrayerService } from '../services/prayer';
 import { SettingsService } from '../services/settings';
@@ -49,12 +48,6 @@ const PRAYER_NAMES_WITH_ICONS: Record<
 
 export default function HomeScreen() {
   const theme = useTheme<ExpressiveTheme>();
-  const {
-    location,
-    loading: locationLoading,
-    error: locationError,
-    requestPermission,
-  } = useLocation(false);
   const { methods: calculationMethods } = useCalculationMethods();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<PrayerName | null>(null);
@@ -64,80 +57,63 @@ export default function HomeScreen() {
   } | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [hijriDate, setHijriDate] = useState<HijriDate | null>(null);
-  const [storedLocation, setStoredLocation] = useState<Coordinates | null>(null);
-  const [locationSource, setLocationSource] = useState<LocationSource | null>(null);
+  const [savedLocation, setSavedLocation] = useState<Coordinates | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Load user settings and stored location
+  // Load user settings and location, then fetch prayer times
   useEffect(() => {
-    const loadData = async () => {
-      const userSettings = await SettingsService.getSettings();
-      setSettings(userSettings);
+    const loadDataAndFetchPrayers = async () => {
+      try {
+        setLoading(true);
 
-      // Load stored location
-      const preference = await LocationPreferenceService.getLocationPreference();
-      if (preference.coordinates) {
-        setStoredLocation(preference.coordinates);
-        setLocationSource(preference.source);
-      }
-    };
-    loadData();
-  }, []);
+        // Load settings
+        const userSettings = await SettingsService.getSettings();
+        setSettings(userSettings);
 
-  // Fetch location and calculate prayer times
-  const fetchPrayerTimes = async () => {
-    try {
-      const perm = await requestPermission();
+        // Load saved location
+        const preference = await LocationPreferenceService.getLocationPreference();
 
-      if (!perm || !perm.granted) {
-        Alert.alert(
-          'Location Permission Required',
-          'Please enable location permissions to calculate accurate prayer times.',
-          [{ text: 'OK' }],
+        if (!preference.coordinates) {
+          // This shouldn't happen after onboarding, but handle gracefully
+          console.warn('No saved location found');
+          setLoading(false);
+          return;
+        }
+
+        setSavedLocation(preference.coordinates);
+
+        // Fetch prayer times and Hijri date
+        const times = await PrayerService.getPrayerTimes(
+          preference.coordinates,
+          new Date(),
         );
-        return;
-      }
-    } catch (error: any) {
-      Alert.alert('Error', error.message);
-    }
-  };
+        setPrayerTimes(times);
 
-  // Calculate prayer times and fetch Hijri date when location is available
-  useEffect(() => {
-    const calculatePrayerTimes = async () => {
-      // Use stored location first, fallback to GPS location
-      const activeLocation = storedLocation || location;
+        const current = PrayerService.getCurrentPrayer(times);
+        setCurrentPrayer(current);
 
-      if (activeLocation) {
+        const next = await PrayerService.getNextPrayer(times, preference.coordinates);
+        setNextPrayer(next);
+
+        // Fetch Hijri date
         try {
-          // Use settings from SettingsService (will use defaults if not set)
-          const times = await PrayerService.getPrayerTimes(
-            activeLocation,
-            new Date(),
-          );
-          setPrayerTimes(times);
-
-          const current = PrayerService.getCurrentPrayer(times);
-          setCurrentPrayer(current);
-
-          const next = await PrayerService.getNextPrayer(times, activeLocation);
-          setNextPrayer(next);
-
-          // Fetch Hijri date
-          try {
-            const dateInfo = await AlAdhanService.getHijriDate(activeLocation);
-            if (dateInfo.hijriDate) {
-              setHijriDate(dateInfo.hijriDate);
-            }
-          } catch (error) {
-            console.error('Error fetching Hijri date:', error);
+          const dateInfo = await AlAdhanService.getHijriDate(preference.coordinates);
+          if (dateInfo.hijriDate) {
+            setHijriDate(dateInfo.hijriDate);
           }
         } catch (error) {
-          console.error('Error calculating prayer times:', error);
+          console.error('Error fetching Hijri date:', error);
         }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        Alert.alert('Error', 'Failed to load prayer times. Please check your location settings.');
+      } finally {
+        setLoading(false);
       }
     };
-    calculatePrayerTimes();
-  }, [location, storedLocation]);
+
+    loadDataAndFetchPrayers();
+  }, []);
 
   // Format time using user's time format preference (memoized)
   // MUST be before early return to maintain hook order
@@ -193,9 +169,9 @@ export default function HomeScreen() {
     });
   }, [prayerTimes, settings, currentPrayer, nextPrayer, formatTime]);
 
-  // Show loading skeleton while settings are loading
+  // Show loading skeleton while data is loading
   // MUST be after ALL hooks (useState, useEffect, useCallback, useMemo)
-  if (!settings) {
+  if (loading || !settings || !prayerTimes) {
     return (
       <SafeAreaView
         edges={['top', 'left', 'right']}
@@ -260,49 +236,6 @@ export default function HomeScreen() {
                     {hijriDate.day} {hijriDate.month.ar} {hijriDate.year} هـ
                   </Text>
                 </View>
-              </View>
-            </Card.Content>
-          </Card>
-        )}
-
-        {/* Location Status */}
-        {(storedLocation || location) && (
-          <Card style={styles.card}>
-            <Card.Content>
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-              >
-                <MaterialCommunityIcons
-                  name={locationSource === 'gps' ? 'crosshairs-gps' : 'map-search'}
-                  size={24}
-                  color={theme.colors.primary}
-                />
-                <Text variant="titleMedium">
-                  {locationSource === 'gps' ? 'GPS Location' : 'Manual Location'}
-                </Text>
-              </View>
-              <Divider style={styles.divider} />
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <MaterialCommunityIcons
-                  name="check-circle"
-                  size={20}
-                  color={theme.colors.primary}
-                />
-                <Text
-                  variant="bodyLarge"
-                  style={{ color: theme.colors.primary, fontWeight: '500' }}
-                >
-                  {locationSource === 'gps'
-                    ? 'Using GPS location'
-                    : 'Using manual location'}
-                </Text>
               </View>
             </Card.Content>
           </Card>
@@ -410,7 +343,7 @@ export default function HomeScreen() {
         )}
 
         {/* Quick Actions */}
-        {(storedLocation || location) && prayerTimes && (
+        {savedLocation && prayerTimes && (
           <Card style={styles.card}>
             <Card.Content>
               <View

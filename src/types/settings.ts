@@ -40,6 +40,7 @@ export interface AppSettings {
   // App
   themeMode: ThemeMode;
   language: string;
+  onboardingCompleted: boolean;
 
   // Advanced
   highLatitudeRule: 'middleOfNight' | 'oneSeventh' | 'angleBased';

@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -36,6 +36,9 @@ import {
 } from '../components/settings';
 import { SkeletonCard } from '../components/LoadingSkeleton';
 import { PageHeader } from '../components/PageHeader';
+import { LocationSetupScreen } from './';
+import { LocationPreferenceService } from '../services/location';
+import type { LocationPreference } from '../services/location';
 
 export default function SettingsScreen() {
   const { setThemeMode, theme } = useThemeContext();
@@ -43,6 +46,8 @@ export default function SettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showImportExport, setShowImportExport] = useState(false);
+  const [showLocationSetup, setShowLocationSetup] = useState(false);
+  const [locationInfo, setLocationInfo] = useState<LocationPreference | null>(null);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
@@ -57,6 +62,7 @@ export default function SettingsScreen() {
 
   useEffect(() => {
     loadSettings();
+    loadLocation();
   }, []);
 
   const loadSettings = async () => {
@@ -69,6 +75,25 @@ export default function SettingsScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadLocation = async () => {
+    try {
+      const preference = await LocationPreferenceService.getLocationPreference();
+      setLocationInfo(preference);
+    } catch (error) {
+      console.error('Failed to load location:', error);
+    }
+  };
+
+  const handleLocationChange = () => {
+    setShowLocationSetup(true);
+  };
+
+  const handleLocationSetupComplete = async () => {
+    setShowLocationSetup(false);
+    await loadLocation();
+    showToast('Location updated successfully');
   };
 
   const showToast = (message: string) => {
@@ -495,6 +520,59 @@ export default function SettingsScreen() {
             </Text>
           </CollapsibleSettingsSection>
 
+          {/* Location Section */}
+          <CollapsibleSettingsSection
+            title="Location"
+            icon="map-marker"
+            defaultExpanded={false}
+          >
+            {locationInfo && (
+              <>
+                <Text
+                  variant="labelLarge"
+                  style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
+                >
+                  Current Location
+                </Text>
+                <List.Item
+                  title={locationInfo.source === 'gps' ? 'GPS Location' : 'Manual Location'}
+                  description={
+                    locationInfo.cityName || locationInfo.displayName
+                      ? `${locationInfo.cityName || locationInfo.displayName}${locationInfo.country ? `, ${locationInfo.country}` : ''}`
+                      : locationInfo.coordinates
+                        ? `${locationInfo.coordinates.latitude.toFixed(4)}, ${locationInfo.coordinates.longitude.toFixed(4)}`
+                        : 'No location set'
+                  }
+                  left={props => (
+                    <List.Icon
+                      {...props}
+                      icon={locationInfo.source === 'gps' ? 'crosshairs-gps' : 'map-search'}
+                    />
+                  )}
+                  style={styles.listItem}
+                />
+
+                <Divider style={styles.divider} />
+              </>
+            )}
+
+            <Button
+              mode="outlined"
+              onPress={handleLocationChange}
+              icon="map-marker-radius"
+              style={styles.changeLocationButton}
+            >
+              Change Location
+            </Button>
+
+            <Text
+              variant="bodySmall"
+              style={[styles.description, { color: theme.colors.outline, marginTop: 12 }]}
+            >
+              Changing your location will update prayer times to match your new location.
+            </Text>
+          </CollapsibleSettingsSection>
+
           {/* Advanced Settings Section */}
           <CollapsibleSettingsSection
             title="Advanced"
@@ -542,6 +620,16 @@ export default function SettingsScreen() {
         currentSettings={settings}
         onImport={handleImport}
       />
+
+      {/* Location Setup Modal */}
+      <Modal
+        visible={showLocationSetup}
+        animationType="slide"
+        presentationStyle="fullScreen"
+        onRequestClose={() => setShowLocationSetup(false)}
+      >
+        <LocationSetupScreen onComplete={handleLocationSetupComplete} />
+      </Modal>
 
       {/* Toast Notifications */}
       <Snackbar
@@ -598,6 +686,9 @@ const styles = StyleSheet.create({
   },
   resetButton: {
     marginTop: 8,
+  },
+  changeLocationButton: {
+    borderRadius: 12,
   },
   snackbar: {
     marginBottom: 80,

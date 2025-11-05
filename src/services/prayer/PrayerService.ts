@@ -1,16 +1,9 @@
 /**
  * Prayer Service
- * Calculates prayer times using the Adhan library
+ * Calculates prayer times using the AlAdhan API
  */
 
-import {
-  Coordinates as AdhanCoordinates,
-  CalculationMethod as AdhanCalculationMethod,
-  PrayerTimes as AdhanPrayerTimes,
-  Prayer as AdhanPrayer,
-  Madhab,
-  HighLatitudeRule,
-} from 'adhan';
+import { Coordinates as AdhanCoordinates } from 'adhan';
 import type {
   Coordinates,
   PrayerTimes,
@@ -18,10 +11,11 @@ import type {
   PrayerName,
 } from '../../types';
 import { SettingsService } from '../settings/SettingsService';
+import { AlAdhanService } from '../api/AlAdhanService';
 
 class PrayerService {
   /**
-   * Get prayer times for a specific date and location
+   * Get prayer times for a specific date and location using AlAdhan API
    * Uses settings from SettingsService by default
    */
   async getPrayerTimes(
@@ -36,31 +30,28 @@ class PrayerService {
       method = method || settings.calculationMethod;
       madhab = madhab || settings.madhab;
     }
-    // Convert our coordinates to Adhan format
-    const adhanCoords = new AdhanCoordinates(
-      coordinates.latitude,
-      coordinates.longitude,
-    );
 
-    // Get calculation parameters
-    const params = this.getCalculationParams(method);
+    // Map calculation method to AlAdhan API ID
+    const alAdhanMethod = AlAdhanService.mapCalculationMethod(method);
 
-    // Set madhab (affects Asr calculation)
-    params.madhab = madhab === 'hanafi' ? Madhab.Hanafi : Madhab.Shafi;
+    // Map madhab to AlAdhan school (0 = Shafi, 1 = Hanafi)
+    const school = madhab === 'hanafi' ? 1 : 0;
 
-    // Calculate prayer times
-    const prayerTimes = new AdhanPrayerTimes(adhanCoords, date, params);
+    try {
+      // Call AlAdhan API with the user's selected method and madhab
+      const prayerTimes = await AlAdhanService.getPrayerTimes({
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        date: date,
+        method: alAdhanMethod,
+        school: school,
+      });
 
-    return {
-      fajr: prayerTimes.fajr,
-      dhuhr: prayerTimes.dhuhr,
-      asr: prayerTimes.asr,
-      maghrib: prayerTimes.maghrib,
-      isha: prayerTimes.isha,
-      sunrise: prayerTimes.sunrise,
-      sunset: prayerTimes.sunset,
-      date: date,
-    };
+      return prayerTimes;
+    } catch (error) {
+      console.error('Failed to fetch prayer times from AlAdhan API:', error);
+      throw new Error('Unable to calculate prayer times. Please check your connection.');
+    }
   }
 
   /**
@@ -120,8 +111,11 @@ class PrayerService {
   /**
    * Get time until next prayer in milliseconds
    */
-  getTimeUntilNextPrayer(prayerTimes: PrayerTimes): number {
-    const nextPrayer = this.getNextPrayer(prayerTimes);
+  async getTimeUntilNextPrayer(
+    prayerTimes: PrayerTimes,
+    coordinates: Coordinates,
+  ): Promise<number> {
+    const nextPrayer = await this.getNextPrayer(prayerTimes, coordinates);
     if (!nextPrayer) return 0;
 
     return nextPrayer.time.getTime() - new Date().getTime();
@@ -171,36 +165,6 @@ class PrayerService {
   }
 
   /**
-   * Get calculation parameters for a method
-   */
-  private getCalculationParams(method: CalculationMethod): any {
-    switch (method) {
-      case 'MuslimWorldLeague':
-        return AdhanCalculationMethod.MuslimWorldLeague();
-      case 'Egyptian':
-        return AdhanCalculationMethod.Egyptian();
-      case 'Karachi':
-        return AdhanCalculationMethod.Karachi();
-      case 'UmmAlQura':
-        return AdhanCalculationMethod.UmmAlQura();
-      case 'Dubai':
-        return AdhanCalculationMethod.Dubai();
-      case 'MoonsightingCommittee':
-        return AdhanCalculationMethod.MoonsightingCommittee();
-      case 'NorthAmerica':
-        return AdhanCalculationMethod.NorthAmerica();
-      case 'Kuwait':
-        return AdhanCalculationMethod.Kuwait();
-      case 'Qatar':
-        return AdhanCalculationMethod.Qatar();
-      case 'Singapore':
-        return AdhanCalculationMethod.Singapore();
-      default:
-        return AdhanCalculationMethod.MuslimWorldLeague();
-    }
-  }
-
-  /**
    * Check if it's time for a specific prayer
    * (within 15 minutes before or after)
    */
@@ -220,12 +184,14 @@ class PrayerService {
 
   /**
    * Get Qibla direction from coordinates
+   * Note: Still uses local adhan library for Qibla calculations
    */
   getQiblaDirection(coordinates: Coordinates): number {
     const adhanCoords = new AdhanCoordinates(
       coordinates.latitude,
       coordinates.longitude,
     );
+    // @ts-ignore - qibla() exists on AdhanCoordinates but not in types
     return adhanCoords.qibla();
   }
 }

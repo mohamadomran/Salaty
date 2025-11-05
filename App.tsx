@@ -14,8 +14,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { ThemeProvider, useThemeContext } from './src/contexts';
 import { TabNavigator } from './src/navigation';
 import { ErrorBoundary } from './src/components';
-import { LocationSetupScreen } from './src/screens';
-import { LocationPreferenceService } from './src/services/location';
+import { OnboardingScreen } from './src/screens';
+import { SettingsService } from './src/services';
 import { queryClient, asyncStoragePersister } from './src/lib/queryClient';
 
 // Configure icon library for react-native-paper
@@ -25,24 +25,24 @@ const settings = {
 
 function AppContent(): React.JSX.Element {
   const { theme, isDark, isLoading } = useThemeContext();
-  const [setupCompleted, setSetupCompleted] = useState<boolean | null>(null);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
-  // Check location setup status
+  // Check onboarding status
   useEffect(() => {
-    const checkSetup = async () => {
-      const isCompleted = await LocationPreferenceService.isSetupCompleted();
-      setSetupCompleted(isCompleted);
+    const checkOnboarding = async () => {
+      const isCompleted = await SettingsService.isOnboardingCompleted();
+      setOnboardingCompleted(isCompleted);
     };
-    checkSetup();
+    checkOnboarding();
   }, []);
 
-  // Handle setup completion
-  const handleSetupComplete = () => {
-    setSetupCompleted(true);
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    setOnboardingCompleted(true);
   };
 
-  // Show nothing while loading theme or checking setup
-  if (isLoading || setupCompleted === null) {
+  // Show nothing while loading theme or checking onboarding
+  if (isLoading || onboardingCompleted === null) {
     return (
       <PaperProvider theme={theme} settings={settings}>
         <StatusBar
@@ -53,15 +53,15 @@ function AppContent(): React.JSX.Element {
     );
   }
 
-  // Show location setup if not completed
-  if (!setupCompleted) {
+  // Show onboarding if not completed
+  if (!onboardingCompleted) {
     return (
       <PaperProvider theme={theme} settings={settings}>
         <StatusBar
           barStyle={isDark ? 'light-content' : 'dark-content'}
           backgroundColor={theme.colors.background}
         />
-        <LocationSetupScreen onComplete={handleSetupComplete} />
+        <OnboardingScreen onComplete={handleOnboardingComplete} />
       </PaperProvider>
     );
   }

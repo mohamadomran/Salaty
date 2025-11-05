@@ -8,3 +8,4 @@ export { default as TrackingScreen } from './TrackingScreen';
 export { default as QiblaScreen } from './QiblaScreen';
 export { default as SettingsScreen } from './SettingsScreen';
 export { default as LocationSetupScreen } from './LocationSetupScreen';
+export { default as OnboardingScreen } from './OnboardingScreen';
