@@ -15,6 +15,7 @@ import {
   Divider,
   Button,
   Snackbar,
+  ActivityIndicator,
 } from 'react-native-paper';
 import { SettingsService } from '../services';
 import {
@@ -25,6 +26,7 @@ import {
   ThemeMode,
 } from '../types';
 import { useThemeContext } from '../contexts';
+import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import {
   CollapsibleSettingsSection,
   SettingsSearchBar,
@@ -39,13 +41,19 @@ export default function SettingsScreen() {
   const { setThemeMode, theme } = useThemeContext();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [calculationMethods, setCalculationMethods] = useState<
-    CalculationMethodInfo[]
-  >([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showImportExport, setShowImportExport] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  // Fetch calculation methods with TanStack Query (cache-first, 7-day cache)
+  const {
+    methods: calculationMethods,
+    isLoading: methodsLoading,
+    error: methodsError,
+    refetch: refetchMethods,
+    isFetching: methodsRefetching,
+  } = useCalculationMethods();
 
   useEffect(() => {
     loadSettings();
@@ -54,9 +62,7 @@ export default function SettingsScreen() {
   const loadSettings = async () => {
     try {
       const currentSettings = await SettingsService.getSettings();
-      const methods = SettingsService.getCalculationMethods();
       setSettings(currentSettings);
-      setCalculationMethods(methods);
     } catch (error) {
       console.error('Failed to load settings:', error);
       Alert.alert('Error', 'Failed to load settings');
@@ -209,12 +215,25 @@ export default function SettingsScreen() {
     );
   };
 
+  // Helper function to format method params as description
+  const formatMethodParams = (params: Record<string, any>): string => {
+    const parts: string[] = [];
+    if (params.Fajr) parts.push(`Fajr: ${params.Fajr}°`);
+    if (params.Isha) {
+      if (typeof params.Isha === 'string') {
+        parts.push(`Isha: ${params.Isha}`);
+      } else {
+        parts.push(`Isha: ${params.Isha}°`);
+      }
+    }
+    return parts.join(', ') || 'Custom parameters';
+  };
+
   // Filter calculation methods based on search
-  const filteredMethods = calculationMethods.filter(method =>
+  const filteredMethods = (calculationMethods || []).filter(method =>
     searchQuery
       ? method.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        method.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        method.description.toLowerCase().includes(searchQuery.toLowerCase())
+        method.id.toLowerCase().includes(searchQuery.toLowerCase())
       : true,
   );
 
@@ -268,25 +287,62 @@ export default function SettingsScreen() {
               placeholder="Search calculation methods..."
             />
 
-            {filteredMethods.map(method => (
-              <List.Item
-                key={method.id}
-                title={method.name}
-                description={`${method.description} • ${method.region}`}
-                left={props => (
-                  <List.Icon
-                    {...props}
-                    icon={
-                      settings.calculationMethod === method.id
-                        ? 'radiobox-marked'
-                        : 'radiobox-blank'
-                    }
-                  />
-                )}
-                onPress={() => handleCalculationMethodChange(method.id)}
-                style={styles.listItem}
-              />
-            ))}
+            {/* Methods Loading State */}
+            {methodsLoading && !calculationMethods && (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+                <Text style={{ marginTop: 10, color: theme.colors.onSurfaceVariant }}>
+                  Loading calculation methods...
+                </Text>
+              </View>
+            )}
+
+            {/* Methods Error State */}
+            {methodsError && !calculationMethods && (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text style={{ color: theme.colors.error, marginBottom: 10 }}>
+                  Failed to load calculation methods
+                </Text>
+                <Button mode="contained" onPress={() => refetchMethods()}>
+                  Retry
+                </Button>
+              </View>
+            )}
+
+            {/* Background Refresh Indicator */}
+            {methodsRefetching && calculationMethods && (
+              <Text style={{ padding: 10, color: theme.colors.primary, textAlign: 'center' }}>
+                Syncing methods...
+              </Text>
+            )}
+
+            {/* Methods List */}
+            {calculationMethods && filteredMethods.map(method => {
+              const isSelected = settings.calculationMethod === method.id;
+              return (
+                <List.Item
+                  key={method.id}
+                  title={method.name}
+                  description={formatMethodParams(method.params)}
+                  left={props => (
+                    <List.Icon
+                      {...props}
+                      icon={isSelected ? 'radiobox-marked' : 'radiobox-blank'}
+                      color={isSelected ? theme.colors.primary : undefined}
+                    />
+                  )}
+                  onPress={() => handleCalculationMethodChange(method.id)}
+                  style={[
+                    styles.listItem,
+                    isSelected && {
+                      backgroundColor: theme.colors.primaryContainer,
+                      borderRadius: 8,
+                    },
+                  ]}
+                  titleStyle={isSelected ? { color: theme.colors.primary, fontWeight: '600' } : undefined}
+                />
+              );
+            })}
 
             <Divider style={styles.divider} />
 
@@ -491,12 +547,13 @@ export default function SettingsScreen() {
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
+        duration={2500}
         action={{
           label: 'OK',
           onPress: () => setSnackbarVisible(false),
         }}
         style={styles.snackbar}
+        icon="check-circle"
       >
         {snackbarMessage}
       </Snackbar>
@@ -543,9 +600,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   snackbar: {
-    position: 'absolute',
-    top: 60,
-    left: 16,
-    right: 16,
+    marginBottom: 80,
   },
 });

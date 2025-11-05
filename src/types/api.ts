@@ -8,14 +8,15 @@
  * Maps to our internal CalculationMethod type
  */
 export enum AlAdhanMethod {
-  MWL = 3,              // Muslim World League
-  ISNA = 2,             // Islamic Society of North America
-  EGYPTIAN = 5,         // Egyptian General Authority of Survey
-  MAKKAH = 4,           // Umm Al-Qura University, Makkah
-  KARACHI = 1,          // University of Islamic Sciences, Karachi
-  TEHRAN = 7,           // Institute of Geophysics, University of Tehran
   JAFARI = 0,           // Shia Ithna-Ashari, Leva Institute, Qum
-  DUBAI = 8,            // Gulf Region (Dubai)
+  KARACHI = 1,          // University of Islamic Sciences, Karachi
+  ISNA = 2,             // Islamic Society of North America
+  MWL = 3,              // Muslim World League
+  MAKKAH = 4,           // Umm Al-Qura University, Makkah
+  EGYPTIAN = 5,         // Egyptian General Authority of Survey
+  TEHRAN = 7,           // Institute of Geophysics, University of Tehran
+  GULF = 8,             // Gulf Region
+  DUBAI = 8,            // Gulf Region (Dubai) - Alias for GULF
   KUWAIT = 9,           // Kuwait
   QATAR = 10,           // Qatar
   SINGAPORE = 11,       // Singapore
@@ -23,6 +24,13 @@ export enum AlAdhanMethod {
   TURKEY = 13,          // Diyanet İşleri Başkanlığı, Turkey
   RUSSIA = 14,          // Spiritual Administration of Muslims of Russia
   MOONSIGHTING = 15,    // Moonsighting Committee Worldwide
+  JAKIM = 17,           // Jabatan Kemajuan Islam Malaysia
+  TUNISIA = 18,         // Tunisia
+  ALGERIA = 19,         // Algeria
+  KEMENAG = 20,         // Kementerian Agama Republik Indonesia
+  MOROCCO = 21,         // Morocco
+  PORTUGAL = 22,        // Comunidade Islamica de Lisboa
+  JORDAN = 23,          // Ministry of Awqaf, Islamic Affairs and Holy Places, Jordan
 }
 
 /**

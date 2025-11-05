@@ -12,6 +12,9 @@ import {
   PrayerTimes,
   Coordinates,
   CalculationMethod,
+  CalculationMethodInfo,
+  ApiCalculationMethodsResponse,
+  ApiMethodData,
 } from '../../types';
 
 class AlAdhanServiceClass {
@@ -194,6 +197,7 @@ class AlAdhanServiceClass {
    */
   public mapCalculationMethod(method: CalculationMethod): AlAdhanMethod {
     const mapping: Record<CalculationMethod, AlAdhanMethod> = {
+      // Original methods
       MuslimWorldLeague: AlAdhanMethod.MWL,
       Egyptian: AlAdhanMethod.EGYPTIAN,
       Karachi: AlAdhanMethod.KARACHI,
@@ -204,6 +208,21 @@ class AlAdhanServiceClass {
       Kuwait: AlAdhanMethod.KUWAIT,
       Qatar: AlAdhanMethod.QATAR,
       Singapore: AlAdhanMethod.SINGAPORE,
+      // New methods from API
+      Jafari: AlAdhanMethod.JAFARI,
+      Tehran: AlAdhanMethod.TEHRAN,
+      France: AlAdhanMethod.FRANCE,
+      Turkey: AlAdhanMethod.TURKEY,
+      Russia: AlAdhanMethod.RUSSIA,
+      Jakim: AlAdhanMethod.JAKIM,
+      Tunisia: AlAdhanMethod.TUNISIA,
+      Algeria: AlAdhanMethod.ALGERIA,
+      Kemenag: AlAdhanMethod.KEMENAG,
+      Morocco: AlAdhanMethod.MOROCCO,
+      Portugal: AlAdhanMethod.PORTUGAL,
+      Jordan: AlAdhanMethod.JORDAN,
+      Gulf: AlAdhanMethod.GULF,
+      Custom: AlAdhanMethod.MAKKAH, // Default to Makkah for custom
     };
 
     return mapping[method] || AlAdhanMethod.MAKKAH;
@@ -211,76 +230,30 @@ class AlAdhanServiceClass {
 
   /**
    * Get all available calculation methods from API
+   * Returns full method details with params and location
    */
-  public async getCalculationMethods(): Promise<
-    Array<{ id: number; name: string }>
-  > {
-    try {
-      const url = `${this.BASE_URL}/methods`;
-      const response = await fetch(url);
+  public async getCalculationMethods(): Promise<CalculationMethodInfo[]> {
+    const url = `${this.BASE_URL}/methods`;
+    const response = await fetch(url);
 
-      if (!response.ok) {
-        throw new Error(`AlAdhan API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (data.code === 200 && data.data) {
-        return Object.entries(data.data).map(
-          ([id, methodData]: [string, any]) => ({
-            id: parseInt(id),
-            name: methodData.name,
-          }),
-        );
-      }
-
-      // Fallback to known methods
-      return this.getDefaultMethods();
-    } catch (error) {
-      console.error('Error fetching calculation methods:', error);
-      return this.getDefaultMethods();
+    if (!response.ok) {
+      throw new Error(`AlAdhan API error: ${response.status}`);
     }
-  }
 
-  /**
-   * Get default calculation methods (fallback)
-   */
-  private getDefaultMethods(): Array<{ id: number; name: string }> {
-    return [
-      { id: AlAdhanMethod.JAFARI, name: 'Shia Ithna-Ashari' },
-      {
-        id: AlAdhanMethod.KARACHI,
-        name: 'University of Islamic Sciences, Karachi',
-      },
-      { id: AlAdhanMethod.ISNA, name: 'Islamic Society of North America' },
-      { id: AlAdhanMethod.MWL, name: 'Muslim World League' },
-      { id: AlAdhanMethod.MAKKAH, name: 'Umm Al-Qura University, Makkah' },
-      {
-        id: AlAdhanMethod.EGYPTIAN,
-        name: 'Egyptian General Authority of Survey',
-      },
-      {
-        id: AlAdhanMethod.TEHRAN,
-        name: 'Institute of Geophysics, University of Tehran',
-      },
-      { id: AlAdhanMethod.DUBAI, name: 'Gulf Region' },
-      { id: AlAdhanMethod.KUWAIT, name: 'Kuwait' },
-      { id: AlAdhanMethod.QATAR, name: 'Qatar' },
-      { id: AlAdhanMethod.SINGAPORE, name: 'Singapore' },
-      {
-        id: AlAdhanMethod.FRANCE,
-        name: 'Union Organization islamic de France',
-      },
-      { id: AlAdhanMethod.TURKEY, name: 'Diyanet İşleri Başkanlığı, Turkey' },
-      {
-        id: AlAdhanMethod.RUSSIA,
-        name: 'Spiritual Administration of Muslims of Russia',
-      },
-      {
-        id: AlAdhanMethod.MOONSIGHTING,
-        name: 'Moonsighting Committee Worldwide',
-      },
-    ];
+    const data: ApiCalculationMethodsResponse = await response.json();
+
+    if (data.code !== 200) {
+      throw new Error(`AlAdhan API returned code ${data.code}`);
+    }
+
+    // Transform API response to our format
+    return Object.entries(data.data).map(([key, methodData]) => ({
+      id: key, // API key like "MWL", "EGYPT", etc.
+      apiId: methodData.id, // Numeric ID
+      name: methodData.name,
+      params: methodData.params || {},
+      location: methodData.location,
+    }));
   }
 
   // ========== Private Helper Methods ==========

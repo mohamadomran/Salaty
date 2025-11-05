@@ -16,6 +16,7 @@ import {
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLocation } from '../hooks/useLocation';
+import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import { PrayerService } from '../services/prayer';
 import { SettingsService } from '../services/settings';
 import { AlAdhanService } from '../services/api';
@@ -54,6 +55,7 @@ export default function HomeScreen() {
     error: locationError,
     requestPermission,
   } = useLocation(false);
+  const { methods: calculationMethods } = useCalculationMethods();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<PrayerName | null>(null);
   const [nextPrayer, setNextPrayer] = useState<{
@@ -336,7 +338,7 @@ export default function HomeScreen() {
               <Text variant="titleLarge">Today's Prayer Times</Text>
               <Text variant="bodySmall" style={styles.methodText}>
                 Method:{' '}
-                {SettingsService.getCalculationMethods().find(
+                {calculationMethods?.find(
                   m => m.id === settings.calculationMethod,
                 )?.name || settings.calculationMethod}
               </Text>

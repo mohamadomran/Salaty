@@ -168,72 +168,10 @@ class SettingsServiceClass {
   }
 
   /**
-   * Get all available calculation methods with descriptions
+   * NOTE: getCalculationMethods() has been removed.
+   * Use the useCalculationMethods() hook instead, which fetches
+   * methods dynamically from the AlAdhan API with caching.
    */
-  public getCalculationMethods(): CalculationMethodInfo[] {
-    return [
-      {
-        id: 'UmmAlQura',
-        name: 'Umm Al-Qura, Makkah',
-        description: 'Used in Saudi Arabia',
-        region: 'Saudi Arabia',
-      },
-      {
-        id: 'MuslimWorldLeague',
-        name: 'Muslim World League',
-        description: 'Standard method',
-        region: 'Global',
-      },
-      {
-        id: 'Egyptian',
-        name: 'Egyptian General Authority',
-        description: 'Used in Egypt and Middle East',
-        region: 'Egypt',
-      },
-      {
-        id: 'Karachi',
-        name: 'University of Islamic Sciences, Karachi',
-        description: 'Used in Pakistan',
-        region: 'Pakistan',
-      },
-      {
-        id: 'Dubai',
-        name: 'Gulf Region',
-        description: 'Used in UAE and Gulf countries',
-        region: 'UAE',
-      },
-      {
-        id: 'MoonsightingCommittee',
-        name: 'Moonsighting Committee Worldwide',
-        description: 'Based on actual moon sighting',
-        region: 'Global',
-      },
-      {
-        id: 'NorthAmerica',
-        name: 'ISNA',
-        description: 'Islamic Society of North America',
-        region: 'North America',
-      },
-      {
-        id: 'Kuwait',
-        name: 'Kuwait',
-        description: 'Used in Kuwait',
-        region: 'Kuwait',
-      },
-      {
-        id: 'Qatar',
-        name: 'Qatar',
-        description: 'Used in Qatar',
-        region: 'Qatar',
-      },
-      {
-        id: 'Singapore',
-        name: 'Singapore',
-        description: 'Used in Singapore and Malaysia',
-        region: 'Singapore',
-      },
-    ];
-  }
 
   /**
    * Get default settings

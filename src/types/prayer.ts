@@ -78,7 +78,7 @@ export interface PrayerStatistics {
   longestStreak: number;
 }
 
-// Calculation methods from Adhan library
+// Calculation methods from AlAdhan API
 export type CalculationMethod =
   | 'MuslimWorldLeague'
   | 'Egyptian'
@@ -89,77 +89,52 @@ export type CalculationMethod =
   | 'NorthAmerica'
   | 'Kuwait'
   | 'Qatar'
-  | 'Singapore';
+  | 'Singapore'
+  | 'Jafari'
+  | 'Tehran'
+  | 'France'
+  | 'Turkey'
+  | 'Russia'
+  | 'Jakim'
+  | 'Tunisia'
+  | 'Algeria'
+  | 'Kemenag'
+  | 'Morocco'
+  | 'Portugal'
+  | 'Jordan'
+  | 'Gulf'
+  | 'Custom';
 
 export interface CalculationMethodInfo {
-  id: CalculationMethod;
+  id: string; // AlAdhan API key (e.g., "MWL", "EGYPT", "JAFARI")
+  apiId: number; // AlAdhan numeric ID
   name: string;
-  description: string;
-  region: string;
+  params: Record<string, any>; // API params (Fajr angle, Isha angle, etc.)
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
-export const CALCULATION_METHODS: CalculationMethodInfo[] = [
-  {
-    id: 'MuslimWorldLeague',
-    name: 'Muslim World League',
-    description: 'Fajr: 18°, Isha: 17°',
-    region: 'Europe, Far East, America',
-  },
-  {
-    id: 'Egyptian',
-    name: 'Egyptian General Authority',
-    description: 'Fajr: 19.5°, Isha: 17.5°',
-    region: 'Africa, Syria, Iraq, Lebanon, Malaysia',
-  },
-  {
-    id: 'Karachi',
-    name: 'University of Islamic Sciences, Karachi',
-    description: 'Fajr: 18°, Isha: 18°',
-    region: 'Pakistan, Bangladesh, India, Afghanistan',
-  },
-  {
-    id: 'UmmAlQura',
-    name: 'Umm Al-Qura University, Makkah',
-    description: 'Fajr: 18.5°, Isha: 90 min after Maghrib',
-    region: 'Saudi Arabia',
-  },
-  {
-    id: 'Dubai',
-    name: 'Dubai',
-    description: 'Fajr: 18.2°, Isha: 18.2°',
-    region: 'UAE',
-  },
-  {
-    id: 'MoonsightingCommittee',
-    name: 'Moonsighting Committee Worldwide',
-    description: 'Conservative timings',
-    region: 'Global (safer approach)',
-  },
-  {
-    id: 'NorthAmerica',
-    name: 'Islamic Society of North America',
-    description: 'Fajr: 15°, Isha: 15°',
-    region: 'North America',
-  },
-  {
-    id: 'Kuwait',
-    name: 'Kuwait',
-    description: 'Fajr: 18°, Isha: 17.5°',
-    region: 'Kuwait',
-  },
-  {
-    id: 'Qatar',
-    name: 'Qatar',
-    description: 'Fajr: 18°, Isha: 90 min after Maghrib',
-    region: 'Qatar',
-  },
-  {
-    id: 'Singapore',
-    name: 'Singapore',
-    description: 'Fajr: 20°, Isha: 18°',
-    region: 'Singapore',
-  },
-];
+// API response type for calculation methods (raw API structure)
+export interface ApiMethodData {
+  id: number; // Numeric method ID
+  name: string;
+  params: Record<string, any>;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
+}
+
+export interface ApiCalculationMethodsResponse {
+  code: number;
+  status: string;
+  data: Record<string, ApiMethodData>; // Key is method code (e.g., "MWL", "EGYPT")
+}
+
+// NOTE: CALCULATION_METHODS array removed - will be fetched dynamically from API
+// Use useCalculationMethods() hook instead
 
 export const PRAYER_NAMES: Record<
   PrayerName,

@@ -8,12 +8,15 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ThemeProvider, useThemeContext } from './src/contexts';
 import { TabNavigator } from './src/navigation';
 import { ErrorBoundary } from './src/components';
 import { LocationSetupScreen } from './src/screens';
 import { LocationPreferenceService } from './src/services/location';
+import { queryClient, asyncStoragePersister } from './src/lib/queryClient';
 
 // Configure icon library for react-native-paper
 const settings = {
@@ -80,11 +83,16 @@ function AppContent(): React.JSX.Element {
 function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </ThemeProvider>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister: asyncStoragePersister }}
+      >
+        <ThemeProvider>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </ThemeProvider>
+      </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }
