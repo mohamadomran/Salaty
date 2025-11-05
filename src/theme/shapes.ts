@@ -60,6 +60,7 @@ export const componentShapes = {
   badge: shapes.corner.full,
 
   // Navigation
+  navigation: 20, // Floating navigation bar with refined pill shape
   navigationBar: shapes.corner.none,
   navigationRail: shapes.corner.none,
 

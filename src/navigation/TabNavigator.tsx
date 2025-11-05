@@ -1,6 +1,7 @@
 /**
  * Tab Navigator
- * Bottom tab navigation with Material Design 3 styling
+ * Bottom tab navigation with sophisticated purple & gold theme
+ * Equal 16px spacing from all edges (bottom, left, right)
  */
 
 import React from 'react';
@@ -25,28 +26,47 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#00BFA5',
-        tabBarInactiveTintColor: '#78909C',
+        // Use gold for active tab, muted purple for inactive
+        tabBarActiveTintColor: theme.expressiveColors.navigationActive,
+        tabBarInactiveTintColor: theme.expressiveColors.navigationInactive,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 20,
-          left: 20,
-          right: 20,
-          backgroundColor: theme.dark ? '#1E2A2A' : '#FFFFFF',
-          borderRadius: 24,
-          height: 70,
-          paddingBottom: 12,
-          paddingTop: 12,
+          // Equal 16px spacing from all edges
+          bottom: 16,
+          left: 16,
+          right: 16,
+
+          // Theme-aware background
+          backgroundColor: theme.dark
+            ? theme.expressiveColors.navigationBackgroundDark
+            : theme.expressiveColors.navigationBackgroundLight,
+
+          // Refined pill shape
+          borderRadius: 20,
+
+          // Subtle border with purple tint
+          borderWidth: 1,
+          borderColor: theme.colors.outline,
           borderTopWidth: 0,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.15,
-          shadowRadius: 12,
+
+          // Dimensions
+          height: 68,
+          paddingBottom: 10,
+          paddingTop: 10,
+
+          // Android elevation
+          elevation: 12,
+
+          // iOS shadow with purple glow
+          shadowColor: theme.colors.primary,
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.08,
+          shadowRadius: 16,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '700',
+          fontSize: 11,
+          fontWeight: '600',
+          letterSpacing: 0.5,
         },
       }}
     >
