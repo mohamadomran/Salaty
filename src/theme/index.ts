@@ -5,7 +5,18 @@
 
 import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
 import type { MD3Theme } from 'react-native-paper';
-import { lightColors, darkColors, expressiveColors, darkExpressiveColors } from './colors';
+import {
+  lightColors,
+  darkColors,
+  expressiveColors,
+  darkExpressiveColors,
+} from './colors';
+import {
+  enhancedLightColors,
+  enhancedDarkColors,
+  enhancedExpressiveColors,
+  enhancedDarkExpressiveColors,
+} from './enhancedColors';
 import { typography } from './typography';
 import { shapes, componentShapes, shapeAnimations } from './shapes';
 
@@ -41,17 +52,17 @@ export interface ExpressiveTheme extends MD3Theme {
   elevation: typeof elevation;
 }
 
-// Light theme with sophisticated purple & gold design
+// Light theme with enhanced Islamic teal & gold design
 export const lightTheme: ExpressiveTheme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    ...lightColors,
+    ...enhancedLightColors,
   },
-  roundness: 12, // More refined rounded corners
+  roundness: 16, // More refined rounded corners for premium feel
 
   // Custom expressive properties
-  expressiveColors,
+  expressiveColors: enhancedExpressiveColors,
   shapes,
   componentShapes,
   shapeAnimations,
@@ -60,20 +71,17 @@ export const lightTheme: ExpressiveTheme = {
   elevation,
 };
 
-// Dark theme with OLED-optimized purple & gold design
+// Dark theme with OLED-optimized Islamic teal & gold design
 export const darkTheme: ExpressiveTheme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    ...darkColors,
+    ...enhancedDarkColors,
   },
-  roundness: 12, // More refined rounded corners
+  roundness: 16, // More refined rounded corners for premium feel
 
   // Custom expressive properties with dark mode overrides
-  expressiveColors: {
-    ...expressiveColors,
-    ...darkExpressiveColors,
-  },
+  expressiveColors: enhancedDarkExpressiveColors,
   shapes,
   componentShapes,
   shapeAnimations,
@@ -83,7 +91,18 @@ export const darkTheme: ExpressiveTheme = {
 };
 
 // Export individual components for easy access
-export { lightColors, darkColors, expressiveColors, darkExpressiveColors } from './colors';
+export {
+  lightColors,
+  darkColors,
+  expressiveColors,
+  darkExpressiveColors,
+} from './colors';
+export {
+  enhancedLightColors,
+  enhancedDarkColors,
+  enhancedExpressiveColors,
+  enhancedDarkExpressiveColors,
+} from './enhancedColors';
 export { typography } from './typography';
 export { shapes, componentShapes, shapeAnimations } from './shapes';
 export { spacing, elevation };

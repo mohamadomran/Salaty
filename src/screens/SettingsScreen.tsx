@@ -6,16 +6,32 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text, Card, List, Switch, SegmentedButtons, Divider, Button } from 'react-native-paper';
-import { SettingsService } from '@services';
-import { AppSettings, CalculationMethodInfo, Madhab, TimeFormat, ThemeMode } from '@types';
-import { useThemeContext } from '@/contexts';
+import {
+  Text,
+  Card,
+  List,
+  Switch,
+  SegmentedButtons,
+  Divider,
+  Button,
+} from 'react-native-paper';
+import { SettingsService } from '../services';
+import {
+  AppSettings,
+  CalculationMethodInfo,
+  Madhab,
+  TimeFormat,
+  ThemeMode,
+} from '../types';
+import { useThemeContext } from '../contexts';
 
 export default function SettingsScreen() {
   const { setThemeMode } = useThemeContext();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
-  const [calculationMethods, setCalculationMethods] = useState<CalculationMethodInfo[]>([]);
+  const [calculationMethods, setCalculationMethods] = useState<
+    CalculationMethodInfo[]
+  >([]);
 
   useEffect(() => {
     loadSettings();
@@ -39,8 +55,13 @@ export default function SettingsScreen() {
     if (!settings) return;
 
     try {
-      await SettingsService.setCalculationMethod(methodId as AppSettings['calculationMethod']);
-      setSettings({ ...settings, calculationMethod: methodId as AppSettings['calculationMethod'] });
+      await SettingsService.setCalculationMethod(
+        methodId as AppSettings['calculationMethod'],
+      );
+      setSettings({
+        ...settings,
+        calculationMethod: methodId as AppSettings['calculationMethod'],
+      });
     } catch (error) {
       console.error('Failed to update calculation method:', error);
       Alert.alert('Error', 'Failed to update calculation method');
@@ -132,7 +153,7 @@ export default function SettingsScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -140,7 +161,9 @@ export default function SettingsScreen() {
 
   if (loading || !settings) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <SafeAreaView
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
         <View style={styles.content}>
           <Text>Loading...</Text>
         </View>
@@ -149,7 +172,10 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
           <Text variant="headlineMedium" style={styles.title}>
@@ -171,15 +197,19 @@ export default function SettingsScreen() {
                 Select the method used to calculate prayer times
               </Text>
 
-              {calculationMethods.map((method) => (
+              {calculationMethods.map(method => (
                 <List.Item
                   key={method.id}
                   title={method.name}
                   description={`${method.description} • ${method.region}`}
-                  left={(props) => (
+                  left={props => (
                     <List.Icon
                       {...props}
-                      icon={settings.calculationMethod === method.id ? 'radiobox-marked' : 'radiobox-blank'}
+                      icon={
+                        settings.calculationMethod === method.id
+                          ? 'radiobox-marked'
+                          : 'radiobox-blank'
+                      }
                     />
                   )}
                   onPress={() => handleCalculationMethodChange(method.id)}
@@ -199,7 +229,7 @@ export default function SettingsScreen() {
 
               <SegmentedButtons
                 value={settings.madhab}
-                onValueChange={(value) => handleMadhabChange(value as Madhab)}
+                onValueChange={value => handleMadhabChange(value as Madhab)}
                 buttons={[
                   {
                     value: 'shafi',
@@ -229,7 +259,9 @@ export default function SettingsScreen() {
 
               <SegmentedButtons
                 value={settings.timeFormat}
-                onValueChange={(value) => handleTimeFormatChange(value as TimeFormat)}
+                onValueChange={value =>
+                  handleTimeFormatChange(value as TimeFormat)
+                }
                 buttons={[
                   {
                     value: '12h',
@@ -249,7 +281,7 @@ export default function SettingsScreen() {
               <List.Item
                 title="Show Sunrise & Sunset"
                 description="Display sunrise and sunset times with prayer times"
-                left={(props) => <List.Icon {...props} icon="weather-sunset" />}
+                left={props => <List.Icon {...props} icon="weather-sunset" />}
                 right={() => (
                   <Switch
                     value={settings.showSunriseSunset}
@@ -270,7 +302,7 @@ export default function SettingsScreen() {
               <List.Item
                 title="Enable Notifications"
                 description="Receive prayer time notifications (Coming Soon)"
-                left={(props) => <List.Icon {...props} icon="bell" />}
+                left={props => <List.Icon {...props} icon="bell" />}
                 right={() => (
                   <Switch
                     value={settings.notificationsEnabled}
@@ -300,7 +332,9 @@ export default function SettingsScreen() {
 
               <SegmentedButtons
                 value={settings.themeMode}
-                onValueChange={(value) => handleThemeModeChange(value as ThemeMode)}
+                onValueChange={value =>
+                  handleThemeModeChange(value as ThemeMode)
+                }
                 buttons={[
                   {
                     value: 'light',
@@ -337,7 +371,7 @@ export default function SettingsScreen() {
               <List.Item
                 title="App Version"
                 description={settings.version}
-                left={(props) => <List.Icon {...props} icon="information" />}
+                left={props => <List.Icon {...props} icon="information" />}
               />
 
               <Divider style={styles.divider} />

@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { LocationService } from '@services/location';
-import type { LocationData, LocationPermissionStatus } from '@types';
+import { LocationService } from '../services/location';
+import type { LocationData, LocationPermissionStatus } from '../types';
 
 interface UseLocationResult {
   location: LocationData | null;
@@ -20,8 +20,9 @@ export function useLocation(autoFetch = true): UseLocationResult {
   const [location, setLocation] = useState<LocationData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [permission, setPermission] =
-    useState<LocationPermissionStatus | null>(null);
+  const [permission, setPermission] = useState<LocationPermissionStatus | null>(
+    null,
+  );
 
   // Check permission
   const checkPermission = useCallback(async () => {

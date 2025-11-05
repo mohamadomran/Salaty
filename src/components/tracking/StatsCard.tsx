@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Text, useTheme } from 'react-native-paper';
-import { lightTheme } from '@theme';
+import { lightTheme } from '../../theme';
 
 interface StatItem {
   label: string;

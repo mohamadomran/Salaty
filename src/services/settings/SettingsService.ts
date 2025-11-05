@@ -4,7 +4,13 @@
  */
 
 import StorageService from '../storage/StorageService';
-import { AppSettings, CalculationMethodInfo, Madhab, TimeFormat, ThemeMode } from '@types';
+import {
+  AppSettings,
+  CalculationMethodInfo,
+  Madhab,
+  TimeFormat,
+  ThemeMode,
+} from '../../types';
 
 class SettingsServiceClass {
   private static instance: SettingsServiceClass;
@@ -42,18 +48,25 @@ class SettingsServiceClass {
   /**
    * Update app settings
    */
-  public async updateSettings(settings: Partial<AppSettings>): Promise<AppSettings> {
+  public async updateSettings(
+    settings: Partial<AppSettings>,
+  ): Promise<AppSettings> {
     const current = await this.getSettings();
     const updated = { ...current, ...settings };
 
-    await this.storageService.setItem(this.SETTINGS_KEY, JSON.stringify(updated));
+    await this.storageService.setItem(
+      this.SETTINGS_KEY,
+      JSON.stringify(updated),
+    );
     return updated;
   }
 
   /**
    * Update calculation method
    */
-  public async setCalculationMethod(method: AppSettings['calculationMethod']): Promise<void> {
+  public async setCalculationMethod(
+    method: AppSettings['calculationMethod'],
+  ): Promise<void> {
     await this.updateSettings({ calculationMethod: method });
   }
 
@@ -113,7 +126,10 @@ class SettingsServiceClass {
    */
   public async resetToDefaults(): Promise<AppSettings> {
     const defaults = this.getDefaultSettings();
-    await this.storageService.setItem(this.SETTINGS_KEY, JSON.stringify(defaults));
+    await this.storageService.setItem(
+      this.SETTINGS_KEY,
+      JSON.stringify(defaults),
+    );
     return defaults;
   }
 

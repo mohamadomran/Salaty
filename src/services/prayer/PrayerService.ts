@@ -16,7 +16,7 @@ import type {
   PrayerTimes,
   CalculationMethod,
   PrayerName,
-} from '@types';
+} from '../../types';
 import { SettingsService } from '../settings/SettingsService';
 
 class PrayerService {
@@ -28,7 +28,7 @@ class PrayerService {
     coordinates: Coordinates,
     date: Date = new Date(),
     method?: CalculationMethod,
-    madhab?: 'shafi' | 'hanafi'
+    madhab?: 'shafi' | 'hanafi',
   ): Promise<PrayerTimes> {
     // Load settings if method or madhab not provided
     if (!method || !madhab) {
@@ -39,7 +39,7 @@ class PrayerService {
     // Convert our coordinates to Adhan format
     const adhanCoords = new AdhanCoordinates(
       coordinates.latitude,
-      coordinates.longitude
+      coordinates.longitude,
     );
 
     // Get calculation parameters
@@ -90,7 +90,7 @@ class PrayerService {
    */
   async getNextPrayer(
     prayerTimes: PrayerTimes,
-    coordinates: Coordinates
+    coordinates: Coordinates,
   ): Promise<{
     name: PrayerName;
     time: Date;
@@ -142,7 +142,9 @@ class PrayerService {
     const minutes = time.getMinutes();
 
     if (use24Hour) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}`;
     } else {
       const period = hours >= 12 ? 'PM' : 'AM';
       const displayHours = hours % 12 || 12;
@@ -158,7 +160,9 @@ class PrayerService {
     const minutes = time.getMinutes();
 
     if (use24Hour) {
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}`;
     } else {
       const period = hours >= 12 ? 'PM' : 'AM';
       const displayHours = hours % 12 || 12;
@@ -203,7 +207,7 @@ class PrayerService {
   isPrayerTime(
     prayerName: PrayerName,
     prayerTimes: PrayerTimes,
-    windowMinutes = 15
+    windowMinutes = 15,
   ): boolean {
     const now = new Date();
     const prayerTime = prayerTimes[prayerName];
@@ -220,7 +224,7 @@ class PrayerService {
   getQiblaDirection(coordinates: Coordinates): number {
     const adhanCoords = new AdhanCoordinates(
       coordinates.latitude,
-      coordinates.longitude
+      coordinates.longitude,
     );
     return adhanCoords.qibla();
   }

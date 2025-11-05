@@ -6,8 +6,8 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton, useTheme } from 'react-native-paper';
-import { PrayerStatus } from '@types';
-import { lightTheme } from '@theme';
+import { PrayerStatus } from '../../types';
+import { lightTheme } from '../../theme';
 
 interface PrayerCheckboxProps {
   prayerName: string;
@@ -32,7 +32,10 @@ export function PrayerCheckbox({
     // Cycle through statuses: pending -> completed -> missed -> pending
     if (status === PrayerStatus.PENDING) {
       onStatusChange(PrayerStatus.COMPLETED);
-    } else if (status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED) {
+    } else if (
+      status === PrayerStatus.COMPLETED ||
+      status === PrayerStatus.DELAYED
+    ) {
       onStatusChange(PrayerStatus.MISSED);
     } else if (status === PrayerStatus.MISSED) {
       onStatusChange(PrayerStatus.PENDING);
@@ -76,10 +79,7 @@ export function PrayerCheckbox({
 
   return (
     <TouchableOpacity
-      style={[
-        styles.container,
-        disabled && styles.disabled,
-      ]}
+      style={[styles.container, disabled && styles.disabled]}
       onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.7}
@@ -99,7 +99,9 @@ export function PrayerCheckbox({
             style={[
               styles.prayerName,
               { color: getTextColor() },
-              (status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED) && styles.completedText,
+              (status === PrayerStatus.COMPLETED ||
+                status === PrayerStatus.DELAYED) &&
+                styles.completedText,
             ]}
           >
             {prayerName}
@@ -120,7 +122,10 @@ export function PrayerCheckbox({
           variant="labelSmall"
           style={[
             styles.badge,
-            { backgroundColor: lightTheme.colors.expressiveColors.prayerUpcoming + '20' },
+            {
+              backgroundColor:
+                lightTheme.colors.expressiveColors.prayerUpcoming + '20',
+            },
           ]}
         >
           Delayed

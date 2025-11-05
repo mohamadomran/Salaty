@@ -9,3 +9,4 @@ export * from './storage';
 export * from './tracking';
 export * from './settings';
 export * from './api';
+export * from './network';

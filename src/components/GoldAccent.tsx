@@ -7,8 +7,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import type { ExpressiveTheme } from '@theme';
-import { LinearGradient } from 'expo-linear-gradient';
+import type { ExpressiveTheme } from '../theme';
+import { LinearGradient } from 'react-native-linear-gradient';
 
 interface GoldAccentProps {
   /** Accent type */

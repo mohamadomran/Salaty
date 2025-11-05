@@ -6,9 +6,15 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import Svg, { Path, G, Defs, Pattern as SvgPattern, Rect } from 'react-native-svg';
+import Svg, {
+  Path,
+  G,
+  Defs,
+  Pattern as SvgPattern,
+  Rect,
+} from 'react-native-svg';
 import { useTheme } from 'react-native-paper';
-import type { ExpressiveTheme } from '@theme';
+import type { ExpressiveTheme } from '../theme';
 
 interface GeometricPatternProps {
   /** Custom opacity (overrides theme default) */

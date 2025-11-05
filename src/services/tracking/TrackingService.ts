@@ -13,7 +13,7 @@ import {
   PrayerStats,
   PrayerTypeStats,
   TrackingPreferences,
-} from '@types';
+} from '../../types';
 
 class TrackingServiceClass {
   private static instance: TrackingServiceClass;
@@ -41,7 +41,9 @@ class TrackingServiceClass {
   /**
    * Get or create daily prayer record for a specific date
    */
-  public async getDailyRecord(date: Date = new Date()): Promise<DailyPrayerRecord> {
+  public async getDailyRecord(
+    date: Date = new Date(),
+  ): Promise<DailyPrayerRecord> {
     const dateKey = this.formatDateKey(date);
     const allRecords = await this.getAllRecords();
 
@@ -74,7 +76,7 @@ class TrackingServiceClass {
     prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
     status: PrayerStatus,
     date: Date = new Date(),
-    notes?: string
+    notes?: string,
   ): Promise<DailyPrayerRecord> {
     const dateKey = this.formatDateKey(date);
     const allRecords = await this.getAllRecords();
@@ -84,9 +86,10 @@ class TrackingServiceClass {
     dailyRecord.prayers[prayerName] = {
       prayerName,
       status,
-      completedAt: status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED
-        ? new Date()
-        : undefined,
+      completedAt:
+        status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED
+          ? new Date()
+          : undefined,
       notes,
       wasDelayed: status === PrayerStatus.DELAYED,
     };
@@ -94,7 +97,10 @@ class TrackingServiceClass {
 
     // Save updated record
     allRecords[dateKey] = dailyRecord;
-    await this.storageService.setItem(this.DAILY_RECORDS_KEY, JSON.stringify(allRecords));
+    await this.storageService.setItem(
+      this.DAILY_RECORDS_KEY,
+      JSON.stringify(allRecords),
+    );
 
     return dailyRecord;
   }
@@ -104,7 +110,7 @@ class TrackingServiceClass {
    */
   public async updateCustomPrayer(
     customPrayer: CustomPrayerRecord,
-    date: Date = new Date()
+    date: Date = new Date(),
   ): Promise<DailyPrayerRecord> {
     const dateKey = this.formatDateKey(date);
     const allRecords = await this.getAllRecords();
@@ -115,7 +121,9 @@ class TrackingServiceClass {
     }
 
     // Find existing or add new
-    const existingIndex = dailyRecord.customPrayers.findIndex(p => p.id === customPrayer.id);
+    const existingIndex = dailyRecord.customPrayers.findIndex(
+      p => p.id === customPrayer.id,
+    );
     if (existingIndex >= 0) {
       dailyRecord.customPrayers[existingIndex] = customPrayer;
     } else {
@@ -126,7 +134,10 @@ class TrackingServiceClass {
 
     // Save updated record
     allRecords[dateKey] = dailyRecord;
-    await this.storageService.setItem(this.DAILY_RECORDS_KEY, JSON.stringify(allRecords));
+    await this.storageService.setItem(
+      this.DAILY_RECORDS_KEY,
+      JSON.stringify(allRecords),
+    );
 
     return dailyRecord;
   }
@@ -136,18 +147,23 @@ class TrackingServiceClass {
    */
   public async deleteCustomPrayer(
     prayerId: string,
-    date: Date = new Date()
+    date: Date = new Date(),
   ): Promise<DailyPrayerRecord> {
     const dateKey = this.formatDateKey(date);
     const allRecords = await this.getAllRecords();
     const dailyRecord = await this.getDailyRecord(date);
 
     if (dailyRecord.customPrayers) {
-      dailyRecord.customPrayers = dailyRecord.customPrayers.filter(p => p.id !== prayerId);
+      dailyRecord.customPrayers = dailyRecord.customPrayers.filter(
+        p => p.id !== prayerId,
+      );
       dailyRecord.updatedAt = new Date();
 
       allRecords[dateKey] = dailyRecord;
-      await this.storageService.setItem(this.DAILY_RECORDS_KEY, JSON.stringify(allRecords));
+      await this.storageService.setItem(
+        this.DAILY_RECORDS_KEY,
+        JSON.stringify(allRecords),
+      );
     }
 
     return dailyRecord;
@@ -158,7 +174,7 @@ class TrackingServiceClass {
    */
   public async getStats(
     startDate: Date,
-    endDate: Date = new Date()
+    endDate: Date = new Date(),
   ): Promise<PrayerStats> {
     const allRecords = await this.getAllRecords();
     const dateKeys = this.getDateRange(startDate, endDate);
@@ -200,7 +216,8 @@ class TrackingServiceClass {
     });
 
     // Calculate completion rates
-    const completionRate = totalPrayers > 0 ? (completedPrayers / totalPrayers) * 100 : 0;
+    const completionRate =
+      totalPrayers > 0 ? (completedPrayers / totalPrayers) * 100 : 0;
     Object.keys(perPrayerStats).forEach(key => {
       const prayerName = key as keyof typeof perPrayerStats;
       const stats = perPrayerStats[prayerName];
@@ -209,7 +226,10 @@ class TrackingServiceClass {
     });
 
     // Calculate streaks
-    const { currentStreak, longestStreak } = this.calculateStreaks(allRecords, dateKeys);
+    const { currentStreak, longestStreak } = this.calculateStreaks(
+      allRecords,
+      dateKeys,
+    );
 
     return {
       period: 'custom',
@@ -239,9 +259,12 @@ class TrackingServiceClass {
     // Default preferences
     const defaultPreferences: TrackingPreferences = {
       autoMarkMissed: true,
-      markAsDelayedThreshold: 30,  // 30 minutes
+      markAsDelayedThreshold: 30, // 30 minutes
       enableCustomPrayers: true,
-      defaultCustomPrayers: [CustomPrayerType.SUNNAH_FAJR, CustomPrayerType.WITR],
+      defaultCustomPrayers: [
+        CustomPrayerType.SUNNAH_FAJR,
+        CustomPrayerType.WITR,
+      ],
       notifications: {
         enabled: true,
         beforeMinutes: 15,
@@ -259,7 +282,10 @@ class TrackingServiceClass {
    * Update tracking preferences
    */
   public async setPreferences(preferences: TrackingPreferences): Promise<void> {
-    await this.storageService.setItem(this.PREFERENCES_KEY, JSON.stringify(preferences));
+    await this.storageService.setItem(
+      this.PREFERENCES_KEY,
+      JSON.stringify(preferences),
+    );
   }
 
   /**
@@ -272,8 +298,13 @@ class TrackingServiceClass {
   /**
    * Import prayer records (from backup)
    */
-  public async importRecords(records: Record<string, DailyPrayerRecord>): Promise<void> {
-    await this.storageService.setItem(this.DAILY_RECORDS_KEY, JSON.stringify(records));
+  public async importRecords(
+    records: Record<string, DailyPrayerRecord>,
+  ): Promise<void> {
+    await this.storageService.setItem(
+      this.DAILY_RECORDS_KEY,
+      JSON.stringify(records),
+    );
   }
 
   /**
@@ -297,7 +328,7 @@ class TrackingServiceClass {
    * Create an initial prayer record
    */
   private createPrayerRecord(
-    prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha'
+    prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
   ): PrayerRecord {
     return {
       prayerName,
@@ -335,7 +366,7 @@ class TrackingServiceClass {
    */
   private calculateStreaks(
     allRecords: Record<string, DailyPrayerRecord>,
-    dateKeys: string[]
+    dateKeys: string[],
   ): { currentStreak: number; longestStreak: number } {
     let currentStreak = 0;
     let longestStreak = 0;
@@ -356,7 +387,9 @@ class TrackingServiceClass {
 
       // Check if all prayers are completed
       const allCompleted = Object.values(record.prayers).every(
-        prayer => prayer.status === PrayerStatus.COMPLETED || prayer.status === PrayerStatus.DELAYED
+        prayer =>
+          prayer.status === PrayerStatus.COMPLETED ||
+          prayer.status === PrayerStatus.DELAYED,
       );
 
       if (allCompleted) {

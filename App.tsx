@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { ThemeProvider, useThemeContext } from './src/contexts';
 import { TabNavigator } from './src/navigation';
+import { ErrorBoundary } from './src/components';
 
 // Configure icon library for react-native-paper
 const settings = {
@@ -49,7 +50,9 @@ function App(): React.JSX.Element {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppContent />
+        <ErrorBoundary>
+          <AppContent />
+        </ErrorBoundary>
       </ThemeProvider>
     </SafeAreaProvider>
   );

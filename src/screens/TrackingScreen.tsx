@@ -3,21 +3,28 @@
  * Track daily prayers with checkboxes, notes, and statistics
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Card, Divider, FAB, useTheme } from 'react-native-paper';
-import { PrayerCheckbox, StatsCard } from '@/components/tracking';
-import { TrackingService } from '@/services/tracking';
-import { PrayerService } from '@/services/prayer';
-import { LocationService } from '@/services/location';
-import { SettingsService } from '@/services/settings';
-import { DailyPrayerRecord, PrayerStatus, PrayerTimes, AppSettings } from '@types';
-import type { ExpressiveTheme } from '@theme';
+import { PrayerCheckbox, StatsCard } from '../components/tracking';
+import { TrackingService } from '../services/tracking';
+import { PrayerService } from '../services/prayer';
+import { LocationService } from '../services/location';
+import { SettingsService } from '../services/settings';
+import {
+  DailyPrayerRecord,
+  PrayerStatus,
+  PrayerTimes,
+  AppSettings,
+} from '../types';
+import type { ExpressiveTheme } from '../theme';
 
 export default function TrackingScreen() {
   const theme = useTheme<ExpressiveTheme>();
-  const [dailyRecord, setDailyRecord] = useState<DailyPrayerRecord | null>(null);
+  const [dailyRecord, setDailyRecord] = useState<DailyPrayerRecord | null>(
+    null,
+  );
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +47,7 @@ export default function TrackingScreen() {
       if (location) {
         const times = await PrayerService.getPrayerTimes(
           location.coordinates,
-          new Date()
+          new Date(),
         );
         setPrayerTimes(times);
       }
@@ -63,13 +70,13 @@ export default function TrackingScreen() {
 
   const handlePrayerStatusChange = async (
     prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
-    newStatus: PrayerStatus
+    newStatus: PrayerStatus,
   ) => {
     try {
       const updatedRecord = await TrackingService.updatePrayerStatus(
         prayerName,
         newStatus,
-        new Date()
+        new Date(),
       );
       setDailyRecord(updatedRecord);
     } catch (error) {
@@ -79,10 +86,14 @@ export default function TrackingScreen() {
 
   const formatTime = (date: Date): string => {
     if (!settings) return '';
-    return PrayerService.formatPrayerTimeSync(date, settings.timeFormat === '24h');
+    return PrayerService.formatPrayerTimeSync(
+      date,
+      settings.timeFormat === '24h',
+    );
   };
 
-  const calculateTodayStats = () => {
+  // Memoize stats calculation
+  const todayStats = useMemo(() => {
     if (!dailyRecord) {
       return {
         completed: 0,
@@ -93,22 +104,25 @@ export default function TrackingScreen() {
 
     const prayers = Object.values(dailyRecord.prayers);
     const completed = prayers.filter(
-      p => p.status === PrayerStatus.COMPLETED || p.status === PrayerStatus.DELAYED
+      p =>
+        p.status === PrayerStatus.COMPLETED ||
+        p.status === PrayerStatus.DELAYED,
     ).length;
     const missed = prayers.filter(p => p.status === PrayerStatus.MISSED).length;
-    const pending = prayers.filter(p => p.status === PrayerStatus.PENDING).length;
+    const pending = prayers.filter(
+      p => p.status === PrayerStatus.PENDING,
+    ).length;
 
     return { completed, missed, pending };
-  };
+  }, [dailyRecord]);
 
-  const todayStats = calculateTodayStats();
-  const completionRate = dailyRecord
-    ? Math.round((todayStats.completed / 5) * 100)
-    : 0;
+  const completionRate = useMemo(() => {
+    return dailyRecord ? Math.round((todayStats.completed / 5) * 100) : 0;
+  }, [dailyRecord, todayStats.completed]);
 
   if (loading && !dailyRecord) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
         <View style={styles.content}>
           <Text variant="bodyLarge" style={styles.loadingText}>
             Loading tracking data...
@@ -119,7 +133,10 @@ export default function TrackingScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -183,7 +200,9 @@ export default function TrackingScreen() {
                   prayerName="Fajr"
                   prayerTime={formatTime(prayerTimes.fajr)}
                   status={dailyRecord.prayers.fajr.status}
-                  onStatusChange={(status) => handlePrayerStatusChange('fajr', status)}
+                  onStatusChange={status =>
+                    handlePrayerStatusChange('fajr', status)
+                  }
                 />
                 <Divider style={styles.itemDivider} />
 
@@ -191,7 +210,9 @@ export default function TrackingScreen() {
                   prayerName="Dhuhr"
                   prayerTime={formatTime(prayerTimes.dhuhr)}
                   status={dailyRecord.prayers.dhuhr.status}
-                  onStatusChange={(status) => handlePrayerStatusChange('dhuhr', status)}
+                  onStatusChange={status =>
+                    handlePrayerStatusChange('dhuhr', status)
+                  }
                 />
                 <Divider style={styles.itemDivider} />
 
@@ -199,7 +220,9 @@ export default function TrackingScreen() {
                   prayerName="Asr"
                   prayerTime={formatTime(prayerTimes.asr)}
                   status={dailyRecord.prayers.asr.status}
-                  onStatusChange={(status) => handlePrayerStatusChange('asr', status)}
+                  onStatusChange={status =>
+                    handlePrayerStatusChange('asr', status)
+                  }
                 />
                 <Divider style={styles.itemDivider} />
 
@@ -207,7 +230,9 @@ export default function TrackingScreen() {
                   prayerName="Maghrib"
                   prayerTime={formatTime(prayerTimes.maghrib)}
                   status={dailyRecord.prayers.maghrib.status}
-                  onStatusChange={(status) => handlePrayerStatusChange('maghrib', status)}
+                  onStatusChange={status =>
+                    handlePrayerStatusChange('maghrib', status)
+                  }
                 />
                 <Divider style={styles.itemDivider} />
 
@@ -215,7 +240,9 @@ export default function TrackingScreen() {
                   prayerName="Isha"
                   prayerTime={formatTime(prayerTimes.isha)}
                   status={dailyRecord.prayers.isha.status}
-                  onStatusChange={(status) => handlePrayerStatusChange('isha', status)}
+                  onStatusChange={status =>
+                    handlePrayerStatusChange('isha', status)
+                  }
                 />
               </View>
             )}
@@ -226,7 +253,8 @@ export default function TrackingScreen() {
         <Card style={styles.infoCard}>
           <Card.Content>
             <Text variant="bodyMedium" style={styles.infoText}>
-              Tap a prayer to mark it as completed. Tap again to mark as missed, or tap once more to reset to pending.
+              Tap a prayer to mark it as completed. Tap again to mark as missed,
+              or tap once more to reset to pending.
             </Text>
           </Card.Content>
         </Card>
@@ -306,5 +334,12 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  flatListContent: {
+    padding: 16,
+    paddingBottom: 100,
+  },
+  bottomSpacing: {
+    height: 80, // Space for FAB
   },
 });

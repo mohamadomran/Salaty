@@ -2,13 +2,8 @@
  * Home Screen - Prayer Times Display
  */
 
-import React, { useEffect, useState } from 'react';
-import {
-  ScrollView,
-  StyleSheet,
-  View,
-  Alert,
-} from 'react-native';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { ScrollView, StyleSheet, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -20,26 +15,42 @@ import {
   useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useLocation } from '@hooks/useLocation';
-import { PrayerService } from '@services/prayer';
-import { SettingsService } from '@services/settings';
-import type { PrayerTimes, PrayerName, AppSettings } from '@types';
-import type { ExpressiveTheme } from '@theme';
+import { useLocation } from '../hooks/useLocation';
+import { PrayerService } from '../services/prayer';
+import { SettingsService } from '../services/settings';
+import { PremiumCard, PrayerTimeCard, IslamicPattern } from '../components';
+import type { PrayerTimes, PrayerName, AppSettings } from '../types';
+import type { ExpressiveTheme } from '../theme';
 
-const PRAYER_NAMES = {
+const PRAYER_NAMES_WITH_ICONS: Record<
+  string,
+  { english: string; arabic: string; icon: string }
+> = {
   fajr: { english: 'Fajr', arabic: 'الفجر', icon: 'weather-sunset-up' },
   dhuhr: { english: 'Dhuhr', arabic: 'الظهر', icon: 'white-balance-sunny' },
   asr: { english: 'Asr', arabic: 'العصر', icon: 'weather-partly-cloudy' },
-  maghrib: { english: 'Maghrib', arabic: 'المغرب', icon: 'weather-sunset-down' },
+  maghrib: {
+    english: 'Maghrib',
+    arabic: 'المغرب',
+    icon: 'weather-sunset-down',
+  },
   isha: { english: 'Isha', arabic: 'العشاء', icon: 'weather-night' },
 };
 
 export default function HomeScreen() {
   const theme = useTheme<ExpressiveTheme>();
-  const { location, loading: locationLoading, error: locationError, requestPermission } = useLocation(false);
+  const {
+    location,
+    loading: locationLoading,
+    error: locationError,
+    requestPermission,
+  } = useLocation(false);
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<PrayerName | null>(null);
-  const [nextPrayer, setNextPrayer] = useState<{ name: PrayerName; time: Date } | null>(null);
+  const [nextPrayer, setNextPrayer] = useState<{
+    name: PrayerName;
+    time: Date;
+  } | null>(null);
   const [settings, setSettings] = useState<AppSettings | null>(null);
 
   // Load user settings
@@ -60,7 +71,7 @@ export default function HomeScreen() {
         Alert.alert(
           'Location Permission Required',
           'Please enable location permissions to calculate accurate prayer times.',
-          [{ text: 'OK' }]
+          [{ text: 'OK' }],
         );
         return;
       }
@@ -77,7 +88,7 @@ export default function HomeScreen() {
           // Use settings from SettingsService (will use defaults if not set)
           const times = await PrayerService.getPrayerTimes(
             location,
-            new Date()
+            new Date(),
           );
           setPrayerTimes(times);
 
@@ -94,21 +105,64 @@ export default function HomeScreen() {
     calculatePrayerTimes();
   }, [location]);
 
-  // Format time using user's time format preference
-  const formatTime = (date: Date): string => {
-    if (!settings) return '';
-    return PrayerService.formatPrayerTimeSync(date, settings.timeFormat === '24h');
-  };
+  // Format time using user's time format preference (memoized)
+  const formatTime = useCallback(
+    (date: Date): string => {
+      if (!settings) return '';
+      return PrayerService.formatPrayerTimeSync(
+        date,
+        settings.timeFormat === '24h',
+      );
+    },
+    [settings],
+  );
 
-  // Format countdown
-  const formatCountdown = (ms: number): string => {
+  // Format countdown (memoized)
+  const formatCountdown = useCallback((ms: number): string => {
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
-  };
+  }, []);
+
+  // Memoize prayer list rendering with enhanced components
+  const prayerListItems = useMemo(() => {
+    if (!prayerTimes || !settings) return null;
+
+    return Object.entries(PRAYER_NAMES_WITH_ICONS).map(([key, prayer]) => {
+      const prayerKey = key as PrayerName;
+      const prayerInfo = PRAYER_NAMES_WITH_ICONS[prayerKey] as {
+        english: string;
+        arabic: string;
+        icon: string;
+      };
+      const time = prayerTimes[prayerKey];
+      const isCurrent = currentPrayer === prayerKey;
+      const isNext = nextPrayer?.name === prayerKey;
+
+      const status: 'current' | 'next' | 'completed' | 'upcoming' = isCurrent
+        ? 'current'
+        : isNext
+        ? 'next'
+        : 'completed';
+
+      return (
+        <PrayerTimeCard
+          key={key}
+          prayerName={prayerInfo.english}
+          arabicName={prayerInfo.arabic}
+          time={formatTime(time)}
+          status={status}
+          icon={prayerInfo.icon}
+        />
+      );
+    });
+  }, [prayerTimes, settings, currentPrayer, nextPrayer, formatTime]);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Header */}
         <View style={styles.header}>
@@ -123,8 +177,14 @@ export default function HomeScreen() {
         {/* Location Status */}
         <Card style={styles.card}>
           <Card.Content>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <MaterialCommunityIcons name="map-marker" size={24} color={theme.colors.primary} />
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            >
+              <MaterialCommunityIcons
+                name="map-marker"
+                size={24}
+                color={theme.colors.primary}
+              />
               <Text variant="titleMedium">Location Status</Text>
             </View>
             <Divider style={styles.divider} />
@@ -144,8 +204,19 @@ export default function HomeScreen() {
               <View>
                 <Text>Latitude: {location.latitude.toFixed(4)}</Text>
                 <Text>Longitude: {location.longitude.toFixed(4)}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
-                  <MaterialCommunityIcons name="check-circle" size={16} color="#00C853" />
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    marginTop: 8,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="check-circle"
+                    size={16}
+                    color="#00C853"
+                  />
                   <Text style={styles.successText}>Location acquired</Text>
                 </View>
               </View>
@@ -171,13 +242,16 @@ export default function HomeScreen() {
                 NEXT PRAYER
               </Text>
               <Text variant="headlineLarge" style={styles.nextPrayerName}>
-                {PRAYER_NAMES[nextPrayer.name].english}
+                {PRAYER_NAMES_WITH_ICONS[nextPrayer.name as PrayerName].english}
               </Text>
               <Text variant="displaySmall" style={styles.nextPrayerTime}>
                 {formatTime(nextPrayer.time)}
               </Text>
               <Text variant="bodyLarge" style={styles.countdown}>
-                In {formatCountdown(PrayerService.getTimeUntilNextPrayer(prayerTimes))}
+                In{' '}
+                {formatCountdown(
+                  PrayerService.getTimeUntilNextPrayer(prayerTimes),
+                )}
               </Text>
             </Card.Content>
           </Card>
@@ -189,77 +263,62 @@ export default function HomeScreen() {
             <Card.Content>
               <Text variant="titleLarge">Today's Prayer Times</Text>
               <Text variant="bodySmall" style={styles.methodText}>
-                Method: {SettingsService.getCalculationMethods().find(m => m.id === settings.calculationMethod)?.name || settings.calculationMethod}
+                Method:{' '}
+                {SettingsService.getCalculationMethods().find(
+                  m => m.id === settings.calculationMethod,
+                )?.name || settings.calculationMethod}
               </Text>
               <Text variant="bodySmall" style={styles.methodText}>
-                Madhab: {settings.madhab === 'shafi' ? 'Shafi/Maliki/Hanbali' : 'Hanafi'}
+                Madhab:{' '}
+                {settings.madhab === 'shafi'
+                  ? 'Shafi/Maliki/Hanbali'
+                  : 'Hanafi'}
               </Text>
               <Divider style={styles.divider} />
 
-              {Object.entries(PRAYER_NAMES).map(([key, prayer]) => {
-                const prayerKey = key as PrayerName;
-                const time = prayerTimes[prayerKey];
-                const isCurrent = currentPrayer === prayerKey;
-                const isNext = nextPrayer?.name === prayerKey;
-
-                return (
-                  <View
-                    key={key}
-                    style={[
-                      styles.prayerRow,
-                      isCurrent && styles.currentPrayerRow,
-                      isNext && styles.nextPrayerRow,
-                    ]}
-                  >
-                    <View style={styles.prayerInfo}>
-                      <Icon source={prayer.icon} size={24} color={theme.colors.primary} />
-                      <View style={styles.prayerNames}>
-                        <Text variant="titleMedium" style={styles.prayerEnglish}>
-                          {prayer.english}
-                        </Text>
-                        <Text variant="bodySmall" style={styles.prayerArabic}>
-                          {prayer.arabic}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.prayerTimeContainer}>
-                      <Text
-                        variant="titleLarge"
-                        style={[
-                          styles.prayerTime,
-                          isCurrent && styles.currentPrayerTime,
-                        ]}
-                      >
-                        {formatTime(time)}
-                      </Text>
-                      {isCurrent && (
-                        <Text style={styles.currentLabel}>NOW</Text>
-                      )}
-                      {isNext && !isCurrent && (
-                        <Text style={styles.nextLabel}>NEXT</Text>
-                      )}
-                    </View>
-                  </View>
-                );
-              })}
+              {prayerListItems}
 
               {/* Sunrise & Sunset */}
               {settings.showSunriseSunset && prayerTimes.sunrise && (
                 <View style={styles.sunTimeRow}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <MaterialCommunityIcons name="weather-sunset-up" size={20} color="#FFA726" />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="weather-sunset-up"
+                      size={20}
+                      color="#FFA726"
+                    />
                     <Text variant="bodyMedium">Sunrise</Text>
                   </View>
-                  <Text variant="bodyMedium">{formatTime(prayerTimes.sunrise)}</Text>
+                  <Text variant="bodyMedium">
+                    {formatTime(prayerTimes.sunrise)}
+                  </Text>
                 </View>
               )}
               {settings.showSunriseSunset && prayerTimes.sunset && (
                 <View style={styles.sunTimeRow}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <MaterialCommunityIcons name="weather-sunset-down" size={20} color="#FFA726" />
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <MaterialCommunityIcons
+                      name="weather-sunset-down"
+                      size={20}
+                      color="#FFA726"
+                    />
                     <Text variant="bodyMedium">Sunset</Text>
                   </View>
-                  <Text variant="bodyMedium">{formatTime(prayerTimes.sunset)}</Text>
+                  <Text variant="bodyMedium">
+                    {formatTime(prayerTimes.sunset)}
+                  </Text>
                 </View>
               )}
             </Card.Content>
@@ -270,24 +329,42 @@ export default function HomeScreen() {
         {settings && (
           <Card style={styles.card}>
             <Card.Content>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MaterialCommunityIcons name="cog" size={24} color={theme.colors.primary} />
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
+                <MaterialCommunityIcons
+                  name="cog"
+                  size={24}
+                  color={theme.colors.primary}
+                />
                 <Text variant="titleMedium">Current Settings</Text>
               </View>
               <Divider style={styles.divider} />
               <Text variant="bodySmall">
-                • {SettingsService.getCalculationMethods().find(m => m.id === settings.calculationMethod)?.name || settings.calculationMethod}
+                •{' '}
+                {SettingsService.getCalculationMethods().find(
+                  m => m.id === settings.calculationMethod,
+                )?.name || settings.calculationMethod}
               </Text>
               <Text variant="bodySmall">
-                • {settings.timeFormat === '12h' ? '12-hour' : '24-hour'} time format
+                • {settings.timeFormat === '12h' ? '12-hour' : '24-hour'} time
+                format
               </Text>
               <Text variant="bodySmall">
-                • {settings.madhab === 'shafi' ? 'Shafi/Maliki/Hanbali' : 'Hanafi'} madhab for Asr
+                •{' '}
+                {settings.madhab === 'shafi'
+                  ? 'Shafi/Maliki/Hanbali'
+                  : 'Hanafi'}{' '}
+                madhab for Asr
               </Text>
               <Text variant="bodySmall">
-                • Sunrise/Sunset: {settings.showSunriseSunset ? 'Visible' : 'Hidden'}
+                • Sunrise/Sunset:{' '}
+                {settings.showSunriseSunset ? 'Visible' : 'Hidden'}
               </Text>
-              <Text variant="bodySmall" style={{ marginTop: 8, fontStyle: 'italic' }}>
+              <Text
+                variant="bodySmall"
+                style={{ marginTop: 8, fontStyle: 'italic' }}
+              >
                 Go to Settings tab to change these preferences
               </Text>
             </Card.Content>

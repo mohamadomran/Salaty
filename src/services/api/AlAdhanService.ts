@@ -12,7 +12,7 @@ import {
   PrayerTimes,
   Coordinates,
   CalculationMethod,
-} from '@types';
+} from '../../types';
 
 class AlAdhanServiceClass {
   private static instance: AlAdhanServiceClass;
@@ -33,7 +33,9 @@ class AlAdhanServiceClass {
   /**
    * Get prayer times for a specific date and location
    */
-  public async getPrayerTimes(params: AlAdhanTimingsParams): Promise<PrayerTimes> {
+  public async getPrayerTimes(
+    params: AlAdhanTimingsParams,
+  ): Promise<PrayerTimes> {
     const date = params.date || new Date();
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -52,7 +54,10 @@ class AlAdhanServiceClass {
     }
 
     if (params.latitudeAdjustmentMethod !== undefined) {
-      url.searchParams.append('latitudeAdjustmentMethod', String(params.latitudeAdjustmentMethod));
+      url.searchParams.append(
+        'latitudeAdjustmentMethod',
+        String(params.latitudeAdjustmentMethod),
+      );
     }
 
     if (params.tune) {
@@ -86,7 +91,7 @@ class AlAdhanServiceClass {
     coordinates: Coordinates,
     date: Date = new Date(),
     method: AlAdhanMethod = AlAdhanMethod.MAKKAH,
-    school: AlAdhanSchool = AlAdhanSchool.SHAFI
+    school: AlAdhanSchool = AlAdhanSchool.SHAFI,
   ): Promise<PrayerTimes[]> {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
@@ -125,16 +130,16 @@ class AlAdhanServiceClass {
    */
   public mapCalculationMethod(method: CalculationMethod): AlAdhanMethod {
     const mapping: Record<CalculationMethod, AlAdhanMethod> = {
-      'MuslimWorldLeague': AlAdhanMethod.MWL,
-      'Egyptian': AlAdhanMethod.EGYPTIAN,
-      'Karachi': AlAdhanMethod.KARACHI,
-      'UmmAlQura': AlAdhanMethod.MAKKAH,
-      'Dubai': AlAdhanMethod.DUBAI,
-      'MoonsightingCommittee': AlAdhanMethod.MOONSIGHTING,
-      'NorthAmerica': AlAdhanMethod.ISNA,
-      'Kuwait': AlAdhanMethod.KUWAIT,
-      'Qatar': AlAdhanMethod.QATAR,
-      'Singapore': AlAdhanMethod.SINGAPORE,
+      MuslimWorldLeague: AlAdhanMethod.MWL,
+      Egyptian: AlAdhanMethod.EGYPTIAN,
+      Karachi: AlAdhanMethod.KARACHI,
+      UmmAlQura: AlAdhanMethod.MAKKAH,
+      Dubai: AlAdhanMethod.DUBAI,
+      MoonsightingCommittee: AlAdhanMethod.MOONSIGHTING,
+      NorthAmerica: AlAdhanMethod.ISNA,
+      Kuwait: AlAdhanMethod.KUWAIT,
+      Qatar: AlAdhanMethod.QATAR,
+      Singapore: AlAdhanMethod.SINGAPORE,
     };
 
     return mapping[method] || AlAdhanMethod.MAKKAH;
@@ -143,7 +148,9 @@ class AlAdhanServiceClass {
   /**
    * Get all available calculation methods from API
    */
-  public async getCalculationMethods(): Promise<Array<{ id: number; name: string }>> {
+  public async getCalculationMethods(): Promise<
+    Array<{ id: number; name: string }>
+  > {
     try {
       const url = `${this.BASE_URL}/methods`;
       const response = await fetch(url);
@@ -155,10 +162,12 @@ class AlAdhanServiceClass {
       const data = await response.json();
 
       if (data.code === 200 && data.data) {
-        return Object.entries(data.data).map(([id, methodData]: [string, any]) => ({
-          id: parseInt(id),
-          name: methodData.name,
-        }));
+        return Object.entries(data.data).map(
+          ([id, methodData]: [string, any]) => ({
+            id: parseInt(id),
+            name: methodData.name,
+          }),
+        );
       }
 
       // Fallback to known methods
@@ -175,20 +184,38 @@ class AlAdhanServiceClass {
   private getDefaultMethods(): Array<{ id: number; name: string }> {
     return [
       { id: AlAdhanMethod.JAFARI, name: 'Shia Ithna-Ashari' },
-      { id: AlAdhanMethod.KARACHI, name: 'University of Islamic Sciences, Karachi' },
+      {
+        id: AlAdhanMethod.KARACHI,
+        name: 'University of Islamic Sciences, Karachi',
+      },
       { id: AlAdhanMethod.ISNA, name: 'Islamic Society of North America' },
       { id: AlAdhanMethod.MWL, name: 'Muslim World League' },
       { id: AlAdhanMethod.MAKKAH, name: 'Umm Al-Qura University, Makkah' },
-      { id: AlAdhanMethod.EGYPTIAN, name: 'Egyptian General Authority of Survey' },
-      { id: AlAdhanMethod.TEHRAN, name: 'Institute of Geophysics, University of Tehran' },
+      {
+        id: AlAdhanMethod.EGYPTIAN,
+        name: 'Egyptian General Authority of Survey',
+      },
+      {
+        id: AlAdhanMethod.TEHRAN,
+        name: 'Institute of Geophysics, University of Tehran',
+      },
       { id: AlAdhanMethod.DUBAI, name: 'Gulf Region' },
       { id: AlAdhanMethod.KUWAIT, name: 'Kuwait' },
       { id: AlAdhanMethod.QATAR, name: 'Qatar' },
       { id: AlAdhanMethod.SINGAPORE, name: 'Singapore' },
-      { id: AlAdhanMethod.FRANCE, name: 'Union Organization islamic de France' },
+      {
+        id: AlAdhanMethod.FRANCE,
+        name: 'Union Organization islamic de France',
+      },
       { id: AlAdhanMethod.TURKEY, name: 'Diyanet İşleri Başkanlığı, Turkey' },
-      { id: AlAdhanMethod.RUSSIA, name: 'Spiritual Administration of Muslims of Russia' },
-      { id: AlAdhanMethod.MOONSIGHTING, name: 'Moonsighting Committee Worldwide' },
+      {
+        id: AlAdhanMethod.RUSSIA,
+        name: 'Spiritual Administration of Muslims of Russia',
+      },
+      {
+        id: AlAdhanMethod.MOONSIGHTING,
+        name: 'Moonsighting Committee Worldwide',
+      },
     ];
   }
 
@@ -199,7 +226,7 @@ class AlAdhanServiceClass {
    */
   private convertToPrayerTimes(
     response: AlAdhanTimingsResponse,
-    date: Date
+    date: Date,
   ): PrayerTimes {
     return this.convertTimingsToPrayerTimes(response.data.timings, date);
   }
@@ -209,7 +236,7 @@ class AlAdhanServiceClass {
    */
   private convertTimingsToPrayerTimes(
     timings: AlAdhanTimingsResponse['data']['timings'],
-    date: Date
+    date: Date,
   ): PrayerTimes {
     return {
       fajr: this.parseTime(timings.Fajr, date),

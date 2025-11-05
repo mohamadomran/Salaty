@@ -3,11 +3,17 @@
  * Manages app theme state and provides theme switching functionality
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 import { useColorScheme } from 'react-native';
-import { lightTheme, darkTheme, ExpressiveTheme } from '@theme';
-import { SettingsService } from '@services';
-import { ThemeMode } from '@types';
+import { lightTheme, darkTheme, ExpressiveTheme } from '../theme';
+import { SettingsService } from '../services';
+import { ThemeMode } from '../types';
 
 interface ThemeContextType {
   theme: ExpressiveTheme;
@@ -68,7 +74,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const isDark = currentTheme === darkTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme: currentTheme, themeMode, setThemeMode, isDark, isLoading }}>
+    <ThemeContext.Provider
+      value={{
+        theme: currentTheme,
+        themeMode,
+        setThemeMode,
+        isDark,
+        isLoading,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );
