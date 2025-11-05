@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Alert } from 'react-native';
+import { ScrollView, StyleSheet, View, Alert, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -216,75 +216,92 @@ export default function HomeScreen() {
 
         {/* Hero Section - Next Prayer with Big Clock */}
         {nextPrayer && (
-          <Card style={[styles.heroCard, { backgroundColor: theme.colors.primaryContainer }]}>
-            <Card.Content style={styles.heroContent}>
-              <Text
-                variant="labelLarge"
-                style={[styles.nextPrayerLabel, { color: theme.colors.onPrimaryContainer }]}
-              >
-                NEXT PRAYER
-              </Text>
+          <Card style={styles.heroCard}>
+            <ImageBackground
+              source={{ uri: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?w=800&q=80' }}
+              style={styles.heroBackground}
+              imageStyle={styles.heroBackgroundImage}
+            >
+              {/* Colored Overlay */}
+              <View style={[
+                styles.heroOverlay,
+                {
+                  backgroundColor: theme.dark
+                    ? 'rgba(0, 0, 0, 0.75)'
+                    : theme.colors.primary,
+                  opacity: theme.dark ? 1 : 0.85
+                }
+              ]} />
 
-              <View style={styles.heroMain}>
-                {/* Big Clock Display */}
+              <Card.Content style={styles.heroContent}>
                 <Text
-                  style={[
-                    styles.heroTime,
-                    { color: theme.colors.onPrimaryContainer }
-                  ]}
+                  variant="labelLarge"
+                  style={[styles.nextPrayerLabel, { color: '#FFFFFF' }]}
                 >
-                  {formatTime(nextPrayer.time)}
+                  NEXT PRAYER
                 </Text>
 
-                {/* Prayer Name */}
-                <Text
-                  variant="headlineMedium"
-                  style={[
-                    styles.heroPrayerName,
-                    { color: theme.colors.onPrimaryContainer }
-                  ]}
-                >
-                  {PRAYER_NAMES_WITH_ICONS[nextPrayer.name as PrayerName].english}
-                </Text>
-              </View>
+                <View style={styles.heroMain}>
+                  {/* Big Clock Display */}
+                  <Text
+                    style={[
+                      styles.heroTime,
+                      { color: '#FFFFFF' }
+                    ]}
+                  >
+                    {formatTime(nextPrayer.time)}
+                  </Text>
 
-              {/* Countdown */}
-              <View style={styles.countdownContainer}>
-                <MaterialCommunityIcons
-                  name="clock-outline"
-                  size={20}
-                  color={theme.colors.onPrimaryContainer}
-                />
-                <Text
-                  variant="titleMedium"
-                  style={[
-                    styles.countdown,
-                    { color: theme.colors.onPrimaryContainer }
-                  ]}
-                >
-                  {countdown}
-                </Text>
-              </View>
+                  {/* Prayer Name */}
+                  <Text
+                    variant="headlineMedium"
+                    style={[
+                      styles.heroPrayerName,
+                      { color: '#FFFFFF' }
+                    ]}
+                  >
+                    {PRAYER_NAMES_WITH_ICONS[nextPrayer.name as PrayerName].english}
+                  </Text>
+                </View>
 
-              {/* Location */}
-              <View style={styles.locationContainer}>
-                <MaterialCommunityIcons
-                  name="map-marker"
-                  size={16}
-                  color={theme.colors.onPrimaryContainer}
-                  style={{ opacity: 0.7 }}
-                />
-                <Text
-                  variant="bodyMedium"
-                  style={{
-                    color: theme.colors.onPrimaryContainer,
-                    opacity: 0.7,
-                  }}
-                >
-                  {locationName}
-                </Text>
-              </View>
-            </Card.Content>
+                {/* Countdown */}
+                <View style={styles.countdownContainer}>
+                  <MaterialCommunityIcons
+                    name="clock-outline"
+                    size={20}
+                    color="#FFFFFF"
+                  />
+                  <Text
+                    variant="titleMedium"
+                    style={[
+                      styles.countdown,
+                      { color: '#FFFFFF' }
+                    ]}
+                  >
+                    {countdown}
+                  </Text>
+                </View>
+
+                {/* Location */}
+                <View style={styles.locationContainer}>
+                  <MaterialCommunityIcons
+                    name="map-marker"
+                    size={16}
+                    color="#FFFFFF"
+                    style={{ opacity: 0.9 }}
+                  />
+                  <Text
+                    variant="bodyMedium"
+                    style={{
+                      color: '#FFFFFF',
+                      opacity: 0.9,
+                    }}
+                  >
+                    {locationName}
+                  </Text>
+                </View>
+              </Card.Content>
+            </ImageBackground>
           </Card>
         )}
 
@@ -523,6 +540,16 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderRadius: 24,
     overflow: 'hidden',
+  },
+  heroBackground: {
+    width: '100%',
+  },
+  heroBackgroundImage: {
+    borderRadius: 24,
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 24,
   },
   heroContent: {
     paddingVertical: 32,
