@@ -75,13 +75,13 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({ variant = 'settings'
         {/* Header */}
         <View style={styles.cardHeader}>
           <LoadingSkeleton width={40} height={40} borderRadius={20} />
-          <LoadingSkeleton width={150} height={20} style={{ marginLeft: 12 }} />
+          <LoadingSkeleton width={150} height={20} style={styles.cardTitleMargin} />
         </View>
 
         {/* Content */}
         <View style={styles.cardContent}>
-          <LoadingSkeleton width="100%" height={16} style={{ marginBottom: 8 }} />
-          <LoadingSkeleton width="80%" height={16} style={{ marginBottom: 16 }} />
+          <LoadingSkeleton width="100%" height={16} style={styles.contentMargin} />
+          <LoadingSkeleton width="80%" height={16} style={styles.contentMarginLarge} />
           <LoadingSkeleton width="100%" height={48} borderRadius={8} />
         </View>
       </View>
@@ -93,8 +93,8 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({ variant = 'settings'
       <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
         <View style={styles.prayerRow}>
           <LoadingSkeleton width={60} height={60} borderRadius={12} />
-          <View style={{ flex: 1, marginLeft: 16 }}>
-            <LoadingSkeleton width="40%" height={20} style={{ marginBottom: 8 }} />
+          <View style={styles.prayerContent}>
+            <LoadingSkeleton width="40%" height={20} style={styles.contentMargin} />
             <LoadingSkeleton width="60%" height={16} />
           </View>
         </View>
@@ -106,8 +106,8 @@ export const SkeletonCard: React.FC<SkeletonCardProps> = ({ variant = 'settings'
   return (
     <View style={styles.listItem}>
       <LoadingSkeleton width={24} height={24} borderRadius={12} />
-      <View style={{ flex: 1, marginLeft: 16 }}>
-        <LoadingSkeleton width="70%" height={16} style={{ marginBottom: 6 }} />
+      <View style={styles.listContent}>
+        <LoadingSkeleton width="70%" height={16} style={styles.contentMarginSmall} />
         <LoadingSkeleton width="50%" height={14} />
       </View>
     </View>
@@ -133,6 +133,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  cardTitleMargin: {
+    marginLeft: 12,
+  },
   cardContent: {
     paddingTop: 8,
   },
@@ -144,5 +147,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
+  },
+  contentMargin: {
+    marginBottom: 8,
+  },
+  contentMarginLarge: {
+    marginBottom: 16,
+  },
+  prayerContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  listContent: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  contentMarginSmall: {
+    marginBottom: 6,
   },
 });

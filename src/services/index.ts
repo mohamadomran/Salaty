@@ -10,3 +10,6 @@ export * from './tracking';
 export * from './settings';
 export * from './api';
 export * from './network';
+export * from './cache';
+export * from './sync';
+export * from './statistics';

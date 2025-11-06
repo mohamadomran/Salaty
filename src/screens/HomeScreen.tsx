@@ -27,6 +27,7 @@ import {
   PrayerGrid,
 } from '../components';
 import { useAppContext } from '../contexts';
+import { usePrayerReactiveUpdates } from '../hooks/useReactiveUpdates';
 import type { PrayerName, HijriDate } from '../types';
 import { PrayerStatus } from '../types';
 import type { ExpressiveTheme } from '../theme';
@@ -51,7 +52,7 @@ export default function HomeScreen() {
   const theme = useTheme<ExpressiveTheme>();
   const navigation = useNavigation();
   const { methods: calculationMethods } = useCalculationMethods();
-  const { state, updatePrayerStatus } = useAppContext();
+  const { state, updatePrayerStatus, subscribe } = useAppContext();
   
   // Get screen dimensions for responsive text sizing
   const { width: screenWidth } = Dimensions.get('window');
@@ -87,7 +88,11 @@ export default function HomeScreen() {
     fetchHijriDate();
   }, [state.location]);
 
-
+  // Subscribe to reactive updates
+  usePrayerReactiveUpdates((data: any) => {
+    console.log('HomeScreen: Prayer status changed:', data);
+    // Context state is already updated, this ensures UI reacts immediately
+  });
 
   // Format time using user's time format preference
   const formatTime = useCallback(

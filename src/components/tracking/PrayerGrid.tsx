@@ -9,6 +9,7 @@ import { Text, useTheme } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { PrayerName, PrayerTimes } from '../../types';
 import type { ExpressiveTheme } from '../../theme';
+import { getPrayerActions, PrayerTimeStatus } from '../../utils/prayerTimeLogic';
 
 interface PrayerGridProps {
   prayerTimes: PrayerTimes;
@@ -39,12 +40,17 @@ export const PrayerGrid: React.FC<PrayerGridProps> = React.memo(({
         const time = prayerTimes[prayerKey];
         const isCurrent = currentPrayer === prayerKey;
         const isNext = nextPrayer?.name === prayerKey;
+        
+        // Get time-based actions for this prayer
+        const prayerActions = getPrayerActions(prayerKey, prayerTimes, 'pending' as any);
+        const canPress = prayerActions.canMarkCompleted;
 
         return (
           <TouchableOpacity
             key={key}
-            onPress={() => onPrayerPress(prayerKey, time)}
-            activeOpacity={0.7}
+            onPress={() => canPress && onPrayerPress(prayerKey, time)}
+            activeOpacity={canPress ? 0.7 : 1}
+            disabled={!canPress}
             style={[
               styles.prayerCard,
               {
@@ -104,14 +110,16 @@ export const PrayerGrid: React.FC<PrayerGridProps> = React.memo(({
               </View>
 
               {/* Status Badge */}
-              {(isCurrent || isNext) && (
+              {(isCurrent || isNext || prayerActions.timeStatus === PrayerTimeStatus.FUTURE) && (
                 <View
                   style={[
                     styles.statusBadge,
                     {
                       backgroundColor: isCurrent
                         ? theme.colors.primary
-                        : theme.colors.secondary,
+                        : isNext
+                        ? theme.colors.secondary
+                        : theme.colors.surfaceVariant,
                     }
                   ]}
                 >
@@ -120,11 +128,13 @@ export const PrayerGrid: React.FC<PrayerGridProps> = React.memo(({
                     style={{
                       color: isCurrent
                         ? theme.colors.onPrimary
-                        : theme.colors.onSecondary,
+                        : isNext
+                        ? theme.colors.onSecondary
+                        : theme.colors.onSurfaceVariant,
                       fontWeight: '700',
                     }}
                   >
-                    {isCurrent ? 'NOW' : 'NEXT'}
+                    {isCurrent ? 'NOW' : isNext ? 'NEXT' : 'WAIT'}
                   </Text>
                 </View>
               )}

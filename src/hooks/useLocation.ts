@@ -59,7 +59,7 @@ export function useLocation(autoFetch = true): UseLocationResult {
     } finally {
       setLoading(false);
     }
-  }, [fetchLocation]);
+  }, []);
 
   // Fetch location
   const fetchLocation = useCallback(async (forceRefresh = false) => {

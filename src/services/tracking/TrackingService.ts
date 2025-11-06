@@ -16,6 +16,8 @@ import {
   QadaDebt,
   QadaPrayerRecord,
 } from '../../types';
+import { OfflineSyncService } from '../sync';
+import { NetworkService } from '../network';
 
 class TrackingServiceClass {
   private static instance: TrackingServiceClass;
@@ -105,6 +107,18 @@ class TrackingServiceClass {
       JSON.stringify(allRecords),
     );
 
+    // Queue for sync if offline
+    if (NetworkService.isOffline()) {
+      await OfflineSyncService.addSyncTask('tracking_data', {
+        type: 'prayer_status_update',
+        dateKey,
+        prayerName,
+        status,
+        notes,
+        updatedAt: dailyRecord.updatedAt,
+      }, 'high');
+    }
+
     return dailyRecord;
   }
 
@@ -141,6 +155,16 @@ class TrackingServiceClass {
       this.DAILY_RECORDS_KEY,
       JSON.stringify(allRecords),
     );
+
+    // Queue for sync if offline
+    if (NetworkService.isOffline()) {
+      await OfflineSyncService.addSyncTask('tracking_data', {
+        type: 'custom_prayer_update',
+        dateKey,
+        customPrayer,
+        updatedAt: dailyRecord.updatedAt,
+      }, 'medium');
+    }
 
     return dailyRecord;
   }
@@ -483,6 +507,16 @@ class TrackingServiceClass {
       JSON.stringify(debt),
     );
 
+    // Queue for sync if offline
+    if (NetworkService.isOffline()) {
+      await OfflineSyncService.addSyncTask('tracking_data', {
+        type: 'qada_debt_update',
+        qadaRecord,
+        operation: 'add',
+        updatedAt: debt.lastUpdated,
+      }, 'medium');
+    }
+
     return debt;
   }
 
@@ -599,6 +633,82 @@ class TrackingServiceClass {
     );
 
     return debt;
+  }
+
+  // ========== Offline Support Methods ==========
+
+  /**
+   * Initialize offline tracking capabilities
+   */
+  public async initializeOfflineTracking(): Promise<void> {
+    try {
+      // Initialize offline sync service
+      await OfflineSyncService.initialize();
+      
+      // Clean up any expired cache entries
+      // Note: This would be implemented if we add caching to tracking service
+      
+      console.log('📱 Offline tracking initialized');
+    } catch (error) {
+      console.error('Failed to initialize offline tracking:', error);
+    }
+  }
+
+  /**
+   * Get offline status
+   */
+  public getOfflineStatus(): {
+    isOffline: boolean;
+    hasPendingSync: boolean;
+    lastSyncAt?: number;
+  } {
+    return {
+      isOffline: NetworkService.isOffline(),
+      hasPendingSync: false, // This would be populated from sync service
+    };
+  }
+
+  /**
+   * Force sync of tracking data
+   */
+  public async forceSyncTrackingData(): Promise<void> {
+    try {
+      // Add current tracking data to sync queue
+      const allRecords = await this.getAllRecords();
+      const qadaDebt = await this.getQadaDebt();
+      
+      await OfflineSyncService.addSyncTask('tracking_data', {
+        type: 'full_sync',
+        dailyRecords: allRecords,
+        qadaDebt: qadaDebt,
+        syncedAt: Date.now(),
+      }, 'low');
+      
+      // Trigger sync if online
+      if (NetworkService.isOnline()) {
+        await OfflineSyncService.triggerSync();
+      }
+    } catch (error) {
+      console.error('Failed to force sync tracking data:', error);
+    }
+  }
+
+  /**
+   * Get tracking data for backup/export
+   */
+  public async getTrackingDataForBackup(): Promise<{
+    dailyRecords: Record<string, DailyPrayerRecord>;
+    qadaDebt: QadaDebt;
+    exportedAt: string;
+  }> {
+    const dailyRecords = await this.getAllRecords();
+    const qadaDebt = await this.getQadaDebt();
+    
+    return {
+      dailyRecords,
+      qadaDebt,
+      exportedAt: new Date().toISOString(),
+    };
   }
 }
 

@@ -25,7 +25,8 @@ import {
   TimeFormat,
   ThemeMode,
 } from '../types';
-import { useThemeContext } from '../contexts';
+import { useThemeContext, useAppContext } from '../contexts';
+import { useSettingsReactiveUpdates } from '../hooks/useReactiveUpdates';
 import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import {
   CollapsibleSettingsSection,
@@ -42,6 +43,7 @@ import type { LocationPreference } from '../services/location';
 
 export default function SettingsScreen() {
   const { setThemeMode, theme } = useThemeContext();
+  const { state, updateSettings, subscribe } = useAppContext();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +66,15 @@ export default function SettingsScreen() {
     loadSettings();
     loadLocation();
   }, []);
+
+  // Subscribe to reactive updates
+  useSettingsReactiveUpdates((data: any) => {
+    console.log('SettingsScreen: Settings changed:', data);
+    // Update local settings state to reflect changes
+    if (data.settings) {
+      setSettings(data.settings);
+    }
+  });
 
   const loadSettings = async () => {
     try {

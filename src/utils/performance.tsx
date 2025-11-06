@@ -3,6 +3,7 @@
  * Tracks app performance metrics and provides optimization insights
  */
 
+import React from 'react';
 import { Platform } from 'react-native';
 
 interface PerformanceMetrics {
@@ -59,10 +60,10 @@ class PerformanceMonitor {
   public measureRender(componentName: string): () => void {
     if (!this.isMonitoring) return () => {};
 
-    const startTime = performance.now();
+    const startTime = Date.now();
 
     return () => {
-      const endTime = performance.now();
+      const endTime = Date.now();
       const renderTime = endTime - startTime;
 
       this.recordRenderMetric(componentName, renderTime);
@@ -251,11 +252,15 @@ class PerformanceMonitor {
    */
   public async getMemoryUsage(): Promise<any> {
     if (Platform.OS === 'web') {
-      return {
-        used: (performance as any).memory?.usedJSHeapSize || 0,
-        total: (performance as any).memory?.totalJSHeapSize || 0,
-        limit: (performance as any).memory?.jsHeapSizeLimit || 0,
-      };
+      // Use type assertion for global performance API
+      const perf = (globalThis as any).performance;
+      if (perf && perf.memory) {
+        return {
+          used: perf.memory?.usedJSHeapSize || 0,
+          total: perf.memory?.totalJSHeapSize || 0,
+          limit: perf.memory?.jsHeapSizeLimit || 0,
+        };
+      }
     }
 
     // React Native doesn't provide direct memory access

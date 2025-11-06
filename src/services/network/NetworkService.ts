@@ -7,7 +7,6 @@ import {
   NetInfoState,
   NetInfoStateType,
 } from '@react-native-community/netinfo';
-import { eventEmitter } from 'react-native';
 
 // Define network status types
 export type NetworkStatus = 'online' | 'offline' | 'unknown';
@@ -88,6 +87,7 @@ class NetworkService {
         type: NetInfoStateType.none,
         isConnected: false,
         isInternetReachable: false,
+        details: null,
       });
     }
   }
@@ -121,8 +121,8 @@ class NetworkService {
       isInternetReachable: state.isInternetReachable,
       details: {
         isWifiEnabled: state.type === NetInfoStateType.wifi,
-        cellularGeneration: this.getCellularGeneration(state.details),
-        strength: state.details.strength || null,
+        cellularGeneration: state.details ? this.getCellularGeneration(state.details) : null,
+        strength: state.details && 'strength' in state.details ? (state.details as any).strength || null : null,
       },
     };
 
@@ -284,7 +284,7 @@ class NetworkService {
         try {
           await fn();
           // Small delay between requests
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise<void>(resolve => setTimeout(resolve, 100));
         } catch (error) {
           console.error('Error executing queued function:', error);
         }
@@ -349,7 +349,7 @@ class NetworkService {
             `Attempt ${attempt + 1} failed, retrying in ${retryDelay}ms:`,
             error,
           );
-          await new Promise(resolve => setTimeout(resolve, retryDelay));
+          await new Promise<void>(resolve => setTimeout(resolve, retryDelay));
         }
       }
     }

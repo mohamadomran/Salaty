@@ -14,16 +14,18 @@ import {
   SegmentedButtons,
   useTheme,
 } from 'react-native-paper';
-import { PrayerStatus } from '../../types';
+import { PrayerStatus, PrayerName, PrayerTimes } from '../../types';
 import type { ExpressiveTheme } from '../../theme';
+import { getPrayerActions } from '../../utils/prayerTimeLogic';
 
 interface PrayerDetailsModalProps {
   visible: boolean;
   onDismiss: () => void;
-  prayerName: string;
+  prayerName: PrayerName;
   prayerTime: string;
   currentStatus: PrayerStatus;
   currentNotes?: string;
+  prayerTimes?: PrayerTimes; // For time-based logic
   onConfirm: (status: PrayerStatus, notes?: string) => void;
 }
 
@@ -34,11 +36,16 @@ export function PrayerDetailsModal({
   prayerTime,
   currentStatus,
   currentNotes,
+  prayerTimes,
   onConfirm,
 }: PrayerDetailsModalProps) {
   const theme = useTheme<ExpressiveTheme>();
   const [selectedStatus, setSelectedStatus] = useState<PrayerStatus>(currentStatus);
   const [notes, setNotes] = useState(currentNotes || '');
+
+  // Get available actions based on prayer time
+  const prayerActions = prayerTimes ? 
+    getPrayerActions(prayerName, prayerTimes, currentStatus) : null;
 
   // Update local state when props change
   useEffect(() => {
@@ -115,32 +122,57 @@ export function PrayerDetailsModal({
             <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
               Status
             </Text>
+            
+            {/* Time-based message */}
+            {prayerActions && (
+              <Text variant="bodySmall" style={[styles.timeMessage, { color: theme.colors.primary }]}>
+                {prayerActions.nextActionText}
+              </Text>
+            )}
+            
             <SegmentedButtons
               value={selectedStatus}
               onValueChange={(value) => setSelectedStatus(value as PrayerStatus)}
-              buttons={[
-                {
-                  value: PrayerStatus.COMPLETED,
-                  label: 'Prayed',
-                  icon: getStatusIcon(PrayerStatus.COMPLETED),
-                  style: selectedStatus === PrayerStatus.COMPLETED
-                    ? { backgroundColor: theme.expressiveColors.prayerCompleted + '20' }
-                    : undefined,
-                },
-                {
-                  value: PrayerStatus.DELAYED,
-                  label: 'Delayed',
-                  icon: getStatusIcon(PrayerStatus.DELAYED),
-                  style: selectedStatus === PrayerStatus.DELAYED
-                    ? { backgroundColor: theme.expressiveColors.prayerUpcoming + '20' }
-                    : undefined,
-                },
-                {
-                  value: PrayerStatus.MISSED,
-                  label: 'Missed',
-                  icon: getStatusIcon(PrayerStatus.MISSED),
-                  style: selectedStatus === PrayerStatus.MISSED
-                    ? { backgroundColor: theme.expressiveColors.prayerMissed + '20' }
+              buttons={
+                // Filter buttons based on available actions
+                prayerActions 
+                  ? prayerActions.availableStatuses.map(status => ({
+                      value: status,
+                      label: getStatusLabel(status),
+                      icon: getStatusIcon(status),
+                      style: selectedStatus === status
+                        ? { 
+                            backgroundColor: 
+                              status === PrayerStatus.COMPLETED ? theme.expressiveColors.prayerCompleted + '20' :
+                              status === PrayerStatus.DELAYED ? theme.expressiveColors.prayerUpcoming + '20' :
+                              status === PrayerStatus.MISSED ? theme.expressiveColors.prayerMissed + '20' :
+                              theme.colors.surfaceVariant + '20'
+                          }
+                        : undefined,
+                    }))
+                  : [
+                    {
+                      value: PrayerStatus.COMPLETED,
+                      label: 'Prayed',
+                      icon: getStatusIcon(PrayerStatus.COMPLETED),
+                      style: selectedStatus === PrayerStatus.COMPLETED
+                        ? { backgroundColor: theme.expressiveColors.prayerCompleted + '20' }
+                        : undefined,
+                    },
+                    {
+                      value: PrayerStatus.DELAYED,
+                      label: 'Delayed',
+                      icon: getStatusIcon(PrayerStatus.DELAYED),
+                      style: selectedStatus === PrayerStatus.DELAYED
+                        ? { backgroundColor: theme.expressiveColors.prayerUpcoming + '20' }
+                        : undefined,
+                    },
+                    {
+                      value: PrayerStatus.MISSED,
+                      label: 'Missed',
+                      icon: getStatusIcon(PrayerStatus.MISSED),
+                      style: selectedStatus === PrayerStatus.MISSED
+                        ? { backgroundColor: theme.expressiveColors.prayerMissed + '20' }
                     : undefined,
                 },
               ]}
@@ -207,6 +239,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 12,
     marginTop: 8,
+  },
+  timeMessage: {
+    textAlign: 'center',
+    marginBottom: 12,
+    fontStyle: 'italic',
   },
   segmentedButtons: {
     marginBottom: 16,

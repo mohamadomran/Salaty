@@ -51,16 +51,18 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({
           key={language.code}
           title={language.name}
           description={language.nativeName}
-          left={props => (
-            <List.Icon
-              {...props}
-              icon={
-                selectedLanguage === language.code
-                  ? 'radiobox-marked'
-                  : 'radiobox-blank'
-              }
-            />
-          )}
+          left={(props) => {
+            return (
+              <List.Icon
+                {...props}
+                icon={
+                  selectedLanguage === language.code
+                    ? 'radiobox-marked'
+                    : 'radiobox-blank'
+                }
+              />
+            );
+          }}
           onPress={() => onLanguageChange(language.code)}
           style={styles.listItem}
         />

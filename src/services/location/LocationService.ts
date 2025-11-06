@@ -322,7 +322,7 @@ class LocationService {
 
       return {
         granted: granted === PermissionsAndroid.RESULTS.GRANTED,
-        canAskAgain: granted !== PermissionsAndroid.RESULTS.DENIED_FOREVER,
+        canAskAgain: granted !== PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN,
         status:
           granted === PermissionsAndroid.RESULTS.GRANTED ? 'granted' : 'denied',
       };

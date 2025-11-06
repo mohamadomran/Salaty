@@ -19,11 +19,9 @@ import { PrayerService } from '../services/prayer';
 import { LocationService } from '../services/location';
 import { SettingsService } from '../services/settings';
 import { useAppContext } from '../contexts';
+import { usePrayerReactiveUpdates } from '../hooks/useReactiveUpdates';
 import {
-  DailyPrayerRecord,
   PrayerStatus,
-  PrayerTimes,
-  AppSettings,
   CustomPrayerRecord,
   CustomPrayerType,
 } from '../types';
@@ -40,6 +38,12 @@ export default function TrackingScreen() {
     status: PrayerStatus;
     notes?: string;
   } | null>(null);
+
+  // Subscribe to reactive updates
+  usePrayerReactiveUpdates((data: any) => {
+    console.log('TrackingScreen: Prayer status changed:', data);
+    // Context state is already updated, this ensures UI reacts immediately
+  });
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -260,10 +264,11 @@ export default function TrackingScreen() {
             {state.dailyRecord && state.prayerTimes && (
               <View style={styles.checklistContainer}>
                 <PrayerCheckbox
-                  prayerName="Fajr"
-                  prayerTime={formatTime(state.prayerTimes.fajr)}
-                  status={state.dailyRecord.prayers.fajr.status}
-                  onPress={() => handleOpenModal('fajr')}
+                  prayerName="maghrib"
+                  prayerTime={formatTime(state.prayerTimes.maghrib)}
+                  status={state.dailyRecord.prayers.maghrib.status}
+                  prayerTimes={state.prayerTimes}
+                  onPress={() => handleOpenModal('maghrib')}
                 />
                 <SunnahCheckbox
                   label="2 Sunnah before"
@@ -279,10 +284,11 @@ export default function TrackingScreen() {
                 <Divider style={styles.itemDivider} />
 
                 <PrayerCheckbox
-                  prayerName="Dhuhr"
-                  prayerTime={formatTime(state.prayerTimes.dhuhr)}
-                  status={state.dailyRecord.prayers.dhuhr.status}
-                  onPress={() => handleOpenModal('dhuhr')}
+                  prayerName="isha"
+                  prayerTime={formatTime(state.prayerTimes.isha)}
+                  status={state.dailyRecord.prayers.isha.status}
+                  prayerTimes={state.prayerTimes}
+                  onPress={() => handleOpenModal('isha')}
                 />
                 <SunnahCheckbox
                   label="2 Sunnah before"
@@ -317,9 +323,10 @@ export default function TrackingScreen() {
                 <Divider style={styles.itemDivider} />
 
                 <PrayerCheckbox
-                  prayerName="Asr"
+                  prayerName="asr"
                   prayerTime={formatTime(state.prayerTimes.asr)}
                   status={state.dailyRecord.prayers.asr.status}
+                  prayerTimes={state.prayerTimes}
                   onPress={() => handleOpenModal('asr')}
                 />
                 <SunnahCheckbox
@@ -336,9 +343,10 @@ export default function TrackingScreen() {
                 <Divider style={styles.itemDivider} />
 
                 <PrayerCheckbox
-                  prayerName="Maghrib"
+                  prayerName="maghrib"
                   prayerTime={formatTime(state.prayerTimes.maghrib)}
                   status={state.dailyRecord.prayers.maghrib.status}
+                  prayerTimes={state.prayerTimes}
                   onPress={() => handleOpenModal('maghrib')}
                 />
                 <SunnahCheckbox
@@ -355,9 +363,10 @@ export default function TrackingScreen() {
                 <Divider style={styles.itemDivider} />
 
                 <PrayerCheckbox
-                  prayerName="Isha"
+                  prayerName="isha"
                   prayerTime={formatTime(state.prayerTimes.isha)}
                   status={state.dailyRecord.prayers.isha.status}
+                  prayerTimes={state.prayerTimes}
                   onPress={() => handleOpenModal('isha')}
                 />
                 <SunnahCheckbox
@@ -412,6 +421,7 @@ export default function TrackingScreen() {
         prayerTime={selectedPrayer?.time || ''}
         currentStatus={selectedPrayer?.status || PrayerStatus.PENDING}
         currentNotes={selectedPrayer?.notes}
+        prayerTimes={state.prayerTimes || undefined}
         onConfirm={handleConfirmModal}
       />
     </SafeAreaView>

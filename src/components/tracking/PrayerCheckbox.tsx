@@ -7,12 +7,15 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton, useTheme } from 'react-native-paper';
 import { PrayerStatus } from '../../types';
+import { PrayerName, PrayerTimes } from '../../types';
 import { ExpressiveTheme } from '../../theme';
+import { getPrayerActions, PrayerTimeStatus } from '../../utils/prayerTimeLogic';
 
 interface PrayerCheckboxProps {
-  prayerName: string;
+  prayerName: PrayerName;
   prayerTime: string;
   status: PrayerStatus;
+  prayerTimes?: PrayerTimes; // For time-based logic
   onPress: () => void; // Opens modal for detailed status change
   disabled?: boolean;
 }
@@ -21,14 +24,23 @@ export function PrayerCheckbox({
   prayerName,
   prayerTime,
   status,
+  prayerTimes,
   onPress,
   disabled = false,
 }: PrayerCheckboxProps) {
   const theme = useTheme() as ExpressiveTheme;
 
+  // Get time-based actions if prayerTimes is available
+  const prayerActions = prayerTimes ? 
+    getPrayerActions(prayerName, prayerTimes, status) : null;
+
+  // Determine if checkbox should be disabled based on time
+  const isTimeDisabled = prayerActions ? !prayerActions.canMarkCompleted : false;
+  const isActuallyDisabled = disabled || isTimeDisabled;
+
   const handlePress = () => {
-    console.log('PrayerCheckbox pressed:', prayerName, 'disabled:', disabled);
-    if (disabled) return;
+    console.log('PrayerCheckbox pressed:', prayerName, 'disabled:', isActuallyDisabled);
+    if (isActuallyDisabled) return;
     onPress();
   };
 
@@ -70,9 +82,9 @@ export function PrayerCheckbox({
   return (
     <TouchableOpacity
       testID={`prayer-checkbox-${prayerName.toLowerCase()}`}
-      style={[styles.container, disabled && styles.disabled]}
+      style={[styles.container, isActuallyDisabled && styles.disabled]}
       onPress={handlePress}
-      disabled={disabled}
+      disabled={isActuallyDisabled}
       activeOpacity={0.7}
     >
       <View style={styles.leftContent}>
@@ -107,24 +119,57 @@ export function PrayerCheckbox({
             {prayerTime}
           </Text>
         </View>
-      </View>
-      {status === PrayerStatus.DELAYED && (
-        <Text
-          variant="labelSmall"
-          style={[
-            styles.badge,
-            {
-              backgroundColor:
-                theme.expressiveColors.prayerUpcoming + '20',
-            },
-          ]}
-        >
-          Delayed
-        </Text>
-      )}
-    </TouchableOpacity>
-  );
-}
+       </View>
+       
+       {/* Status badges */}
+       {status === PrayerStatus.DELAYED && (
+         <Text
+           variant="labelSmall"
+           style={[
+             styles.badge,
+             {
+               backgroundColor:
+                 theme.expressiveColors.prayerUpcoming + '20',
+             },
+           ]}
+         >
+           Delayed
+         </Text>
+       )}
+       
+       {/* Time-based status indicator */}
+       {prayerActions && prayerActions.timeStatus === PrayerTimeStatus.FUTURE && (
+         <Text
+           variant="labelSmall"
+           style={[
+             styles.badge,
+             {
+               backgroundColor: theme.colors.surfaceVariant + '40',
+               color: theme.colors.onSurfaceVariant,
+             },
+           ]}
+         >
+           {prayerActions.nextActionText}
+         </Text>
+       )}
+       
+       {prayerActions && prayerActions.timeStatus === PrayerTimeStatus.CURRENT && (
+         <Text
+           variant="labelSmall"
+           style={[
+             styles.badge,
+             {
+               backgroundColor: theme.colors.primary + '20',
+               color: theme.colors.primary,
+             },
+           ]}
+         >
+           Now
+         </Text>
+       )}
+     </TouchableOpacity>
+   );
+ }
 
 const styles = StyleSheet.create({
   container: {

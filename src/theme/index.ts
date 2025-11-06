@@ -105,10 +105,18 @@ export {
 } from './enhancedColors';
 export { typography } from './typography';
 export { shapes, componentShapes, shapeAnimations } from './shapes';
-export { spacing, elevation };
 
 // Hook for using theme in components
 export { useTheme } from 'react-native-paper';
 
-// Re-export theme type
-export type { ExpressiveTheme };
+// Enhanced theme system
+export { 
+  enhancedThemeManager, 
+  useEnhancedTheme, 
+  themeUtils,
+  type EnhancedThemeConfig,
+  type ContrastMode,
+  type ThemeTransition,
+} from './enhancedTheme';
+
+

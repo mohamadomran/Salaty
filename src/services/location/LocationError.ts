@@ -21,8 +21,8 @@ export class LocationError extends Error {
     this.originalError = originalError;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, LocationError);
+    if ((Error as any).captureStackTrace) {
+      (Error as any).captureStackTrace(this, LocationError);
     }
   }
 

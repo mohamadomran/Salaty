@@ -16,6 +16,7 @@ import {
   QiblaScreen,
   SettingsScreen,
   QadaScreen,
+  StatisticsScreen,
 } from '@/screens';
 import type { ExpressiveTheme } from '../theme';
 
@@ -26,6 +27,7 @@ const iconMap: Record<string, string> = {
   Home: 'home',
   Tracking: 'view-grid',
   Qada: 'history',
+  Statistics: 'chart-line',
   Qibla: 'compass',
   Settings: 'account',
 };
@@ -109,6 +111,7 @@ CustomTabBar.displayName = 'CustomTabBar';
 const AnimatedHomeScreen = React.memo(() => <HomeScreen />);
 const AnimatedTrackingScreen = React.memo(() => <TrackingScreen />);
 const AnimatedQadaScreen = React.memo(() => <QadaScreen />);
+const AnimatedStatisticsScreen = React.memo(() => <StatisticsScreen />);
 const AnimatedQiblaScreen = React.memo(() => <QiblaScreen />);
 const AnimatedSettingsScreen = React.memo(() => <SettingsScreen />);
 
@@ -125,6 +128,7 @@ export default function TabNavigator() {
       <Tab.Screen name="Home" component={AnimatedHomeScreen} />
       <Tab.Screen name="Tracking" component={AnimatedTrackingScreen} />
       <Tab.Screen name="Qada" component={AnimatedQadaScreen} />
+      <Tab.Screen name="Statistics" component={AnimatedStatisticsScreen} />
       <Tab.Screen name="Qibla" component={AnimatedQiblaScreen} />
       <Tab.Screen name="Settings" component={AnimatedSettingsScreen} />
     </Tab.Navigator>

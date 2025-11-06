@@ -20,6 +20,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { LocationService, GeocodingService, LocationPreferenceService } from '../services/location';
 import type { GeocodingResult } from '../services/location';
 import type { ExpressiveTheme } from '../theme';
+import { useAppContext } from '../contexts';
+import { useLocationReactiveUpdates } from '../hooks/useReactiveUpdates';
 
 interface LocationSetupScreenProps {
   onComplete: () => void;
@@ -27,6 +29,7 @@ interface LocationSetupScreenProps {
 
 export default function LocationSetupScreen({ onComplete }: LocationSetupScreenProps) {
   const theme = useTheme<ExpressiveTheme>();
+  const { updateLocation } = useAppContext();
   const [mode, setMode] = useState<'choice' | 'manual' | 'gps'>('choice');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<GeocodingResult[]>([]);
@@ -35,6 +38,12 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
   
   // Debounce timer ref
   const searchTimeoutRef = useRef<any>(null);
+
+  // Subscribe to reactive updates
+  useLocationReactiveUpdates((data: any) => {
+    console.log('LocationSetupScreen: Location changed:', data);
+    // Location changes will be handled through AppContext
+  });
 
   // Handle GPS location
   const handleUseGPS = async () => {
@@ -70,11 +79,14 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
         throw new Error('Unable to get location');
       }
 
-      // Save preference
-      await LocationPreferenceService.setGPSPreference({
-        latitude: locationData.latitude,
-        longitude: locationData.longitude,
-      });
+      // Update location through AppContext for instant propagation
+      await updateLocation(
+        {
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+        },
+        'Current Location'
+      );
 
       Alert.alert('Success', 'Location set successfully!', [
         { text: 'Continue', onPress: onComplete },
@@ -143,11 +155,10 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
     setLoading(true);
 
     try {
-      await LocationPreferenceService.setManualLocation(
+      // Update location through AppContext for instant propagation
+      await updateLocation(
         result.coordinates,
-        result.name,
-        result.displayName,
-        result.country,
+        result.displayName
       );
 
       Alert.alert(

@@ -430,21 +430,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundImage: `
-      repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10px,
-        rgba(0, 106, 106, 0.03) 10px,
-        rgba(0, 106, 106, 0.03) 20px
-      ),
-      repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 10px,
-        rgba(255, 215, 0, 0.02) 10px,
-        rgba(255, 215, 0, 0.02) 20px
-      )
-    `,
+    // Note: backgroundImage not supported in React Native StyleSheet
+    // This would need to be implemented differently or removed
+    backgroundColor: 'transparent',
   },
 });

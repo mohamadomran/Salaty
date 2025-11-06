@@ -50,9 +50,9 @@ export interface AppSettings {
 }
 
 /**
- * Calculation method info
+ * Calculation method display info
  */
-export interface CalculationMethodInfo {
+export interface CalculationMethodDisplayInfo {
   id: CalculationMethod;
   name: string;
   description: string;

@@ -15,16 +15,24 @@ import {
   useTheme,
   ProgressBar,
   Button,
+  Portal,
+  Modal,
+  FAB,
 } from 'react-native-paper';
 import { TrackingService } from '../services/tracking';
+import { useAppContext } from '../contexts';
+import { useReactiveUpdates } from '../hooks/useReactiveUpdates';
 import { QadaDebt, QadaPrayerRecord } from '../types';
 import type { ExpressiveTheme } from '../theme';
 
 export default function QadaScreen() {
   const theme = useTheme<ExpressiveTheme>();
+  const { emit } = useAppContext();
   const [qadaDebt, setQadaDebt] = useState<QadaDebt | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedPrayer, setSelectedPrayer] = useState<string | null>(null);
+  const [showBulkActions, setShowBulkActions] = useState(false);
 
   const loadQadaDebt = useCallback(async () => {
     try {
@@ -43,6 +51,14 @@ export default function QadaScreen() {
     loadQadaDebt();
   }, [loadQadaDebt]);
 
+  // Subscribe to reactive updates
+  useReactiveUpdates({
+    onQadaDebtChanged: (data: any) => {
+      console.log('QadaScreen: Qada debt changed:', data);
+      loadQadaDebt();
+    },
+  });
+
   const handleRefresh = () => {
     setRefreshing(true);
     loadQadaDebt();
@@ -52,6 +68,13 @@ export default function QadaScreen() {
     try {
       const updatedDebt = await TrackingService.completeQada(qadaId);
       setQadaDebt(updatedDebt);
+      
+      // Emit event for reactive updates
+      emit('QADA_DEBT_CHANGED' as any, {
+        type: 'qada_completed',
+        qadaId,
+        timestamp: Date.now(),
+      });
     } catch (error) {
       console.error('Error completing qada:', error);
     }
@@ -61,8 +84,37 @@ export default function QadaScreen() {
     try {
       const updatedDebt = await TrackingService.clearCompletedQadas();
       setQadaDebt(updatedDebt);
+      
+      // Emit event for reactive updates
+      emit('QADA_DEBT_CHANGED' as any, {
+        type: 'completed_cleared',
+        timestamp: Date.now(),
+      });
     } catch (error) {
       console.error('Error clearing completed qadas:', error);
+    }
+  };
+
+  const handleBulkComplete = async (prayerName: string) => {
+    try {
+      const pendingQadas = await TrackingService.getPendingQadasForPrayer(prayerName as any);
+      
+      for (const qada of pendingQadas) {
+        await TrackingService.completeQada(qada.id);
+      }
+      
+      const updatedDebt = await TrackingService.getQadaDebt();
+      setQadaDebt(updatedDebt);
+      
+      // Emit event for reactive updates
+      emit('QADA_DEBT_CHANGED' as any, {
+        type: 'bulk_completed',
+        prayerName,
+        count: pendingQadas.length,
+        timestamp: Date.now(),
+      });
+    } catch (error) {
+      console.error('Error bulk completing qadas:', error);
     }
   };
 
@@ -241,15 +293,24 @@ export default function QadaScreen() {
                     style={styles.progressBar}
                   />
                 </View>
-                {completedPrayers > 0 && (
+                <View style={styles.actionButtons}>
+                  {completedPrayers > 0 && (
+                    <Button
+                      mode="text"
+                      onPress={handleClearCompleted}
+                      style={styles.clearButton}
+                    >
+                      Clear Completed
+                    </Button>
+                  )}
                   <Button
-                    mode="text"
-                    onPress={handleClearCompleted}
-                    style={styles.clearButton}
+                    mode="outlined"
+                    onPress={() => setShowBulkActions(!showBulkActions)}
+                    style={styles.bulkActionButton}
                   >
-                    Clear Completed
+                    Bulk Actions
                   </Button>
-                )}
+                </View>
               </>
             )}
           </Card.Content>
@@ -287,6 +348,65 @@ export default function QadaScreen() {
           </Card>
         )}
       </ScrollView>
+
+    {/* Bulk Actions Modal */}
+    <Portal>
+      <Modal
+        visible={showBulkActions}
+        onDismiss={() => setShowBulkActions(false)}
+        contentContainerStyle={styles.modalContainer}
+      >
+        <Card style={styles.modalCard}>
+          <Card.Content>
+            <Text variant="titleLarge" style={styles.modalTitle}>
+              Bulk Actions
+            </Text>
+            <Text variant="bodyMedium" style={styles.modalSubtitle}>
+              Complete all pending qadas for specific prayers
+            </Text>
+            
+            <Divider style={styles.modalDivider} />
+            
+            {Object.entries(qadaDebt?.prayers || {}).map(([prayerName, qadas]) => {
+              const pending = qadas.filter(q => !q.isCompleted);
+              if (pending.length === 0) return null;
+              
+              return (
+                <List.Item
+                  key={prayerName}
+                  title={prayerName.charAt(0).toUpperCase() + prayerName.slice(1)}
+                  description={`${pending.length} pending qada(s)`}
+                  left={(props) => (
+                    <List.Icon
+                      {...props}
+                      icon={getPrayerIcon(prayerName)}
+                    />
+                  )}
+                  right={() => (
+                    <Button
+                      mode="text"
+                      compact
+                      onPress={() => handleBulkComplete(prayerName)}
+                    >
+                      Complete All
+                    </Button>
+                  )}
+                />
+              );
+            })}
+          </Card.Content>
+        </Card>
+      </Modal>
+    </Portal>
+
+    {/* Floating Action Button */}
+    {qadaDebt && qadaDebt.totalPending > 0 && (
+      <FAB
+        icon="format-list-checks"
+        style={styles.fab}
+        onPress={() => setShowBulkActions(true)}
+      />
+    )}
     </SafeAreaView>
   );
 }
@@ -339,9 +459,17 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
   },
-  clearButton: {
-    marginTop: 8,
-    alignSelf: 'flex-end',
+clearButton: {
+    marginTop: 12,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  bulkActionButton: {
+    marginLeft: 8,
   },
   qadaLists: {
     gap: 16,
@@ -402,7 +530,36 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
   },
-  emptyText: {
+emptyText: {
     textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  modalContainer: {
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 400,
+    borderRadius: 16,
+  },
+  modalTitle: {
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  modalSubtitle: {
+    marginBottom: 16,
+    color: '#666',
+  },
+  modalDivider: {
+    marginBottom: 16,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
 });
