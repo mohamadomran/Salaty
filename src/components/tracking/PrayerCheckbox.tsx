@@ -13,7 +13,7 @@ interface PrayerCheckboxProps {
   prayerName: string;
   prayerTime: string;
   status: PrayerStatus;
-  onStatusChange: (status: PrayerStatus) => void;
+  onPress: () => void; // Opens modal for detailed status change
   disabled?: boolean;
 }
 
@@ -21,25 +21,15 @@ export function PrayerCheckbox({
   prayerName,
   prayerTime,
   status,
-  onStatusChange,
+  onPress,
   disabled = false,
 }: PrayerCheckboxProps) {
   const theme = useTheme();
 
   const handlePress = () => {
+    console.log('PrayerCheckbox pressed:', prayerName, 'disabled:', disabled);
     if (disabled) return;
-
-    // Cycle through statuses: pending -> completed -> missed -> pending
-    if (status === PrayerStatus.PENDING) {
-      onStatusChange(PrayerStatus.COMPLETED);
-    } else if (
-      status === PrayerStatus.COMPLETED ||
-      status === PrayerStatus.DELAYED
-    ) {
-      onStatusChange(PrayerStatus.MISSED);
-    } else if (status === PrayerStatus.MISSED) {
-      onStatusChange(PrayerStatus.PENDING);
-    }
+    onPress();
   };
 
   const getIcon = () => {
@@ -89,8 +79,7 @@ export function PrayerCheckbox({
           icon={getIcon()}
           iconColor={getIconColor()}
           size={32}
-          onPress={handlePress}
-          disabled={disabled}
+          disabled={true}
           style={styles.checkbox}
         />
         <View style={styles.textContainer}>

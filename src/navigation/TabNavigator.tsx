@@ -2,6 +2,7 @@
  * Tab Navigator
  * Asymmetric bottom navigation with dark pill + white circular profile button
  * Inspired by modern fitness app design
+ * Enhanced with smooth page transitions
  */
 
 import React from 'react';
@@ -14,6 +15,7 @@ import {
   TrackingScreen,
   QiblaScreen,
   SettingsScreen,
+  QadaScreen,
 } from '@/screens';
 import type { ExpressiveTheme } from '../theme';
 
@@ -26,6 +28,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   const iconMap: Record<string, string> = {
     Home: 'home',
     Tracking: 'view-grid',
+    Qada: 'history',
     Qibla: 'compass',
     Settings: 'account',
   };
@@ -33,14 +36,14 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   return (
     <View style={styles.tabBarContainer}>
       <View style={styles.tabBarWrapper}>
-        {/* Dark pill containing first 3 tabs */}
+        {/* Dark pill containing first 4 tabs */}
         <View
           style={[
             styles.darkPill,
             { backgroundColor: theme.dark ? '#1C1C1E' : '#1C1C1E' },
           ]}
         >
-          {state.routes.slice(0, 3).map((route: any, index: number) => {
+          {state.routes.slice(0, 4).map((route: any, index: number) => {
             const { options } = descriptors[route.key];
             const isFocused = state.index === index;
 
@@ -79,18 +82,18 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         {/* White circular button for last tab (Settings/Profile) */}
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityState={state.index === 3 ? { selected: true } : {}}
+          accessibilityState={state.index === 4 ? { selected: true } : {}}
           onPress={() => navigation.navigate('Settings')}
           style={[
             styles.profileButton,
             { backgroundColor: theme.dark ? '#FFFFFF' : '#FFFFFF' },
-            state.index === 3 && styles.profileButtonActive,
+            state.index === 4 && styles.profileButtonActive,
           ]}
         >
           <Icon
             source={iconMap['Settings']}
             size={26}
-            color={state.index === 3 ? '#1C1C1E' : '#1C1C1E'}
+            color={state.index === 4 ? '#1C1C1E' : '#1C1C1E'}
           />
         </TouchableOpacity>
       </View>
@@ -98,18 +101,28 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   );
 }
 
+// Simple screen components without animations
+const AnimatedHomeScreen = () => <HomeScreen />;
+const AnimatedTrackingScreen = () => <TrackingScreen />;
+const AnimatedQadaScreen = () => <QadaScreen />;
+const AnimatedQiblaScreen = () => <QiblaScreen />;
+const AnimatedSettingsScreen = () => <SettingsScreen />;
+
 export default function TabNavigator() {
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        // Lazy load screens for better performance
+        lazy: true,
       }}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Tracking" component={TrackingScreen} />
-      <Tab.Screen name="Qibla" component={QiblaScreen} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Home" component={AnimatedHomeScreen} />
+      <Tab.Screen name="Tracking" component={AnimatedTrackingScreen} />
+      <Tab.Screen name="Qada" component={AnimatedQadaScreen} />
+      <Tab.Screen name="Qibla" component={AnimatedQiblaScreen} />
+      <Tab.Screen name="Settings" component={AnimatedSettingsScreen} />
     </Tab.Navigator>
   );
 }

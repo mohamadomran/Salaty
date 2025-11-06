@@ -11,6 +11,7 @@ export enum PrayerStatus {
   COMPLETED = 'completed',  // Prayer was performed on time
   MISSED = 'missed',        // Prayer was missed
   DELAYED = 'delayed',      // Prayer was performed but delayed
+  QADA = 'qada',           // Prayer made up from previous missed prayer (قضاء)
 }
 
 /**
@@ -52,6 +53,7 @@ export enum CustomPrayerType {
   TAHAJJUD = 'tahajjud',     // Late night prayer
   SUNNAH_FAJR = 'sunnah_fajr',
   SUNNAH_DHUHR = 'sunnah_dhuhr',
+  SUNNAH_ASR = 'sunnah_asr',
   SUNNAH_MAGHRIB = 'sunnah_maghrib',
   SUNNAH_ISHA = 'sunnah_isha',
   OTHER = 'other',
@@ -124,4 +126,56 @@ export interface TrackingPreferences {
   enableCustomPrayers: boolean;
   defaultCustomPrayers: CustomPrayerType[];  // Default custom prayers to show
   notifications: NotificationPreferences;
+}
+
+/**
+ * Qada (Makeup Prayer) Record
+ * Represents a prayer that was missed and needs to be made up
+ */
+export interface QadaPrayerRecord {
+  id: string;               // Unique identifier
+  prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+  originalDate: string;     // Date when prayer was originally missed (YYYY-MM-DD)
+  missedAt: Date;           // Timestamp when it was marked as missed
+  completedAt?: Date;       // Timestamp when qada was completed
+  isCompleted: boolean;     // Whether the qada has been prayed
+  notes?: string;           // Optional notes
+}
+
+/**
+ * Qada Debt Tracker
+ * Tracks all pending makeup prayers
+ */
+export interface QadaDebt {
+  prayers: {
+    fajr: QadaPrayerRecord[];
+    dhuhr: QadaPrayerRecord[];
+    asr: QadaPrayerRecord[];
+    maghrib: QadaPrayerRecord[];
+    isha: QadaPrayerRecord[];
+  };
+  totalPending: number;     // Total number of pending qada prayers
+  lastUpdated: Date;
+}
+
+/**
+ * Sunnah Prayer Configuration
+ * Defines which sunnah prayers to track for each prayer
+ */
+export interface SunnahConfiguration {
+  rakaat: number;           // Number of rakaat (e.g., 2, 4)
+  timing: 'before' | 'after';  // Before or after fard
+  name: string;             // Display name (e.g., "2 Sunnah before")
+  isEmphasis: boolean;      // Whether it's emphasized/confirmed sunnah
+}
+
+/**
+ * Prayer-specific Sunnah configuration
+ */
+export interface PrayerSunnahConfig {
+  fajr: SunnahConfiguration[];     // e.g., [{ rakaat: 2, timing: 'before', ... }]
+  dhuhr: SunnahConfiguration[];    // e.g., [{ rakaat: 2, timing: 'before' }, { rakaat: 2, timing: 'after' }]
+  asr: SunnahConfiguration[];      // e.g., [{ rakaat: 2, timing: 'before' }]
+  maghrib: SunnahConfiguration[];  // e.g., [{ rakaat: 2, timing: 'after' }]
+  isha: SunnahConfiguration[];     // e.g., [{ rakaat: 2, timing: 'after' }]
 }

@@ -3,7 +3,7 @@
  * Initial setup screen for location - GPS or Manual entry
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -32,6 +32,9 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
   const [searchResults, setSearchResults] = useState<GeocodingResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
+  
+  // Debounce timer ref
+  const searchTimeoutRef = useRef<any>(null);
 
   // Handle GPS location
   const handleUseGPS = async () => {
@@ -91,11 +94,9 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
     }
   };
 
-  // Handle manual search
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-
-    if (query.trim().length < 2) {
+  // Debounced search function
+  const performSearch = useCallback(async (query: string) => {
+    if (query.trim().length < 3) {
       setSearchResults([]);
       return;
     }
@@ -111,7 +112,31 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
     } finally {
       setSearching(false);
     }
-  };
+  }, []);
+
+  // Handle manual search with debouncing
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout for 500ms delay
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(query);
+    }, 500);
+  }, [performSearch]);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Handle location selection
   const handleSelectLocation = async (result: GeocodingResult) => {
@@ -286,7 +311,7 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
             </View>
           )}
 
-          {!searching && searchResults.length === 0 && searchQuery.length >= 2 && (
+          {!searching && searchResults.length === 0 && searchQuery.length >= 3 && (
             <View style={styles.emptyResults}>
               <MaterialCommunityIcons
                 name="map-marker-off"
@@ -299,7 +324,7 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
             </View>
           )}
 
-          {!searching && searchResults.length === 0 && searchQuery.length < 2 && (
+          {!searching && searchResults.length === 0 && searchQuery.length < 3 && (
             <View style={styles.emptyResults}>
               <MaterialCommunityIcons
                 name="map-search"
@@ -307,7 +332,7 @@ export default function LocationSetupScreen({ onComplete }: LocationSetupScreenP
                 color={theme.colors.outline}
               />
               <Text style={{ marginTop: 16, color: theme.colors.onSurfaceVariant }}>
-                Start typing to search for your city
+                Type at least 3 characters to search
               </Text>
             </View>
           )}

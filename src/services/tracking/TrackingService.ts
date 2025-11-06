@@ -13,6 +13,8 @@ import {
   PrayerStats,
   PrayerTypeStats,
   TrackingPreferences,
+  QadaDebt,
+  QadaPrayerRecord,
 } from '../../types';
 
 class TrackingServiceClass {
@@ -23,6 +25,7 @@ class TrackingServiceClass {
   private readonly DAILY_RECORDS_KEY = '@salaty:daily_records';
   private readonly PREFERENCES_KEY = '@salaty:tracking_preferences';
   private readonly CUSTOM_PRAYERS_KEY = '@salaty:custom_prayers';
+  private readonly QADA_DEBT_KEY = '@salaty:qada_debt';
 
   private constructor() {
     this.storageService = StorageService;
@@ -414,6 +417,188 @@ class TrackingServiceClass {
     }
 
     return { currentStreak, longestStreak };
+  }
+
+  // ========== Qada (Makeup Prayer) Management ==========
+
+  /**
+   * Get current qada debt
+   */
+  public async getQadaDebt(): Promise<QadaDebt> {
+    const stored = await this.storageService.getItem(this.QADA_DEBT_KEY);
+
+    if (stored) {
+      return JSON.parse(stored);
+    }
+
+    // Initialize empty qada debt
+    const emptyDebt: QadaDebt = {
+      prayers: {
+        fajr: [],
+        dhuhr: [],
+        asr: [],
+        maghrib: [],
+        isha: [],
+      },
+      totalPending: 0,
+      lastUpdated: new Date(),
+    };
+
+    await this.storageService.setItem(
+      this.QADA_DEBT_KEY,
+      JSON.stringify(emptyDebt),
+    );
+
+    return emptyDebt;
+  }
+
+  /**
+   * Add a missed prayer to qada debt
+   */
+  public async addToQadaDebt(
+    prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
+    date: Date,
+    notes?: string,
+  ): Promise<QadaDebt> {
+    const debt = await this.getQadaDebt();
+
+    // Create new qada record
+    const qadaRecord: QadaPrayerRecord = {
+      id: `${prayerName}_${date.getTime()}_${Date.now()}`,
+      prayerName,
+      originalDate: this.formatDateKey(date),
+      missedAt: new Date(),
+      isCompleted: false,
+      notes,
+    };
+
+    // Add to appropriate prayer array
+    debt.prayers[prayerName].push(qadaRecord);
+    debt.totalPending++;
+    debt.lastUpdated = new Date();
+
+    // Save updated debt
+    await this.storageService.setItem(
+      this.QADA_DEBT_KEY,
+      JSON.stringify(debt),
+    );
+
+    return debt;
+  }
+
+  /**
+   * Mark a qada prayer as completed
+   */
+  public async completeQada(qadaId: string): Promise<QadaDebt> {
+    const debt = await this.getQadaDebt();
+
+    // Find and update the qada record
+    let found = false;
+    Object.keys(debt.prayers).forEach(prayerName => {
+      const name = prayerName as keyof typeof debt.prayers;
+      const qadaIndex = debt.prayers[name].findIndex(q => q.id === qadaId);
+
+      if (qadaIndex >= 0) {
+        debt.prayers[name][qadaIndex].isCompleted = true;
+        debt.prayers[name][qadaIndex].completedAt = new Date();
+        debt.totalPending--;
+        found = true;
+      }
+    });
+
+    if (found) {
+      debt.lastUpdated = new Date();
+      await this.storageService.setItem(
+        this.QADA_DEBT_KEY,
+        JSON.stringify(debt),
+      );
+    }
+
+    return debt;
+  }
+
+  /**
+   * Remove a qada prayer from the debt list
+   */
+  public async removeQada(qadaId: string): Promise<QadaDebt> {
+    const debt = await this.getQadaDebt();
+
+    // Find and remove the qada record
+    let found = false;
+    Object.keys(debt.prayers).forEach(prayerName => {
+      const name = prayerName as keyof typeof debt.prayers;
+      const originalLength = debt.prayers[name].length;
+      debt.prayers[name] = debt.prayers[name].filter(q => q.id !== qadaId);
+
+      if (debt.prayers[name].length < originalLength) {
+        found = true;
+        // Only decrease totalPending if it was not yet completed
+        const wasCompleted = debt.prayers[name].find(q => q.id === qadaId)
+          ?.isCompleted;
+        if (!wasCompleted) {
+          debt.totalPending--;
+        }
+      }
+    });
+
+    if (found) {
+      debt.lastUpdated = new Date();
+      await this.storageService.setItem(
+        this.QADA_DEBT_KEY,
+        JSON.stringify(debt),
+      );
+    }
+
+    return debt;
+  }
+
+  /**
+   * Get all pending (incomplete) qada prayers
+   */
+  public async getPendingQadas(): Promise<QadaPrayerRecord[]> {
+    const debt = await this.getQadaDebt();
+    const allPending: QadaPrayerRecord[] = [];
+
+    Object.values(debt.prayers).forEach(prayerArray => {
+      const pending = prayerArray.filter(q => !q.isCompleted);
+      allPending.push(...pending);
+    });
+
+    // Sort by missedAt date (oldest first)
+    return allPending.sort(
+      (a, b) => new Date(a.missedAt).getTime() - new Date(b.missedAt).getTime(),
+    );
+  }
+
+  /**
+   * Get pending qadas for a specific prayer
+   */
+  public async getPendingQadasForPrayer(
+    prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
+  ): Promise<QadaPrayerRecord[]> {
+    const debt = await this.getQadaDebt();
+    return debt.prayers[prayerName].filter(q => !q.isCompleted);
+  }
+
+  /**
+   * Clear all completed qada prayers from storage
+   */
+  public async clearCompletedQadas(): Promise<QadaDebt> {
+    const debt = await this.getQadaDebt();
+
+    // Remove completed qadas from each prayer array
+    Object.keys(debt.prayers).forEach(prayerName => {
+      const name = prayerName as keyof typeof debt.prayers;
+      debt.prayers[name] = debt.prayers[name].filter(q => !q.isCompleted);
+    });
+
+    debt.lastUpdated = new Date();
+    await this.storageService.setItem(
+      this.QADA_DEBT_KEY,
+      JSON.stringify(debt),
+    );
+
+    return debt;
   }
 }
 

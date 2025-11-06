@@ -2,18 +2,9 @@
  * Prayer-related type definitions
  */
 
-export type PrayerName = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+import { CustomPrayerType } from './tracking';
 
-export type CustomPrayerType =
-  | 'taraweeh'
-  | 'qiyam'
-  | 'witr'
-  | 'sunnah_fajr'
-  | 'sunnah_dhuhr_before'
-  | 'sunnah_dhuhr_after'
-  | 'sunnah_maghrib'
-  | 'sunnah_isha'
-  | 'custom';
+export type PrayerName = 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
 
 export interface PrayerTime {
   name: PrayerName;

@@ -4,10 +4,16 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, RefreshControl, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text, Card, Divider, FAB, useTheme } from 'react-native-paper';
-import { PrayerCheckbox, StatsCard } from '../components/tracking';
+import {
+  PrayerCheckbox,
+  StatsCard,
+  PrayerDetailsModal,
+  SunnahCheckbox,
+  CalendarView,
+} from '../components/tracking';
 import { TrackingService } from '../services/tracking';
 import { PrayerService } from '../services/prayer';
 import { LocationService } from '../services/location';
@@ -17,6 +23,8 @@ import {
   PrayerStatus,
   PrayerTimes,
   AppSettings,
+  CustomPrayerRecord,
+  CustomPrayerType,
 } from '../types';
 import type { ExpressiveTheme } from '../theme';
 
@@ -29,6 +37,13 @@ export default function TrackingScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPrayer, setSelectedPrayer] = useState<{
+    name: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+    time: string;
+    status: PrayerStatus;
+    notes?: string;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -68,19 +83,84 @@ export default function TrackingScreen() {
     loadData();
   };
 
-  const handlePrayerStatusChange = async (
+  const handleOpenModal = (
     prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
-    newStatus: PrayerStatus,
   ) => {
+    console.log('handleOpenModal called for:', prayerName);
+    console.log('dailyRecord:', !!dailyRecord, 'prayerTimes:', !!prayerTimes);
+
+    if (!dailyRecord || !prayerTimes) {
+      console.log('Returning early - missing data');
+      return;
+    }
+
+    const prayer = {
+      name: prayerName,
+      time: formatTime(prayerTimes[prayerName]),
+      status: dailyRecord.prayers[prayerName].status,
+      notes: dailyRecord.prayers[prayerName].notes,
+    };
+
+    console.log('Setting selectedPrayer:', prayer);
+    setSelectedPrayer(prayer);
+    setModalVisible(true);
+    console.log('Modal should be visible now');
+  };
+
+  const handleConfirmModal = async (
+    status: PrayerStatus,
+    notes?: string,
+  ) => {
+    if (!selectedPrayer) return;
+
     try {
       const updatedRecord = await TrackingService.updatePrayerStatus(
-        prayerName,
-        newStatus,
+        selectedPrayer.name,
+        status,
         new Date(),
+        notes,
       );
       setDailyRecord(updatedRecord);
     } catch (error) {
       console.error('Error updating prayer status:', error);
+    }
+  };
+
+  const getSunnahPrayer = (type: CustomPrayerType): CustomPrayerRecord | undefined => {
+    if (!dailyRecord?.customPrayers) return undefined;
+    return dailyRecord.customPrayers.find(p => p.type === type);
+  };
+
+  const isSunnahCompleted = (type: CustomPrayerType): boolean => {
+    const prayer = getSunnahPrayer(type);
+    return prayer?.completed || false;
+  };
+
+  const handleToggleSunnah = async (
+    type: CustomPrayerType,
+    name: string,
+    rakaat: number,
+  ) => {
+    try {
+      const existingPrayer = getSunnahPrayer(type);
+      const now = new Date();
+
+      const sunnahRecord: CustomPrayerRecord = {
+        id: existingPrayer?.id || `${type}_${now.getTime()}`,
+        type,
+        name,
+        rakaat,
+        completed: !isSunnahCompleted(type),
+        completedAt: !isSunnahCompleted(type) ? now : undefined,
+      };
+
+      const updatedRecord = await TrackingService.updateCustomPrayer(
+        sunnahRecord,
+        new Date(),
+      );
+      setDailyRecord(updatedRecord);
+    } catch (error) {
+      console.error('Error toggling sunnah prayer:', error);
     }
   };
 
@@ -186,6 +266,17 @@ export default function TrackingScreen() {
           ]}
         />
 
+        {/* Calendar Card */}
+        <Card style={styles.calendarCard} mode="elevated">
+          <Card.Content>
+            <Text variant="titleMedium" style={styles.cardTitle}>
+              Monthly Overview
+            </Text>
+            <Divider style={styles.divider} />
+            <CalendarView />
+          </Card.Content>
+        </Card>
+
         {/* Prayer Checklist Card */}
         <Card style={styles.checklistCard} mode="elevated">
           <Card.Content>
@@ -200,8 +291,17 @@ export default function TrackingScreen() {
                   prayerName="Fajr"
                   prayerTime={formatTime(prayerTimes.fajr)}
                   status={dailyRecord.prayers.fajr.status}
-                  onStatusChange={status =>
-                    handlePrayerStatusChange('fajr', status)
+                  onPress={() => handleOpenModal('fajr')}
+                />
+                <SunnahCheckbox
+                  label="2 Sunnah before"
+                  completed={isSunnahCompleted(CustomPrayerType.SUNNAH_FAJR)}
+                  onToggle={() =>
+                    handleToggleSunnah(
+                      CustomPrayerType.SUNNAH_FAJR,
+                      '2 Sunnah before Fajr',
+                      2,
+                    )
                   }
                 />
                 <Divider style={styles.itemDivider} />
@@ -210,8 +310,36 @@ export default function TrackingScreen() {
                   prayerName="Dhuhr"
                   prayerTime={formatTime(prayerTimes.dhuhr)}
                   status={dailyRecord.prayers.dhuhr.status}
-                  onStatusChange={status =>
-                    handlePrayerStatusChange('dhuhr', status)
+                  onPress={() => handleOpenModal('dhuhr')}
+                />
+                <SunnahCheckbox
+                  label="2 Sunnah before"
+                  completed={
+                    !!dailyRecord.customPrayers?.find(
+                      p => p.type === CustomPrayerType.SUNNAH_DHUHR && p.name.includes('before'),
+                    )?.completed
+                  }
+                  onToggle={() =>
+                    handleToggleSunnah(
+                      CustomPrayerType.SUNNAH_DHUHR,
+                      '2 Sunnah before Dhuhr',
+                      2,
+                    )
+                  }
+                />
+                <SunnahCheckbox
+                  label="2 Sunnah after"
+                  completed={
+                    !!dailyRecord.customPrayers?.find(
+                      p => p.type === CustomPrayerType.SUNNAH_DHUHR && p.name.includes('after'),
+                    )?.completed
+                  }
+                  onToggle={() =>
+                    handleToggleSunnah(
+                      CustomPrayerType.SUNNAH_DHUHR,
+                      '2 Sunnah after Dhuhr',
+                      2,
+                    )
                   }
                 />
                 <Divider style={styles.itemDivider} />
@@ -220,8 +348,17 @@ export default function TrackingScreen() {
                   prayerName="Asr"
                   prayerTime={formatTime(prayerTimes.asr)}
                   status={dailyRecord.prayers.asr.status}
-                  onStatusChange={status =>
-                    handlePrayerStatusChange('asr', status)
+                  onPress={() => handleOpenModal('asr')}
+                />
+                <SunnahCheckbox
+                  label="2 Sunnah before"
+                  completed={isSunnahCompleted(CustomPrayerType.SUNNAH_ASR)}
+                  onToggle={() =>
+                    handleToggleSunnah(
+                      CustomPrayerType.SUNNAH_ASR,
+                      '2 Sunnah before Asr',
+                      2,
+                    )
                   }
                 />
                 <Divider style={styles.itemDivider} />
@@ -230,8 +367,17 @@ export default function TrackingScreen() {
                   prayerName="Maghrib"
                   prayerTime={formatTime(prayerTimes.maghrib)}
                   status={dailyRecord.prayers.maghrib.status}
-                  onStatusChange={status =>
-                    handlePrayerStatusChange('maghrib', status)
+                  onPress={() => handleOpenModal('maghrib')}
+                />
+                <SunnahCheckbox
+                  label="2 Sunnah after"
+                  completed={isSunnahCompleted(CustomPrayerType.SUNNAH_MAGHRIB)}
+                  onToggle={() =>
+                    handleToggleSunnah(
+                      CustomPrayerType.SUNNAH_MAGHRIB,
+                      '2 Sunnah after Maghrib',
+                      2,
+                    )
                   }
                 />
                 <Divider style={styles.itemDivider} />
@@ -240,8 +386,24 @@ export default function TrackingScreen() {
                   prayerName="Isha"
                   prayerTime={formatTime(prayerTimes.isha)}
                   status={dailyRecord.prayers.isha.status}
-                  onStatusChange={status =>
-                    handlePrayerStatusChange('isha', status)
+                  onPress={() => handleOpenModal('isha')}
+                />
+                <SunnahCheckbox
+                  label="2 Sunnah after"
+                  completed={isSunnahCompleted(CustomPrayerType.SUNNAH_ISHA)}
+                  onToggle={() =>
+                    handleToggleSunnah(
+                      CustomPrayerType.SUNNAH_ISHA,
+                      '2 Sunnah after Isha',
+                      2,
+                    )
+                  }
+                />
+                <SunnahCheckbox
+                  label="Witr"
+                  completed={isSunnahCompleted(CustomPrayerType.WITR)}
+                  onToggle={() =>
+                    handleToggleSunnah(CustomPrayerType.WITR, 'Witr', 3)
                   }
                 />
               </View>
@@ -253,8 +415,7 @@ export default function TrackingScreen() {
         <Card style={styles.infoCard}>
           <Card.Content>
             <Text variant="bodyMedium" style={styles.infoText}>
-              Tap a prayer to mark it as completed. Tap again to mark as missed,
-              or tap once more to reset to pending.
+              Tap a prayer to mark its status and add notes.
             </Text>
           </Card.Content>
         </Card>
@@ -269,6 +430,17 @@ export default function TrackingScreen() {
           console.log('Navigate to statistics');
         }}
         color={theme.colors.onPrimary}
+      />
+
+      {/* Prayer Details Modal */}
+      <PrayerDetailsModal
+        visible={modalVisible && !!selectedPrayer}
+        onDismiss={() => setModalVisible(false)}
+        prayerName={selectedPrayer?.name || 'fajr'}
+        prayerTime={selectedPrayer?.time || ''}
+        currentStatus={selectedPrayer?.status || PrayerStatus.PENDING}
+        currentNotes={selectedPrayer?.notes}
+        onConfirm={handleConfirmModal}
       />
     </SafeAreaView>
   );
@@ -304,6 +476,10 @@ const styles = StyleSheet.create({
   },
   date: {
     color: '#4A6363',
+  },
+  calendarCard: {
+    marginBottom: 16,
+    borderRadius: 24,
   },
   checklistCard: {
     marginBottom: 16,

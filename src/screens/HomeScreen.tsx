@@ -338,7 +338,8 @@ export default function HomeScreen() {
                 ]}
                 elevation={0}
               >
-                <View style={styles.prayerCardContent}>
+                <View style={styles.prayerCardWrapper}>
+                  <View style={styles.prayerCardContent}>
                   {/* Icon */}
                   <View
                     style={[
@@ -422,6 +423,7 @@ export default function HomeScreen() {
                   >
                     {formatTime(time)}
                   </Text>
+                </View>
                 </View>
               </Surface>
             );
@@ -599,14 +601,17 @@ const styles = StyleSheet.create({
   },
   prayerCard: {
     borderRadius: 20,
-    padding: 16,
-    position: 'relative',
+  },
+  prayerCardWrapper: {
     overflow: 'hidden',
+    borderRadius: 20,
   },
   prayerCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
+    padding: 16,
+    position: 'relative',
   },
   prayerIconContainer: {
     width: 48,
