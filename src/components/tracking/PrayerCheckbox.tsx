@@ -7,7 +7,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton, useTheme } from 'react-native-paper';
 import { PrayerStatus } from '../../types';
-import { lightTheme } from '../../theme';
+import { ExpressiveTheme } from '../../theme';
 
 interface PrayerCheckboxProps {
   prayerName: string;
@@ -24,7 +24,7 @@ export function PrayerCheckbox({
   onPress,
   disabled = false,
 }: PrayerCheckboxProps) {
-  const theme = useTheme();
+  const theme = useTheme() as ExpressiveTheme;
 
   const handlePress = () => {
     console.log('PrayerCheckbox pressed:', prayerName, 'disabled:', disabled);
@@ -49,11 +49,11 @@ export function PrayerCheckbox({
   const getIconColor = () => {
     switch (status) {
       case PrayerStatus.COMPLETED:
-        return lightTheme.colors.expressiveColors.prayerCompleted;
+        return theme.expressiveColors.prayerCompleted;
       case PrayerStatus.DELAYED:
-        return lightTheme.colors.expressiveColors.prayerUpcoming;
+        return theme.expressiveColors.prayerUpcoming;
       case PrayerStatus.MISSED:
-        return lightTheme.colors.expressiveColors.prayerMissed;
+        return theme.expressiveColors.prayerMissed;
       case PrayerStatus.PENDING:
       default:
         return theme.colors.outline;
@@ -69,6 +69,7 @@ export function PrayerCheckbox({
 
   return (
     <TouchableOpacity
+      testID={`prayer-checkbox-${prayerName.toLowerCase()}`}
       style={[styles.container, disabled && styles.disabled]}
       onPress={handlePress}
       disabled={disabled}
@@ -76,6 +77,7 @@ export function PrayerCheckbox({
     >
       <View style={styles.leftContent}>
         <IconButton
+          testID={`${prayerName.toLowerCase()}-${status}-icon`}
           icon={getIcon()}
           iconColor={getIconColor()}
           size={32}
@@ -113,7 +115,7 @@ export function PrayerCheckbox({
             styles.badge,
             {
               backgroundColor:
-                lightTheme.colors.expressiveColors.prayerUpcoming + '20',
+                theme.expressiveColors.prayerUpcoming + '20',
             },
           ]}
         >

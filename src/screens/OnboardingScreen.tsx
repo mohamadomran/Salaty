@@ -1,5 +1,5 @@
 /**
- * Onboarding Screen with Animations and Swipe
+ * Onboarding Screen without Animations
  * First-time setup: Location + Calculation Method selection
  */
 
@@ -15,18 +15,6 @@ import {
   useTheme,
 } from 'react-native-paper';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeInUp,
-  FadeOut,
-  SlideInRight,
-  SlideOutLeft,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  interpolate,
-} from 'react-native-reanimated';
 import { SettingsService } from '../services';
 import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import LocationSetupScreen from './LocationSetupScreen';
@@ -52,14 +40,14 @@ const WELCOME_SLIDES: WelcomeSlide[] = [
   {
     id: '1',
     icon: 'mosque',
-    title: 'Welcome to Salaty',
-    description: 'Your companion for accurate prayer times and Islamic calendar',
+    title: 'Prayer Times',
+    description: 'Get accurate prayer times for your location based on trusted calculation methods',
   },
   {
     id: '2',
-    icon: 'map-marker-check',
-    title: 'Accurate Times',
-    description: 'Get precise prayer times based on your exact location',
+    icon: 'map-marker',
+    title: 'Location Based',
+    description: 'Automatically detects your location or search for any city worldwide',
   },
   {
     id: '3',
@@ -83,7 +71,6 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
 
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useSharedValue(0);
 
   const { methods: calculationMethods, isLoading: methodsLoading } = useCalculationMethods();
 
@@ -148,37 +135,27 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const renderWelcomeSlide = ({ item, index }: { item: WelcomeSlide; index: number }) => {
     return (
       <View style={[styles.slideContainer, { width: SCREEN_WIDTH }]}>
-        <Animated.View
-          entering={FadeInDown.delay(100).springify()}
-          style={styles.slideContent}
-        >
-          <Animated.View
-            entering={FadeInDown.delay(200).springify()}
-          >
+        <View style={styles.slideContent}>
+          <View>
             <MaterialCommunityIcons
               name={item.icon as any}
               size={100}
               color={theme.colors.primary}
             />
-          </Animated.View>
-
-          <Animated.Text
-            entering={FadeInUp.delay(300).springify()}
-            style={[
-              styles.slideTitle,
-              { color: theme.colors.onBackground, fontSize: index === 0 ? 32 : 28 }
-            ]}
+          </View>
+          <Text
+            variant="headlineMedium"
+            style={[styles.slideTitle, { color: theme.colors.onSurface }]}
           >
             {item.title}
-          </Animated.Text>
-
-          <Animated.Text
-            entering={FadeInUp.delay(400).springify()}
+          </Text>
+          <Text
+            variant="bodyLarge"
             style={[styles.slideDescription, { color: theme.colors.onSurfaceVariant }]}
           >
             {item.description}
-          </Animated.Text>
-        </Animated.View>
+          </Text>
+        </View>
       </View>
     );
   };
@@ -188,21 +165,17 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     return (
       <View style={styles.paginationContainer}>
         {WELCOME_SLIDES.map((_, index) => {
-          const dotStyle = useAnimatedStyle(() => {
-            const isActive = index === currentSlideIndex;
-            return {
-              width: withSpring(isActive ? 24 : 8),
-              opacity: withSpring(isActive ? 1 : 0.3),
-            };
-          });
-
+          const isActive = index === currentSlideIndex;
           return (
-            <Animated.View
+            <View
               key={index}
               style={[
                 styles.dot,
-                { backgroundColor: theme.colors.primary },
-                dotStyle,
+                { 
+                  backgroundColor: theme.colors.primary,
+                  width: isActive ? 24 : 8,
+                  opacity: isActive ? 1 : 0.3,
+                },
               ]}
             />
           );
@@ -218,11 +191,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
         edges={['top', 'left', 'right']}
         style={[styles.container, { backgroundColor: theme.colors.background }]}
       >
-        <Animated.View
-          entering={FadeIn.duration(300)}
-          exiting={FadeOut.duration(200)}
-          style={styles.welcomeContainer}
-        >
+        <View style={styles.welcomeContainer}>
           <FlatList
             ref={flatListRef}
             data={WELCOME_SLIDES}
@@ -239,10 +208,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
 
           <PaginationDots />
 
-          <Animated.View
-            entering={FadeInUp.delay(500).springify()}
-            style={styles.buttonContainer}
-          >
+          <View style={styles.buttonContainer}>
             {currentSlideIndex < WELCOME_SLIDES.length - 1 ? (
               <View style={styles.navigationButtons}>
                 <Button
@@ -271,8 +237,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 Get Started
               </Button>
             )}
-          </Animated.View>
-        </Animated.View>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
@@ -280,36 +246,25 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   // Location Setup
   if (step === 'location') {
     return (
-      <Animated.View
-        entering={SlideInRight.springify()}
-        exiting={SlideOutLeft.springify()}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <LocationSetupScreen
           onComplete={() => setStep('method')}
         />
-      </Animated.View>
+      </View>
     );
   }
 
   // Method Selection
   if (step === 'method') {
     return (
-      <Animated.View
-        entering={SlideInRight.springify()}
-        exiting={SlideOutLeft.springify()}
-        style={{ flex: 1 }}
-      >
+      <View style={{ flex: 1 }}>
         <SafeAreaView
           edges={['top', 'left', 'right']}
           style={[styles.container, { backgroundColor: theme.colors.background }]}
         >
           <View style={styles.methodContainer}>
             {/* Header */}
-            <Animated.View
-              entering={FadeInDown.delay(100).springify()}
-              style={styles.methodHeader}
-            >
+            <View style={styles.methodHeader}>
               <Text variant="headlineMedium" style={styles.methodTitle}>
                 Choose Calculation Method
               </Text>
@@ -317,9 +272,9 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                 variant="bodyMedium"
                 style={[styles.methodSubtitle, { color: theme.colors.onSurfaceVariant }]}
               >
-                Select the method used to calculate prayer times. You can change this later in settings.
+                Select method used to calculate prayer times. You can change this later in settings.
               </Text>
-            </Animated.View>
+            </View>
 
             {/* Methods List */}
             <ScrollView style={styles.methodsList}>
@@ -333,10 +288,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               {calculationMethods?.map((method, index) => {
                 const isSelected = selectedMethod === method.id;
                 return (
-                  <Animated.View
-                    key={method.id}
-                    entering={FadeInDown.delay(200 + index * 50).springify()}
-                  >
+                  <View key={method.id}>
                     <Card style={styles.methodCard}>
                       <List.Item
                         title={method.name}
@@ -361,16 +313,13 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
                         }
                       />
                     </Card>
-                  </Animated.View>
+                  </View>
                 );
               })}
             </ScrollView>
 
             {/* Action Buttons */}
-            <Animated.View
-              entering={FadeInUp.delay(300).springify()}
-              style={styles.methodActions}
-            >
+            <View style={styles.methodActions}>
               <Button
                 mode="outlined"
                 onPress={() => setStep('location')}
@@ -388,10 +337,10 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
               >
                 Complete Setup
               </Button>
-            </Animated.View>
+            </View>
           </View>
         </SafeAreaView>
-      </Animated.View>
+      </View>
     );
   }
 
@@ -486,17 +435,17 @@ const styles = StyleSheet.create({
   },
   methodActions: {
     flexDirection: 'row',
-    padding: 16,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 24,
     gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.1)',
   },
   backButton: {
-    flex: 1,
     borderRadius: 12,
+    flex: 1,
   },
   continueButton: {
-    flex: 2,
     borderRadius: 12,
+    flex: 1,
   },
 });

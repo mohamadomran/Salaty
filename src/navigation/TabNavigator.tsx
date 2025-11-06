@@ -21,17 +21,18 @@ import type { ExpressiveTheme } from '../theme';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
-// Custom tab bar with asymmetric design
-function CustomTabBar({ state, descriptors, navigation }: any) {
-  const theme = useTheme<ExpressiveTheme>();
+// Move iconMap outside component to prevent recreation
+const iconMap: Record<string, string> = {
+  Home: 'home',
+  Tracking: 'view-grid',
+  Qada: 'history',
+  Qibla: 'compass',
+  Settings: 'account',
+};
 
-  const iconMap: Record<string, string> = {
-    Home: 'home',
-    Tracking: 'view-grid',
-    Qada: 'history',
-    Qibla: 'compass',
-    Settings: 'account',
-  };
+// Custom tab bar with asymmetric design
+const CustomTabBar = React.memo(({ state, descriptors, navigation }: any) => {
+  const theme = useTheme<ExpressiveTheme>();
 
   return (
     <View style={styles.tabBarContainer}>
@@ -65,7 +66,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
                 accessibilityLabel={options.tabBarAccessibilityLabel}
-                testID={options.tabBarTestID}
+                testID={`${route.name.toLowerCase()}-tab`}
                 onPress={onPress}
                 style={styles.tabButton}
               >
@@ -81,6 +82,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
         {/* White circular button for last tab (Settings/Profile) */}
         <TouchableOpacity
+          testID="settings-tab"
           accessibilityRole="button"
           accessibilityState={state.index === 4 ? { selected: true } : {}}
           onPress={() => navigation.navigate('Settings')}
@@ -99,14 +101,16 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
       </View>
     </View>
   );
-}
+});
 
-// Simple screen components without animations
-const AnimatedHomeScreen = () => <HomeScreen />;
-const AnimatedTrackingScreen = () => <TrackingScreen />;
-const AnimatedQadaScreen = () => <QadaScreen />;
-const AnimatedQiblaScreen = () => <QiblaScreen />;
-const AnimatedSettingsScreen = () => <SettingsScreen />;
+CustomTabBar.displayName = 'CustomTabBar';
+
+// Simple screen components without animations - optimized with React.memo
+const AnimatedHomeScreen = React.memo(() => <HomeScreen />);
+const AnimatedTrackingScreen = React.memo(() => <TrackingScreen />);
+const AnimatedQadaScreen = React.memo(() => <QadaScreen />);
+const AnimatedQiblaScreen = React.memo(() => <QiblaScreen />);
+const AnimatedSettingsScreen = React.memo(() => <SettingsScreen />);
 
 export default function TabNavigator() {
   return (

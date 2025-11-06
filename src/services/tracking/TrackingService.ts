@@ -253,10 +253,10 @@ class TrackingServiceClass {
    * Get tracking preferences
    */
   public async getPreferences(): Promise<TrackingPreferences> {
-    const stored = await this.storageService.getItem(this.PREFERENCES_KEY);
+    const stored = await this.storageService.getItem<string>(this.PREFERENCES_KEY);
 
     if (stored) {
-      return JSON.parse(stored);
+      return JSON.parse(stored) as TrackingPreferences;
     }
 
     // Default preferences
@@ -323,8 +323,8 @@ class TrackingServiceClass {
    * Get all daily records from storage
    */
   private async getAllRecords(): Promise<Record<string, DailyPrayerRecord>> {
-    const stored = await this.storageService.getItem(this.DAILY_RECORDS_KEY);
-    return stored ? JSON.parse(stored) : {};
+    const stored = await this.storageService.getItem<string>(this.DAILY_RECORDS_KEY);
+    return stored ? JSON.parse(stored) as Record<string, DailyPrayerRecord> : {};
   }
 
   /**
@@ -425,10 +425,10 @@ class TrackingServiceClass {
    * Get current qada debt
    */
   public async getQadaDebt(): Promise<QadaDebt> {
-    const stored = await this.storageService.getItem(this.QADA_DEBT_KEY);
+    const stored = await this.storageService.getItem<string>(this.QADA_DEBT_KEY);
 
     if (stored) {
-      return JSON.parse(stored);
+      return JSON.parse(stored) as QadaDebt;
     }
 
     // Initialize empty qada debt

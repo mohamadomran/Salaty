@@ -30,10 +30,13 @@ export const asyncStoragePersister: Persister = {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Cache-first strategy: show cached data immediately
-      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      gcTime: 30 * 24 * 60 * 60 * 1000, // Keep cache for 30 days (gcTime replaces cacheTime)
+      // Optimized cache times for better performance
+      staleTime: 5 * 60 * 1000, // 5 minutes for prayer times (was 7 days)
+      gcTime: 60 * 60 * 1000, // 1 hour cache cleanup (was 30 days)
 
+      // Limit cache size to prevent memory bloat
+      structuralSharing: true,
+      
       // Retry configuration for network failures
       retry: 2,
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),

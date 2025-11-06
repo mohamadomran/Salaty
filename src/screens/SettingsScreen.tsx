@@ -280,6 +280,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView
+      testID="settings-screen"
       edges={['top', 'left', 'right']}
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
@@ -289,11 +290,13 @@ export default function SettingsScreen() {
 
           {/* Prayer Settings Section */}
           <CollapsibleSettingsSection
+            testID="prayer-settings-section"
             title="Prayer Settings"
             icon="mosque"
             defaultExpanded={false}
           >
             <Text
+              testID="calculation-method-setting"
               variant="labelLarge"
               style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
             >
@@ -493,6 +496,7 @@ export default function SettingsScreen() {
 
           {/* Notifications Section */}
           <CollapsibleSettingsSection
+            testID="notifications-setting"
             title="Notifications"
             icon="bell"
             defaultExpanded={false}
@@ -522,6 +526,7 @@ export default function SettingsScreen() {
 
           {/* Location Section */}
           <CollapsibleSettingsSection
+            testID="location-setting"
             title="Location"
             icon="map-marker"
             defaultExpanded={false}

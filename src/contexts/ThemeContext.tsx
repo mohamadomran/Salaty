@@ -8,6 +8,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useMemo,
   ReactNode,
 } from 'react';
 import { useColorScheme } from 'react-native';
@@ -32,7 +33,6 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [themeMode, setThemeModeState] = useState<ThemeMode>('auto');
-  const [currentTheme, setCurrentTheme] = useState<ExpressiveTheme>(lightTheme);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load saved theme preference on mount
@@ -50,8 +50,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     loadThemePreference();
   }, []);
 
-  // Update theme when mode or system preference changes
-  useEffect(() => {
+  // Memoized theme calculation
+  const currentTheme = useMemo(() => {
     let shouldUseDark = false;
 
     if (themeMode === 'dark') {
@@ -63,26 +63,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       shouldUseDark = systemColorScheme === 'dark';
     }
 
-    setCurrentTheme(shouldUseDark ? darkTheme : lightTheme);
+    return shouldUseDark ? darkTheme : lightTheme;
   }, [themeMode, systemColorScheme]);
 
-  const setThemeMode = async (mode: ThemeMode) => {
+  const setThemeMode = React.useCallback(async (mode: ThemeMode) => {
     setThemeModeState(mode);
     await SettingsService.setThemeMode(mode);
-  };
+  }, []);
 
   const isDark = currentTheme === darkTheme;
 
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    theme: currentTheme,
+    themeMode,
+    setThemeMode,
+    isDark,
+    isLoading,
+  }), [currentTheme, themeMode, setThemeMode, isDark, isLoading]);
+
   return (
-    <ThemeContext.Provider
-      value={{
-        theme: currentTheme,
-        themeMode,
-        setThemeMode,
-        isDark,
-        isLoading,
-      }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

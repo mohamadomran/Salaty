@@ -8,10 +8,10 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { QueryClientProvider } from '@tanstack/react-query';
+
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { ThemeProvider, useThemeContext } from './src/contexts';
+import { ThemeProvider, AppProvider, useThemeContext } from './src/contexts';
 import { TabNavigator } from './src/navigation';
 import { ErrorBoundary } from './src/components';
 import { OnboardingScreen } from './src/screens';
@@ -87,11 +87,13 @@ function App(): React.JSX.Element {
         client={queryClient}
         persistOptions={{ persister: asyncStoragePersister }}
       >
-        <ThemeProvider>
-          <ErrorBoundary>
-            <AppContent />
-          </ErrorBoundary>
-        </ThemeProvider>
+        <AppProvider>
+          <ThemeProvider>
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
+          </ThemeProvider>
+        </AppProvider>
       </PersistQueryClientProvider>
     </SafeAreaProvider>
   );

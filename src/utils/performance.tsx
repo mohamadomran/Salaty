@@ -26,7 +26,7 @@ class PerformanceMonitor {
   private metrics: PerformanceMetrics[] = [];
   private renderMetrics: Map<string, RenderMetrics> = new Map();
   private isMonitoring = false;
-  private maxMetrics = 1000; // Keep last 1000 metrics
+  private maxMetrics = 500; // Reduced from 1000 to 500 for better memory usage
 
   private constructor() {}
 

@@ -190,6 +190,7 @@ export default function QadaScreen() {
 
   return (
     <SafeAreaView
+      testID="qada-screen"
       edges={['top', 'left', 'right']}
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
@@ -216,7 +217,7 @@ export default function QadaScreen() {
         </View>
 
         {/* Summary Card */}
-        <Card style={styles.summaryCard} mode="elevated">
+        <Card testID="qada-summary-card" style={styles.summaryCard} mode="elevated">
           <Card.Content>
             <View style={styles.summaryRow}>
               <Text variant="titleLarge" style={{ color: theme.colors.primary }}>

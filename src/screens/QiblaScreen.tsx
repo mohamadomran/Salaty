@@ -10,7 +10,7 @@ import { Text, Card } from 'react-native-paper';
 
 export default function QiblaScreen() {
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
+    <SafeAreaView testID="qibla-screen" edges={['top', 'left', 'right']} style={styles.container}>
       <View style={styles.content}>
         <Text variant="headlineMedium" style={styles.title}>
           Qibla Direction

@@ -113,7 +113,8 @@ class StorageService {
    */
   async getAllKeys(): Promise<string[]> {
     try {
-      return await AsyncStorage.getAllKeys();
+      const keys = await AsyncStorage.getAllKeys();
+      return [...keys]; // Convert readonly array to mutable
     } catch (error) {
       console.error('Error getting all keys:', error);
       return [];
@@ -128,6 +129,34 @@ class StorageService {
       await AsyncStorage.mergeItem(key, JSON.stringify(value));
     } catch (error) {
       console.error(`Error merging item ${key}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Batch update settings for better performance
+   */
+  async batchUpdateSettings(updates: Record<string, any>): Promise<void> {
+    try {
+      const keyValuePairs: Array<[string, any]> = Object.entries(updates).map(([key, value]) => [
+        key,
+        value,
+      ]);
+      await this.multiSet(keyValuePairs);
+    } catch (error) {
+      console.error('Error batch updating settings:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Batch remove multiple keys
+   */
+  async batchRemove(keys: string[]): Promise<void> {
+    try {
+      await AsyncStorage.multiRemove(keys);
+    } catch (error) {
+      console.error('Error batch removing keys:', error);
       throw error;
     }
   }

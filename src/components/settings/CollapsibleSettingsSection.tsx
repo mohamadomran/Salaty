@@ -22,6 +22,7 @@ interface CollapsibleSettingsSectionProps {
   children: React.ReactNode;
   defaultExpanded?: boolean;
   onExpansionChange?: (expanded: boolean) => void;
+  testID?: string;
 }
 
 export const CollapsibleSettingsSection: React.FC<
@@ -32,6 +33,7 @@ export const CollapsibleSettingsSection: React.FC<
   children,
   defaultExpanded = false,
   onExpansionChange,
+testID,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const theme = useTheme();
@@ -44,7 +46,7 @@ export const CollapsibleSettingsSection: React.FC<
   };
 
   return (
-    <Card style={styles.card} elevation={2}>
+    <Card testID={testID} style={styles.card} elevation={2}>
       <View style={styles.innerContainer}>
         <TouchableOpacity
           onPress={toggleExpansion}

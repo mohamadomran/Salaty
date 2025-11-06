@@ -93,11 +93,12 @@ export function PrayerDetailsModal({
   return (
     <Portal>
       <Dialog
+        testID="prayer-details-modal"
         visible={visible}
         onDismiss={handleCancel}
         style={styles.dialog}
       >
-        <Dialog.Title style={styles.title}>
+        <Dialog.Title testID="prayer-title-text" style={styles.title}>
           {prayerName} Prayer
         </Dialog.Title>
 
@@ -105,7 +106,7 @@ export function PrayerDetailsModal({
           <ScrollView showsVerticalScrollIndicator={false}>
             {/* Prayer Time */}
             <View style={styles.timeContainer}>
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+              <Text testID="prayer-time-text" variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
                 Time: {prayerTime}
               </Text>
             </View>
@@ -160,6 +161,7 @@ export function PrayerDetailsModal({
               Notes (Optional)
             </Text>
             <TextInput
+              testID="prayer-notes-input"
               mode="outlined"
               value={notes}
               onChangeText={setNotes}
@@ -172,8 +174,9 @@ export function PrayerDetailsModal({
         </Dialog.Content>
 
         <Dialog.Actions>
-          <Button onPress={handleCancel}>Cancel</Button>
+          <Button testID="close-modal-button" onPress={handleCancel}>Cancel</Button>
           <Button
+            testID="save-notes-button"
             onPress={handleConfirm}
             mode="contained"
             style={styles.confirmButton}

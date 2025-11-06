@@ -18,6 +18,7 @@ import { TrackingService } from '../services/tracking';
 import { PrayerService } from '../services/prayer';
 import { LocationService } from '../services/location';
 import { SettingsService } from '../services/settings';
+import { useAppContext } from '../contexts';
 import {
   DailyPrayerRecord,
   PrayerStatus,
@@ -30,12 +31,7 @@ import type { ExpressiveTheme } from '../theme';
 
 export default function TrackingScreen() {
   const theme = useTheme<ExpressiveTheme>();
-  const [dailyRecord, setDailyRecord] = useState<DailyPrayerRecord | null>(
-    null,
-  );
-  const [prayerTimes, setPrayerTimes] = useState<PrayerTimes | null>(null);
-  const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { state, updatePrayerStatus, subscribe } = useAppContext();
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPrayer, setSelectedPrayer] = useState<{
@@ -45,60 +41,28 @@ export default function TrackingScreen() {
     notes?: string;
   } | null>(null);
 
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      // Load user settings
-      const userSettings = await SettingsService.getSettings();
-      setSettings(userSettings);
-
-      // Load today's tracking record
-      const record = await TrackingService.getDailyRecord(new Date());
-      setDailyRecord(record);
-
-      // Load prayer times for displaying times (uses settings automatically)
-      const location = await LocationService.getCurrentLocation();
-      if (location) {
-        const times = await PrayerService.getPrayerTimes(
-          location.coordinates,
-          new Date(),
-        );
-        setPrayerTimes(times);
-      }
-    } catch (error) {
-      console.error('Error loading tracking data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
   const handleRefresh = () => {
     setRefreshing(true);
-    loadData();
+    // Context will automatically refresh data
+    setTimeout(() => setRefreshing(false), 1000);
   };
 
   const handleOpenModal = (
     prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
   ) => {
     console.log('handleOpenModal called for:', prayerName);
-    console.log('dailyRecord:', !!dailyRecord, 'prayerTimes:', !!prayerTimes);
+    console.log('dailyRecord:', !!state.dailyRecord, 'prayerTimes:', !!state.prayerTimes);
 
-    if (!dailyRecord || !prayerTimes) {
+    if (!state.dailyRecord || !state.prayerTimes) {
       console.log('Returning early - missing data');
       return;
     }
 
     const prayer = {
       name: prayerName,
-      time: formatTime(prayerTimes[prayerName]),
-      status: dailyRecord.prayers[prayerName].status,
-      notes: dailyRecord.prayers[prayerName].notes,
+      time: formatTime(state.prayerTimes[prayerName]),
+      status: state.dailyRecord.prayers[prayerName].status,
+      notes: state.dailyRecord.prayers[prayerName].notes,
     };
 
     console.log('Setting selectedPrayer:', prayer);
@@ -114,21 +78,29 @@ export default function TrackingScreen() {
     if (!selectedPrayer) return;
 
     try {
-      const updatedRecord = await TrackingService.updatePrayerStatus(
+      await updatePrayerStatus(
         selectedPrayer.name,
         status,
         new Date(),
-        notes,
       );
-      setDailyRecord(updatedRecord);
+      
+      // Update notes separately if provided
+      if (notes) {
+        await TrackingService.updatePrayerStatus(
+          selectedPrayer.name,
+          status,
+          new Date(),
+          notes,
+        );
+      }
     } catch (error) {
       console.error('Error updating prayer status:', error);
     }
   };
 
   const getSunnahPrayer = (type: CustomPrayerType): CustomPrayerRecord | undefined => {
-    if (!dailyRecord?.customPrayers) return undefined;
-    return dailyRecord.customPrayers.find(p => p.type === type);
+    if (!state.dailyRecord?.customPrayers) return undefined;
+    return state.dailyRecord.customPrayers.find((p: any) => p.type === type);
   };
 
   const isSunnahCompleted = (type: CustomPrayerType): boolean => {
@@ -154,27 +126,26 @@ export default function TrackingScreen() {
         completedAt: !isSunnahCompleted(type) ? now : undefined,
       };
 
-      const updatedRecord = await TrackingService.updateCustomPrayer(
+      await TrackingService.updateCustomPrayer(
         sunnahRecord,
         new Date(),
       );
-      setDailyRecord(updatedRecord);
     } catch (error) {
       console.error('Error toggling sunnah prayer:', error);
     }
   };
 
   const formatTime = (date: Date): string => {
-    if (!settings) return '';
+    if (!state.settings) return '';
     return PrayerService.formatPrayerTimeSync(
       date,
-      settings.timeFormat === '24h',
+      state.settings.timeFormat === '24h',
     );
   };
 
   // Memoize stats calculation
   const todayStats = useMemo(() => {
-    if (!dailyRecord) {
+    if (!state.dailyRecord) {
       return {
         completed: 0,
         missed: 0,
@@ -182,25 +153,25 @@ export default function TrackingScreen() {
       };
     }
 
-    const prayers = Object.values(dailyRecord.prayers);
+    const prayers = Object.values(state.dailyRecord.prayers);
     const completed = prayers.filter(
-      p =>
+      (p: any) =>
         p.status === PrayerStatus.COMPLETED ||
         p.status === PrayerStatus.DELAYED,
     ).length;
-    const missed = prayers.filter(p => p.status === PrayerStatus.MISSED).length;
+    const missed = prayers.filter((p: any) => p.status === PrayerStatus.MISSED).length;
     const pending = prayers.filter(
-      p => p.status === PrayerStatus.PENDING,
+      (p: any) => p.status === PrayerStatus.PENDING,
     ).length;
 
     return { completed, missed, pending };
-  }, [dailyRecord]);
+  }, [state.dailyRecord]);
 
   const completionRate = useMemo(() => {
-    return dailyRecord ? Math.round((todayStats.completed / 5) * 100) : 0;
-  }, [dailyRecord, todayStats.completed]);
+    return state.dailyRecord ? Math.round((todayStats.completed / 5) * 100) : 0;
+  }, [state.dailyRecord, todayStats.completed]);
 
-  if (loading && !dailyRecord) {
+  if (state.isLoading && !state.dailyRecord) {
     return (
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
         <View style={styles.content}>
@@ -214,6 +185,7 @@ export default function TrackingScreen() {
 
   return (
     <SafeAreaView
+      testID="tracking-screen"
       edges={['top', 'left', 'right']}
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
@@ -285,12 +257,12 @@ export default function TrackingScreen() {
             </Text>
             <Divider style={styles.divider} />
 
-            {dailyRecord && prayerTimes && (
+            {state.dailyRecord && state.prayerTimes && (
               <View style={styles.checklistContainer}>
                 <PrayerCheckbox
                   prayerName="Fajr"
-                  prayerTime={formatTime(prayerTimes.fajr)}
-                  status={dailyRecord.prayers.fajr.status}
+                  prayerTime={formatTime(state.prayerTimes.fajr)}
+                  status={state.dailyRecord.prayers.fajr.status}
                   onPress={() => handleOpenModal('fajr')}
                 />
                 <SunnahCheckbox
@@ -308,15 +280,15 @@ export default function TrackingScreen() {
 
                 <PrayerCheckbox
                   prayerName="Dhuhr"
-                  prayerTime={formatTime(prayerTimes.dhuhr)}
-                  status={dailyRecord.prayers.dhuhr.status}
+                  prayerTime={formatTime(state.prayerTimes.dhuhr)}
+                  status={state.dailyRecord.prayers.dhuhr.status}
                   onPress={() => handleOpenModal('dhuhr')}
                 />
                 <SunnahCheckbox
                   label="2 Sunnah before"
                   completed={
-                    !!dailyRecord.customPrayers?.find(
-                      p => p.type === CustomPrayerType.SUNNAH_DHUHR && p.name.includes('before'),
+                    !!state.dailyRecord.customPrayers?.find(
+                      (p: any) => p.type === CustomPrayerType.SUNNAH_DHUHR && p.name.includes('before'),
                     )?.completed
                   }
                   onToggle={() =>
@@ -330,8 +302,8 @@ export default function TrackingScreen() {
                 <SunnahCheckbox
                   label="2 Sunnah after"
                   completed={
-                    !!dailyRecord.customPrayers?.find(
-                      p => p.type === CustomPrayerType.SUNNAH_DHUHR && p.name.includes('after'),
+                    !!state.dailyRecord.customPrayers?.find(
+                      (p: any) => p.type === CustomPrayerType.SUNNAH_DHUHR && p.name.includes('after'),
                     )?.completed
                   }
                   onToggle={() =>
@@ -346,8 +318,8 @@ export default function TrackingScreen() {
 
                 <PrayerCheckbox
                   prayerName="Asr"
-                  prayerTime={formatTime(prayerTimes.asr)}
-                  status={dailyRecord.prayers.asr.status}
+                  prayerTime={formatTime(state.prayerTimes.asr)}
+                  status={state.dailyRecord.prayers.asr.status}
                   onPress={() => handleOpenModal('asr')}
                 />
                 <SunnahCheckbox
@@ -365,8 +337,8 @@ export default function TrackingScreen() {
 
                 <PrayerCheckbox
                   prayerName="Maghrib"
-                  prayerTime={formatTime(prayerTimes.maghrib)}
-                  status={dailyRecord.prayers.maghrib.status}
+                  prayerTime={formatTime(state.prayerTimes.maghrib)}
+                  status={state.dailyRecord.prayers.maghrib.status}
                   onPress={() => handleOpenModal('maghrib')}
                 />
                 <SunnahCheckbox
@@ -384,8 +356,8 @@ export default function TrackingScreen() {
 
                 <PrayerCheckbox
                   prayerName="Isha"
-                  prayerTime={formatTime(prayerTimes.isha)}
-                  status={dailyRecord.prayers.isha.status}
+                  prayerTime={formatTime(state.prayerTimes.isha)}
+                  status={state.dailyRecord.prayers.isha.status}
                   onPress={() => handleOpenModal('isha')}
                 />
                 <SunnahCheckbox

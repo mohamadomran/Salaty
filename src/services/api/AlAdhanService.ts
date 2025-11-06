@@ -20,6 +20,8 @@ import {
 class AlAdhanServiceClass {
   private static instance: AlAdhanServiceClass;
   private readonly BASE_URL = 'https://api.aladhan.com/v1';
+  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
 
   private constructor() {}
 
@@ -104,6 +106,25 @@ class AlAdhanServiceClass {
     const year = date.getFullYear();
     const dateStr = `${day}-${month}-${year}`;
 
+    // Build cache key and check cache first
+    const cacheParams = {
+      latitude: params.latitude,
+      longitude: params.longitude,
+      method: params.method,
+      school: params.school,
+      latitudeAdjustmentMethod: params.latitudeAdjustmentMethod,
+      tune: params.tune,
+      date: dateStr,
+    };
+    
+    const cacheKey = this.generateCacheKey('timings', cacheParams);
+    const cachedData = this.getCachedData(cacheKey);
+    
+    if (cachedData) {
+      console.log('📦 Using cached prayer times for', dateStr);
+      return cachedData;
+    }
+
     // Build URL string manually to avoid trailing slash
     const queryParams = new URLSearchParams({
       latitude: String(params.latitude),
@@ -132,6 +153,7 @@ class AlAdhanServiceClass {
     const urlStr = `${this.BASE_URL}/timings/${dateStr}?${queryParams.toString()}`;
 
     try {
+      console.log('🌐 Fetching prayer times from API for', dateStr);
       const response = await fetch(urlStr);
 
       if (!response.ok) {
@@ -144,7 +166,12 @@ class AlAdhanServiceClass {
         throw new Error(`AlAdhan API returned code ${data.code}`);
       }
 
-      return this.convertToPrayerTimes(data, date);
+      const result = this.convertToPrayerTimes(data, date);
+      
+      // Cache the result for 5 minutes
+      this.setCachedData(cacheKey, result);
+      
+      return result;
     } catch (error) {
       console.error('AlAdhan API error:', error);
       throw error;
@@ -254,6 +281,45 @@ class AlAdhanServiceClass {
       params: methodData.params || {},
       location: methodData.location,
     }));
+  }
+
+  // ========== Cache Helper Methods ==========
+
+  /**
+   * Get cached data or return null if expired/not found
+   */
+  private getCachedData(key: string): any | null {
+    const cached = this.cache.get(key);
+    if (!cached) return null;
+
+    if (Date.now() - cached.timestamp > cached.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+
+    return cached.data;
+  }
+
+  /**
+   * Set data in cache with TTL
+   */
+  private setCachedData(key: string, data: any, ttl: number = this.DEFAULT_TTL): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl,
+    });
+  }
+
+  /**
+   * Generate cache key for requests
+   */
+  private generateCacheKey(endpoint: string, params: Record<string, any>): string {
+    const sortedParams = Object.keys(params)
+      .sort()
+      .map(key => `${key}=${params[key]}`)
+      .join('&');
+    return `${endpoint}?${sortedParams}`;
   }
 
   // ========== Private Helper Methods ==========

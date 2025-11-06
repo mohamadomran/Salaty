@@ -24,6 +24,7 @@ export function SunnahCheckbox({
 
   return (
     <TouchableOpacity
+      testID={`sunnah-checkbox-${label.toLowerCase().replace(/\s+/g, '-')}`}
       style={[styles.container, disabled && styles.disabled]}
       onPress={onToggle}
       disabled={disabled}
