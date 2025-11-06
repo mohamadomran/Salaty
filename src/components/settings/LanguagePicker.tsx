@@ -6,6 +6,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { List, Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 
 export type Language = 'en' | 'ar';
 
@@ -16,7 +17,7 @@ interface LanguageOption {
 }
 
 const LANGUAGES: LanguageOption[] = [
-  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'en', name: 'English', nativeName: 'English (الإنجليزية)' },
   { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
 ];
 
@@ -29,6 +30,7 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({
   selectedLanguage,
   onLanguageChange,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
 
   return (
@@ -37,13 +39,15 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({
         variant="labelLarge"
         style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
       >
-        App Language
+        {t('settings.language')}
       </Text>
       <Text
         variant="bodySmall"
         style={[styles.description, { color: theme.colors.outline }]}
       >
-        Select the language for the app interface
+        {selectedLanguage === 'ar'
+          ? 'اختر لغة واجهة التطبيق'
+          : 'Select the language for the app interface'}
       </Text>
 
       {LANGUAGES.map(language => (

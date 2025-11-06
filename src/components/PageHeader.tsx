@@ -1,11 +1,13 @@
 /**
  * PageHeader Component
  * Reusable header for all pages with consistent styling
+ * Supports RTL layout for Arabic language
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, I18nManager } from 'react-native';
 import { Text, Icon, useTheme, IconButton } from 'react-native-paper';
+import { useLanguage } from '../contexts';
 
 interface PageHeaderProps {
   title: string;
@@ -31,13 +33,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   style,
 }) => {
   const theme = useTheme();
+  const { isRTL } = useLanguage();
 
   return (
     <View style={[styles.container, style]}>
-      <View style={styles.leftSection}>
+      <View style={[styles.leftSection, isRTL && styles.rtlLeftSection]}>
         {showBackButton && (
           <IconButton
-            icon="arrow-left"
+            icon={isRTL ? "arrow-right" : "arrow-left"}
             size={24}
             iconColor={theme.colors.onPrimary}
             onPress={onBackPress}
@@ -51,14 +54,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         <View style={styles.titleSection}>
           <Text
             variant="displaySmall"
-            style={[styles.title, { color: '#FFFFFF' }]}
+            style={[styles.title, { color: '#FFFFFF', textAlign: isRTL ? 'right' : 'left' }]}
           >
             {title}
           </Text>
           {subtitle && (
             <Text
               variant="bodyMedium"
-              style={[styles.subtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}
+              style={[styles.subtitle, { color: 'rgba(255, 255, 255, 0.8)', textAlign: isRTL ? 'right' : 'left' }]}
             >
               {subtitle}
             </Text>
@@ -96,6 +99,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
+  rtlLeftSection: {
+    flexDirection: 'row-reverse',
+  },
   titleSection: {
     flex: 1,
     marginLeft: 8,
@@ -115,10 +121,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
-    textAlign: 'left',
   },
   subtitle: {
     marginTop: 4,
-    textAlign: 'left',
   },
 });

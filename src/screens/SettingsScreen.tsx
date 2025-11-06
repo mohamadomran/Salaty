@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import {
   Text,
   List,
@@ -25,7 +26,7 @@ import {
   TimeFormat,
   ThemeMode,
 } from '../types';
-import { useThemeContext, useAppContext } from '../contexts';
+import { useThemeContext, useAppContext, useLanguage } from '../contexts';
 import { useSettingsReactiveUpdates } from '../hooks/useReactiveUpdates';
 import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import {
@@ -42,8 +43,10 @@ import { LocationPreferenceService } from '../services/location';
 import type { LocationPreference } from '../services/location';
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const { setThemeMode, theme } = useThemeContext();
   const { state, updateSettings, subscribe } = useAppContext();
+  const { language, setLanguage: setAppLanguage } = useLanguage();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -185,13 +188,30 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleLanguageChange = async (language: Language) => {
+  const handleLanguageChange = async (newLanguage: Language) => {
     if (!settings) return;
 
     try {
-      await SettingsService.setLanguage(language);
-      setSettings({ ...settings, language });
-      showToast('Language updated');
+      // Update language in context (handles i18n and RTL)
+      await setAppLanguage(newLanguage);
+
+      // Save to settings
+      await SettingsService.setLanguage(newLanguage);
+      setSettings({ ...settings, language: newLanguage });
+
+      // Show success message
+      showToast(newLanguage === 'ar' ? 'تم تحديث اللغة' : 'Language updated');
+
+      // If RTL changed, show restart message
+      if ((newLanguage === 'ar') !== (language === 'ar')) {
+        Alert.alert(
+          newLanguage === 'ar' ? 'إعادة التشغيل مطلوبة' : 'Restart Required',
+          newLanguage === 'ar'
+            ? 'يرجى إعادة تشغيل التطبيق لتطبيق تغييرات RTL'
+            : 'Please restart the app to apply RTL changes',
+          [{ text: newLanguage === 'ar' ? 'موافق' : 'OK' }]
+        );
+      }
     } catch (error) {
       console.error('Failed to update language:', error);
       Alert.alert('Error', 'Failed to update language');
@@ -280,7 +300,7 @@ export default function SettingsScreen() {
         edges={['top', 'left', 'right']}
       >
         <View style={styles.content}>
-          <PageHeader title="Settings" />
+          <PageHeader title={t('settings.title')} />
           <SkeletonCard variant="settings" />
           <SkeletonCard variant="settings" />
           <SkeletonCard variant="settings" />
@@ -297,12 +317,12 @@ export default function SettingsScreen() {
     >
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          <PageHeader title="Settings" />
+          <PageHeader title={t('settings.title')} />
 
           {/* Prayer Settings Section */}
           <CollapsibleSettingsSection
             testID="prayer-settings-section"
-            title="Prayer Settings"
+            title={t('settings.prayerSettings')}
             icon="mosque"
             defaultExpanded={false}
           >
@@ -311,19 +331,19 @@ export default function SettingsScreen() {
               variant="labelLarge"
               style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
             >
-              Calculation Method
+              {t('settings.calculationMethod')}
             </Text>
             <Text
               variant="bodySmall"
               style={[styles.description, { color: theme.colors.outline }]}
             >
-              Select the method used to calculate prayer times
+              {t('settings.calculationMethodDesc')}
             </Text>
 
             <SettingsSearchBar
               value={searchQuery}
               onChangeText={setSearchQuery}
-              placeholder="Search calculation methods..."
+              placeholder={t('settings.searchMethods')}
             />
 
             {/* Methods Loading State */}
@@ -389,13 +409,13 @@ export default function SettingsScreen() {
               variant="labelLarge"
               style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
             >
-              Madhab (Asr Calculation)
+              {t('settings.madhab')}
             </Text>
             <Text
               variant="bodySmall"
               style={[styles.description, { color: theme.colors.outline }]}
             >
-              Choose the juristic method for Asr prayer time
+              {t('settings.madhabDesc')}
             </Text>
 
             <SegmentedButtons
@@ -404,11 +424,11 @@ export default function SettingsScreen() {
               buttons={[
                 {
                   value: 'shafi',
-                  label: 'Shafi/Maliki/Hanbali',
+                  label: t('settings.shafiMalikiHanbali'),
                 },
                 {
                   value: 'hanafi',
-                  label: 'Hanafi',
+                  label: t('settings.hanafi'),
                 },
               ]}
               style={styles.segmentedButtons}
@@ -417,7 +437,7 @@ export default function SettingsScreen() {
 
           {/* Display & Appearance Section */}
           <CollapsibleSettingsSection
-            title="Display & Appearance"
+            title={t('settings.displayAppearance')}
             icon="palette"
             defaultExpanded={false}
           >
@@ -425,7 +445,7 @@ export default function SettingsScreen() {
               variant="labelLarge"
               style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
             >
-              Theme
+              {t('settings.theme')}
             </Text>
 
             <SegmentedButtons
@@ -434,17 +454,17 @@ export default function SettingsScreen() {
               buttons={[
                 {
                   value: 'light',
-                  label: 'Light',
+                  label: t('settings.light'),
                   icon: 'white-balance-sunny',
                 },
                 {
                   value: 'dark',
-                  label: 'Dark',
+                  label: t('settings.dark'),
                   icon: 'moon-waning-crescent',
                 },
                 {
                   value: 'auto',
-                  label: 'Auto',
+                  label: t('settings.auto'),
                   icon: 'theme-light-dark',
                 },
               ]}
@@ -455,7 +475,7 @@ export default function SettingsScreen() {
               variant="bodySmall"
               style={[styles.description, { color: theme.colors.outline }]}
             >
-              Auto mode follows your device's system theme preference
+              {t('settings.autoModeDesc')}
             </Text>
 
             <Divider style={styles.divider} />
@@ -471,7 +491,7 @@ export default function SettingsScreen() {
               variant="labelLarge"
               style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
             >
-              Time Format
+              {t('settings.timeFormat')}
             </Text>
 
             <SegmentedButtons
@@ -480,11 +500,11 @@ export default function SettingsScreen() {
               buttons={[
                 {
                   value: '12h',
-                  label: '12 Hour',
+                  label: t('settings.12hour'),
                 },
                 {
                   value: '24h',
-                  label: '24 Hour',
+                  label: t('settings.24hour'),
                 },
               ]}
               style={styles.segmentedButtons}

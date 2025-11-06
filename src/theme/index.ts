@@ -91,7 +91,13 @@ export {
   expressiveColors,
   darkExpressiveColors,
 } from './colors';
-export { typography } from './typography';
+export {
+  typography,
+  islamicTypography,
+  fontFamilies,
+  getFontFamily,
+  getTypographyForLanguage,
+} from './typography';
 export { shapes, componentShapes, shapeAnimations } from './shapes';
 
 // Hook for using theme in components

@@ -1,9 +1,11 @@
 /**
  * Material Design 3 Expressive Typography
  * Enhanced font weights for emphasis and expressiveness
+ * Includes Arabic font support for RTL languages
  */
 
 import type { MD3TypescaleKey } from 'react-native-paper/lib/typescript/types';
+import { Platform, I18nManager } from 'react-native';
 
 export interface TypographyConfig {
   [key: string]: {
@@ -14,6 +16,35 @@ export interface TypographyConfig {
     letterSpacing?: number;
   };
 }
+
+// Font families for different scripts
+export const fontFamilies = {
+  // Default system fonts
+  default: Platform.select({
+    ios: 'System',
+    android: 'sans-serif',
+    default: 'System',
+  }),
+
+  // Arabic fonts (using system Arabic fonts for best compatibility)
+  arabic: Platform.select({
+    ios: 'Damascus', // iOS system Arabic font
+    android: 'sans-serif', // Android handles Arabic automatically with sans-serif
+    default: 'sans-serif',
+  }),
+
+  // Monospace for times (works with both English and Arabic numerals)
+  monospace: Platform.select({
+    ios: 'Courier New',
+    android: 'monospace',
+    default: 'monospace',
+  }),
+};
+
+// Helper to get font family based on current language/RTL state
+export const getFontFamily = (isArabic: boolean = I18nManager.isRTL): string => {
+  return isArabic ? fontFamilies.arabic! : fontFamilies.default!;
+};
 
 // M3 Expressive uses bolder weights for emphasis
 export const typography: TypographyConfig = {
@@ -119,37 +150,60 @@ export const islamicTypography = {
   arabicLarge: {
     fontSize: 32,
     lineHeight: 48,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     letterSpacing: 0,
+    fontFamily: fontFamilies.arabic,
   },
   arabicMedium: {
     fontSize: 24,
     lineHeight: 36,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     letterSpacing: 0,
+    fontFamily: fontFamilies.arabic,
   },
   arabicSmall: {
     fontSize: 18,
     lineHeight: 28,
-    fontWeight: '500',
+    fontWeight: '500' as const,
     letterSpacing: 0,
+    fontFamily: fontFamilies.arabic,
   },
 
   // For prayer times (large, clear numbers)
   prayerTime: {
     fontSize: 28,
     lineHeight: 36,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     letterSpacing: -0.5,
-    fontFamily: 'monospace', // Better for time display
+    fontFamily: fontFamilies.monospace,
   },
 
   // For countdown timers
   countdown: {
     fontSize: 48,
     lineHeight: 56,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     letterSpacing: -1,
-    fontFamily: 'monospace',
+    fontFamily: fontFamilies.monospace,
   },
+};
+
+// Export helper for RTL-aware typography
+export const getTypographyForLanguage = (isArabic: boolean = I18nManager.isRTL) => {
+  if (isArabic) {
+    // For Arabic, use larger line heights and disable letter spacing
+    return Object.keys(typography).reduce((acc, key) => {
+      const style = typography[key];
+      return {
+        ...acc,
+        [key]: {
+          ...style,
+          fontFamily: fontFamilies.arabic,
+          lineHeight: style.lineHeight * 1.2, // Increase line height for Arabic
+          letterSpacing: 0, // Arabic doesn't use letter spacing
+        },
+      };
+    }, {} as TypographyConfig);
+  }
+  return typography;
 };

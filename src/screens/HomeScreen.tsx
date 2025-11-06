@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Alert, TouchableOpacity, Dimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {
   Text,
   Button,
@@ -28,8 +29,9 @@ import {
   SectionHeader,
   cardStyles,
 } from '../components';
-import { useAppContext } from '../contexts';
+import { useAppContext, useLanguage } from '../contexts';
 import { usePrayerReactiveUpdates } from '../hooks/useReactiveUpdates';
+import { getPrayerName } from '../constants';
 import type { PrayerName, HijriDate } from '../types';
 import { PrayerStatus } from '../types';
 import type { ExpressiveTheme } from '../theme';
@@ -52,6 +54,8 @@ const PRAYER_NAMES_WITH_ICONS: Record<
 };
 
 export default function HomeScreen() {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const theme = useTheme<ExpressiveTheme>();
   const navigation = useNavigation();
   const { methods: calculationMethods } = useCalculationMethods();
@@ -250,7 +254,7 @@ export default function HomeScreen() {
 
       {/* Prayer Times Grid */}
       <SectionHeader
-        title="Today's Prayers"
+        title={t('home.prayerTimes')}
         subtitle={calculationMethods?.find(m => m.id === state.settings?.calculationMethod)?.name ||
           state.settings?.calculationMethod}
         showDivider={false}

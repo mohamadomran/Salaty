@@ -12,12 +12,13 @@ import RNBootSplash from 'react-native-bootsplash';
 
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { ThemeProvider, AppProvider, useThemeContext } from './src/contexts';
+import { ThemeProvider, AppProvider, LanguageProvider, useThemeContext } from './src/contexts';
 import { TabNavigator } from './src/navigation';
 import { ErrorBoundary } from './src/components';
 import { OnboardingScreen } from './src/screens';
 import { SettingsService } from './src/services';
 import { queryClient, asyncStoragePersister } from './src/lib/queryClient';
+import './src/localization'; // Initialize i18n
 
 // Configure icon library for react-native-paper
 const settings = {
@@ -90,13 +91,15 @@ function App(): React.JSX.Element {
         client={queryClient}
         persistOptions={{ persister: asyncStoragePersister }}
       >
-        <AppProvider>
-          <ThemeProvider>
-            <ErrorBoundary>
-              <AppContent />
-            </ErrorBoundary>
-          </ThemeProvider>
-        </AppProvider>
+        <LanguageProvider>
+          <AppProvider>
+            <ThemeProvider>
+              <ErrorBoundary>
+                <AppContent />
+              </ErrorBoundary>
+            </ThemeProvider>
+          </AppProvider>
+        </LanguageProvider>
       </PersistQueryClientProvider>
     </SafeAreaProvider>
   );

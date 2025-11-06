@@ -6,19 +6,22 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, Card } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { ScreenContainer, PageHeader } from '../components';
 
 export default function QiblaScreen() {
+  const { t } = useTranslation();
+
   return (
     <ScreenContainer testID="qibla-screen">
-      <PageHeader 
-        title="Qibla Direction"
+      <PageHeader
+        title={t('qibla.title')}
         icon="compass"
       />
       <Card style={styles.card}>
         <Card.Content>
           <Text variant="bodyLarge">
-            Coming Soon: Live compass pointing to Kaaba with distance display and calibration.
+            {t('qibla.subtitle')}
           </Text>
         </Card.Content>
       </Card>

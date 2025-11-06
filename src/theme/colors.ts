@@ -5,11 +5,11 @@
  */
 
 export const lightColors = {
-  // Primary - Deep Islamic Teal
-  primary: '#006A6A',
+  // Primary - Deep Islamic Teal (Matches Logo Background)
+  primary: '#194042',
   onPrimary: '#FFFFFF',
-  primaryContainer: '#B2E8E8',
-  onPrimaryContainer: '#001F1F',
+  primaryContainer: '#6B9FA1',
+  onPrimaryContainer: '#001415',
 
   // Secondary - Rich Islamic Gold
   secondary: '#B8860B',
@@ -57,9 +57,9 @@ export const lightColors = {
 export const darkColors = {
   // Primary - Light Teal for dark mode
   primary: '#4CDADA',
-  onPrimary: '#003737',
-  primaryContainer: '#004F4F',
-  onPrimaryContainer: '#B2E8E8',
+  onPrimary: '#001415',
+  primaryContainer: '#194042',
+  onPrimaryContainer: '#6B9FA1',
 
   // Secondary - Warm Gold
   secondary: '#FFD700',
@@ -115,7 +115,7 @@ export const expressiveColors = {
 
   // Qibla compass
   qiblaDirection: '#FFD700', // Gold for Qibla
-  compassBackground: 'rgba(0, 106, 106, 0.1)',
+  compassBackground: 'rgba(25, 64, 66, 0.1)',
   compassRose: '#4CDADA', // Teal for compass directions
 
   // Navigation
@@ -125,11 +125,11 @@ export const expressiveColors = {
   navigationBackgroundDark: '#1A1A1A',
 
   // Islamic design elements
-  geometricPattern: 'rgba(0, 106, 106, 0.05)',
-  goldAccent: '#FFD700', // Pure gold
+  geometricPattern: 'rgba(25, 64, 66, 0.05)',
+  goldAccent: '#FFD700', // Pure gold (matches logo)
   goldShimmer: '#FFED4E', // Bright gold shimmer
-  islamicGreen: '#006A6A', // Traditional Islamic green
-  deepTeal: '#004F4F',
+  islamicGreen: '#194042', // Traditional Islamic green (matches logo)
+  deepTeal: '#0F2829',
 
   // Success states
   success: '#5A9A5A',
@@ -157,7 +157,7 @@ export const expressiveColors = {
   gradients: {
     prayerCard: ['#FFFFFF', '#F8FBFB'],
     goldGradient: ['#FFD700', '#FFED4E'],
-    tealGradient: ['#006A6A', '#4CDADA'],
+    tealGradient: ['#194042', '#4CDADA'],
     sunsetGradient: ['#FF6B6B', '#FFD700'],
   },
 };
@@ -168,7 +168,7 @@ export const darkExpressiveColors = {
 
   // Dark mode adjustments
   geometricPattern: 'rgba(76, 218, 218, 0.08)',
-  compassBackground: 'rgba(0, 106, 106, 0.15)',
+  compassBackground: 'rgba(25, 64, 66, 0.15)',
   prayerCompleted: '#A5D4BF', // Lighter sage for dark mode
   success: '#A5D4BF',
   successContainer: '#1C3A32',
@@ -177,7 +177,7 @@ export const darkExpressiveColors = {
   gradients: {
     prayerCard: ['#1A1A1A', '#242424'],
     goldGradient: ['#FFD700', '#B8860B'],
-    tealGradient: ['#4CDADA', '#006A6A'],
+    tealGradient: ['#4CDADA', '#194042'],
     sunsetGradient: ['#FF6B6B', '#B8860B'],
   },
 };

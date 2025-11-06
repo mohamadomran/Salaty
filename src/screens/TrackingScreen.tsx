@@ -6,6 +6,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, StyleSheet, SectionList, RefreshControl } from 'react-native';
 import { Text, Card, Divider, FAB, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import {
   PrayerCheckbox,
   StatsCard,
@@ -16,7 +17,7 @@ import {
 import { ScreenContainer, PageHeader, cardStyles } from '../components';
 import { TrackingService } from '../services/tracking';
 import { PrayerService } from '../services/prayer';
-import { useAppContext } from '../contexts';
+import { useAppContext, useLanguage } from '../contexts';
 import { usePrayerReactiveUpdates } from '../hooks/useReactiveUpdates';
 import {
   PrayerStatus,
@@ -28,6 +29,8 @@ import type { ExpressiveTheme } from '../theme';
 import { getPrayerTimeStatus, PrayerTimeStatus } from '../utils/prayerTimeLogic';
 
 export default function TrackingScreen() {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const theme = useTheme<ExpressiveTheme>();
   const { state, updatePrayerStatus, subscribe } = useAppContext();
   const [refreshing, setRefreshing] = useState(false);
@@ -200,13 +203,13 @@ export default function TrackingScreen() {
 
     const sections = [];
     if (currentPrayer.length > 0) {
-      sections.push({ title: 'Current Prayer', data: currentPrayer, type: 'current' });
+      sections.push({ title: t('prayers.currentPrayer'), data: currentPrayer, type: 'current' });
     }
     if (upcomingPrayers.length > 0) {
-      sections.push({ title: 'Upcoming Prayers', data: upcomingPrayers, type: 'upcoming' });
+      sections.push({ title: t('prayers.upcomingPrayers'), data: upcomingPrayers, type: 'upcoming' });
     }
     if (completedPrayers.length > 0) {
-      sections.push({ title: 'Completed Prayers', data: completedPrayers, type: 'completed' });
+      sections.push({ title: t('prayers.completedPrayers'), data: completedPrayers, type: 'completed' });
     }
 
     return sections;
@@ -353,8 +356,8 @@ export default function TrackingScreen() {
     >
       {/* Header */}
       <PageHeader
-        title="Today's Prayers"
-        subtitle={new Date().toLocaleDateString('en-US', {
+        title={t('tracking.title')}
+        subtitle={new Date().toLocaleDateString(language === 'ar' ? 'ar-SA' : 'en-US', {
           weekday: 'long',
           year: 'numeric',
           month: 'long',
@@ -364,20 +367,20 @@ export default function TrackingScreen() {
 
       {/* Stats Card */}
       <StatsCard
-        title="Today's Progress"
+        title={t('tracking.todaysProgress')}
         stats={[
           {
-            label: 'Completed',
+            label: t('status.completed'),
             value: todayStats.completed,
             color: theme.expressiveColors.prayerCompleted,
           },
           {
-            label: 'Rate',
+            label: t('tracking.completionRate'),
             value: `${completionRate}%`,
             color: theme.colors.primary,
           },
           {
-            label: 'Missed',
+            label: t('status.missed'),
             value: todayStats.missed,
             color: theme.expressiveColors.prayerMissed,
           },

@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import {
   Text,
   Card,
@@ -14,8 +15,9 @@ import {
   Divider,
 } from 'react-native-paper';
 import { StatisticsService } from '../services/statistics';
-import { useAppContext } from '../contexts';
+import { useAppContext, useLanguage } from '../contexts';
 import { useReactiveUpdates } from '../hooks/useReactiveUpdates';
+import { getPrayerName } from '../constants';
 import { PrayerStatus, PrayerName } from '../types';
 import type { ExpressiveTheme } from '../theme';
 import { StatsCard } from '../components/tracking';
@@ -40,6 +42,8 @@ interface StreakData {
 }
 
 export default function StatisticsScreen() {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const theme = useTheme<ExpressiveTheme>();
   const { state } = useAppContext();
   const [timeRange, setTimeRange] = useState<TimeRange>('month');
@@ -163,24 +167,24 @@ export default function StatisticsScreen() {
     <>
       {/* Summary Cards */}
       <StatsCard
-        title="Overall Performance"
+        title={t('statistics.overallPerformance')}
         stats={[
-          { label: 'Total Prayers', value: analytics.reduce((sum, a) => sum + a.total, 0) },
-          { label: 'Completed', value: analytics.reduce((sum, a) => sum + a.completed, 0), color: theme.expressiveColors.prayerCompleted },
-          { label: 'Missed', value: analytics.reduce((sum, a) => sum + a.missed, 0), color: theme.expressiveColors.prayerMissed },
-          { label: 'Delayed', value: analytics.reduce((sum, a) => sum + a.delayed, 0), color: theme.expressiveColors.prayerUpcoming },
+          { label: t('statistics.totalPrayers'), value: analytics.reduce((sum, a) => sum + a.total, 0) },
+          { label: t('status.completed'), value: analytics.reduce((sum, a) => sum + a.completed, 0), color: theme.expressiveColors.prayerCompleted },
+          { label: t('status.missed'), value: analytics.reduce((sum, a) => sum + a.missed, 0), color: theme.expressiveColors.prayerMissed },
+          { label: t('status.delayed'), value: analytics.reduce((sum, a) => sum + a.delayed, 0), color: theme.expressiveColors.prayerUpcoming },
         ]}
       />
 
       {/* Prayer Streaks */}
       {streaks && (
         <StatsCard
-          title="Prayer Streaks"
+          title={t('statistics.prayerStreaks')}
           stats={[
-            { label: 'Current Streak', value: `${streaks.current} days`, color: theme.colors.primary },
-            { label: 'Longest Streak', value: `${streaks.longest} days` },
-            { label: 'This Month', value: `${streaks.thisMonth} days` },
-            { label: 'Last Month', value: `${streaks.lastMonth} days` },
+            { label: t('statistics.currentStreak'), value: `${streaks.current} ${t('statistics.days')}`, color: theme.colors.primary },
+            { label: t('statistics.longestStreak'), value: `${streaks.longest} ${t('statistics.days')}` },
+            { label: t('statistics.thisMonth'), value: `${streaks.thisMonth} ${t('statistics.days')}` },
+            { label: t('statistics.lastMonth'), value: `${streaks.lastMonth} ${t('statistics.days')}` },
           ]}
         />
       )}
@@ -208,19 +212,19 @@ export default function StatisticsScreen() {
                 <Text variant="titleMedium" style={{ color: getStatusColor(PrayerStatus.COMPLETED) }}>
                   {prayer.completed}
                 </Text>
-                <Text variant="bodySmall">Completed</Text>
+                <Text variant="bodySmall">{t('status.completed')}</Text>
               </View>
               <View style={styles.statBox}>
                 <Text variant="titleMedium" style={{ color: getStatusColor(PrayerStatus.MISSED) }}>
                   {prayer.missed}
                 </Text>
-                <Text variant="bodySmall">Missed</Text>
+                <Text variant="bodySmall">{t('status.missed')}</Text>
               </View>
               <View style={styles.statBox}>
                 <Text variant="titleMedium" style={{ color: getStatusColor(PrayerStatus.DELAYED) }}>
                   {prayer.delayed}
                 </Text>
-                <Text variant="bodySmall">Delayed</Text>
+                <Text variant="bodySmall">{t('status.delayed')}</Text>
               </View>
               <View style={styles.statBox}>
                 <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
@@ -254,8 +258,8 @@ export default function StatisticsScreen() {
       >
         {/* Header */}
         <PageHeader
-          title="Prayer Analytics"
-          subtitle="Track your prayer performance over time"
+          title={t('statistics.title')}
+          subtitle={t('statistics.subtitle')}
         />
 
         {/* Time Range Selector */}

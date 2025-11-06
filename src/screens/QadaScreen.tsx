@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import {
   Text,
   Card,
@@ -20,13 +21,16 @@ import {
   FAB,
 } from 'react-native-paper';
 import { TrackingService } from '../services/tracking';
-import { useAppContext } from '../contexts';
+import { useAppContext, useLanguage } from '../contexts';
 import { useReactiveUpdates } from '../hooks/useReactiveUpdates';
+import { getPrayerName } from '../constants';
 import { QadaDebt, QadaPrayerRecord } from '../types';
 import type { ExpressiveTheme } from '../theme';
 import { PageHeader } from '../components';
 
 export default function QadaScreen() {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const theme = useTheme<ExpressiveTheme>();
   const { emit } = useAppContext();
   const [qadaDebt, setQadaDebt] = useState<QadaDebt | null>(null);
@@ -261,8 +265,8 @@ export default function QadaScreen() {
       >
         {/* Header */}
         <PageHeader
-          title="Qada Prayers"
-          subtitle="Track and complete missed prayers"
+          title={t('qada.title')}
+          subtitle={t('qada.subtitle')}
         />
 
         {/* Summary Card */}
@@ -371,8 +375,8 @@ export default function QadaScreen() {
               return (
                 <List.Item
                   key={prayerName}
-                  title={prayerName.charAt(0).toUpperCase() + prayerName.slice(1)}
-                  description={`${pending.length} pending qada(s)`}
+                  title={getPrayerName(prayerName as any, language)}
+                  description={`${pending.length} ${t('qada.pendingQadas', { count: pending.length })}`}
                   left={(props) => (
                     <List.Icon
                       {...props}
@@ -385,7 +389,7 @@ export default function QadaScreen() {
                       compact
                       onPress={() => handleBulkComplete(prayerName)}
                     >
-                      Complete All
+                      {t('qada.completeAll')}
                     </Button>
                   )}
                 />
