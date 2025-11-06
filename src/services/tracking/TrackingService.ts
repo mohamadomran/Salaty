@@ -87,17 +87,31 @@ class TrackingServiceClass {
     const allRecords = await this.getAllRecords();
     const dailyRecord = await this.getDailyRecord(date);
 
-    // Update the specific prayer
-    dailyRecord.prayers[prayerName] = {
-      prayerName,
-      status,
-      completedAt:
-        status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED
-          ? new Date()
-          : undefined,
-      notes,
-      wasDelayed: status === PrayerStatus.DELAYED,
-    };
+    // Handle QADA status by adding to qada debt
+    if (status === PrayerStatus.QADA) {
+      await this.addToQadaDebt(prayerName, date, notes);
+      
+      // Mark the original prayer as missed for record keeping
+      dailyRecord.prayers[prayerName] = {
+        prayerName,
+        status: PrayerStatus.MISSED,
+        notes,
+        wasDelayed: false,
+      };
+    } else {
+      // Update the specific prayer normally
+      dailyRecord.prayers[prayerName] = {
+        prayerName,
+        status,
+        completedAt:
+          status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED
+            ? new Date()
+            : undefined,
+        notes,
+        wasDelayed: status === PrayerStatus.DELAYED,
+      };
+    }
+    
     dailyRecord.updatedAt = new Date();
 
     // Save updated record

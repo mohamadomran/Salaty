@@ -52,6 +52,8 @@ export function PrayerCheckbox({
         return 'check-circle-outline';
       case PrayerStatus.MISSED:
         return 'close-circle';
+      case PrayerStatus.QADA:
+        return 'plus-circle-outline';
       case PrayerStatus.PENDING:
       default:
         return 'circle-outline';
@@ -66,6 +68,8 @@ export function PrayerCheckbox({
         return theme.expressiveColors.prayerUpcoming;
       case PrayerStatus.MISSED:
         return theme.expressiveColors.prayerMissed;
+      case PrayerStatus.QADA:
+        return theme.colors.secondary;
       case PrayerStatus.PENDING:
       default:
         return theme.colors.outline;
@@ -121,21 +125,36 @@ export function PrayerCheckbox({
         </View>
        </View>
        
-       {/* Status badges */}
-       {status === PrayerStatus.DELAYED && (
-         <Text
-           variant="labelSmall"
-           style={[
-             styles.badge,
-             {
-               backgroundColor:
-                 theme.expressiveColors.prayerUpcoming + '20',
-             },
-           ]}
-         >
-           Delayed
-         </Text>
-       )}
+        {/* Status badges */}
+        {status === PrayerStatus.DELAYED && (
+          <Text
+            variant="labelSmall"
+            style={[
+              styles.badge,
+              {
+                backgroundColor:
+                  theme.expressiveColors.prayerUpcoming + '20',
+              },
+            ]}
+          >
+            Delayed
+          </Text>
+        )}
+        
+        {status === PrayerStatus.QADA && (
+          <Text
+            variant="labelSmall"
+            style={[
+              styles.badge,
+              {
+                backgroundColor: theme.colors.secondaryContainer + '20',
+                color: theme.colors.onSecondaryContainer,
+              },
+            ]}
+          >
+            Qada
+          </Text>
+        )}
        
        {/* Time-based status indicator */}
        {prayerActions && prayerActions.timeStatus === PrayerTimeStatus.FUTURE && (

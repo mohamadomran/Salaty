@@ -12,6 +12,17 @@ const config = {
     alias: {
       '@': './src',
     },
+    
+    // Optimize asset handling
+    assetExts: [
+      // Default asset extensions
+      'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg',
+      'ttf', 'otf', 'woff', 'woff2',
+      // Add any custom asset types
+    ],
+    
+    // Source extensions for better module resolution
+    sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
   },
   
   // Optimizations for better performance
@@ -30,17 +41,6 @@ const config = {
   
   // Improve bundling performance
   maxWorkers: 4,
-  
-  // Optimize asset handling
-  assetExts: [
-    // Default asset extensions
-    'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg',
-    'ttf', 'otf', 'woff', 'woff2',
-    // Add any custom asset types
-  ],
-  
-  // Source extensions for better module resolution
-  sourceExts: ['js', 'jsx', 'ts', 'tsx', 'json'],
   
   // Watch settings for development
   watchFolders: [

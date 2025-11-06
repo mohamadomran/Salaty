@@ -242,9 +242,20 @@ class PrayerService {
   /**
    * Format time for display (synchronous version for when settings are already loaded)
    */
-  formatPrayerTimeSync(time: Date, use24Hour: boolean): string {
-    const hours = time.getHours();
-    const minutes = time.getMinutes();
+  formatPrayerTimeSync(time: Date | undefined, use24Hour: boolean): string {
+    if (!time) return '';
+
+    // Convert to Date if it's a string (defensive programming)
+    const dateObj = time instanceof Date ? time : new Date(time);
+
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) {
+      console.error('Invalid date provided to formatPrayerTimeSync:', time);
+      return '';
+    }
+
+    const hours = dateObj.getHours();
+    const minutes = dateObj.getMinutes();
 
     if (use24Hour) {
       return `${hours.toString().padStart(2, '0')}:${minutes

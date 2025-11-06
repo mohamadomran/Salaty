@@ -195,7 +195,6 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     borderRadius: 16,
-    elevation: 4,
   },
   cardContent: {
     alignItems: 'center',

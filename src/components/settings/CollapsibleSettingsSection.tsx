@@ -46,7 +46,7 @@ testID,
   };
 
   return (
-    <Card testID={testID} style={styles.card} elevation={2}>
+    <Card testID={testID} style={styles.card} elevation={0}>
       <View style={styles.innerContainer}>
         <TouchableOpacity
           onPress={toggleExpansion}

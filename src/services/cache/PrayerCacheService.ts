@@ -50,15 +50,17 @@ class PrayerCacheServiceClass {
       const cached = await StorageService.getItem<string>(this.CACHE_KEY);
       if (cached) {
         const cacheData = JSON.parse(cached) as Record<string, CacheEntry>;
-        
-        // Load valid entries into memory cache
+
+        // Load valid entries into memory cache and deserialize dates
         Object.entries(cacheData).forEach(([key, entry]) => {
           if (this.isValidEntry(entry)) {
+            // Deserialize date strings back to Date objects
+            entry.data.prayerTimes = this.deserializePrayerTimes(entry.data.prayerTimes);
             this.memoryCache.set(key, entry);
           }
         });
       }
-      
+
       this.cacheInitialized = true;
       console.log('📦 Prayer cache initialized with', this.memoryCache.size, 'entries');
     } catch (error) {
@@ -88,6 +90,24 @@ class PrayerCacheServiceClass {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Deserialize prayer times by converting date strings to Date objects
+   */
+  private deserializePrayerTimes(prayerTimes: any): PrayerTimes {
+    return {
+      fajr: new Date(prayerTimes.fajr),
+      dhuhr: new Date(prayerTimes.dhuhr),
+      asr: new Date(prayerTimes.asr),
+      maghrib: new Date(prayerTimes.maghrib),
+      isha: new Date(prayerTimes.isha),
+      sunrise: prayerTimes.sunrise ? new Date(prayerTimes.sunrise) : undefined,
+      sunset: prayerTimes.sunset ? new Date(prayerTimes.sunset) : undefined,
+      date: new Date(prayerTimes.date),
+      hijriDate: prayerTimes.hijriDate,
+      locationName: prayerTimes.locationName,
+    };
   }
 
   /**
@@ -144,7 +164,16 @@ class PrayerCacheServiceClass {
     }
 
     console.log('📦 Using cached prayer times for', this.formatDateKey(date));
-    return entry.data.prayerTimes;
+
+    // Ensure dates are properly deserialized
+    const prayerTimes = entry.data.prayerTimes;
+
+    // Check if dates need to be deserialized (they might be strings if not yet deserialized)
+    if (typeof prayerTimes.fajr === 'string') {
+      return this.deserializePrayerTimes(prayerTimes);
+    }
+
+    return prayerTimes;
   }
 
   /**

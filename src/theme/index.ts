@@ -31,14 +31,14 @@ export const spacing = {
   navigationPadding: 10,
 };
 
-// Elevation scale for consistent shadows and depth
+// Elevation scale for consistent shadows and depth (all set to 0 - no shadows)
 export const elevation = {
   none: 0,
-  low: 2,
-  medium: 4,
-  high: 8,
-  navigation: 12,
-  dialog: 16,
+  low: 0,
+  medium: 0,
+  high: 0,
+  navigation: 0,
+  dialog: 0,
 };
 
 // Extend the MD3Theme type to include our custom properties

@@ -96,13 +96,6 @@ export function PremiumCard({
       style={[
         styles.card,
         getCardStyle(),
-        {
-          shadowColor: theme.colors.primary,
-          shadowOffset: { width: 0, height: elevation * 2 },
-          shadowOpacity: 0.15,
-          shadowRadius: elevation * 3,
-          elevation: elevation * 4,
-        },
         style,
       ]}
     >

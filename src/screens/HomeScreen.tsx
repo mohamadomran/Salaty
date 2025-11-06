@@ -31,6 +31,7 @@ import { usePrayerReactiveUpdates } from '../hooks/useReactiveUpdates';
 import type { PrayerName, HijriDate } from '../types';
 import { PrayerStatus } from '../types';
 import type { ExpressiveTheme } from '../theme';
+import { getPrayerActions } from '../utils/prayerTimeLogic';
 
 const PRAYER_NAMES_WITH_ICONS: Record<
   string,
@@ -70,6 +71,15 @@ export default function HomeScreen() {
     status: PrayerStatus;
   } | null>(null);
 
+  // Handle modal dismissal with proper cleanup timing
+  const handleDismissModal = useCallback(() => {
+    setTrackingModalVisible(false);
+    // Clear selected prayer after animation completes (300ms is typical modal animation duration)
+    setTimeout(() => {
+      setSelectedPrayer(null);
+    }, 300);
+  }, []);
+
   // Fetch Hijri date when location changes
   useEffect(() => {
     const fetchHijriDate = async () => {
@@ -96,8 +106,8 @@ export default function HomeScreen() {
 
   // Format time using user's time format preference
   const formatTime = useCallback(
-    (date: Date): string => {
-      if (!state.settings) return '';
+    (date: Date | undefined): string => {
+      if (!state.settings || !date) return '';
       return PrayerService.formatPrayerTimeSync(
         date,
         state.settings.timeFormat === '24h',
@@ -109,12 +119,36 @@ export default function HomeScreen() {
   // Handle prayer tracking
   const handlePrayerTrack = async (prayerName: PrayerName, time: Date) => {
     try {
+      // Check if prayer times are available
+      if (!state.prayerTimes) {
+        Alert.alert('Error', 'Prayer times not available');
+        return;
+      }
+
+      // Get available actions for this prayer based on its time status
+      const prayerActions = getPrayerActions(
+        prayerName,
+        state.prayerTimes,
+        PrayerStatus.PENDING,
+        new Date()
+      );
+
+      // If no actions available (future prayer), show info message
+      if (prayerActions.availableStatuses.length === 0) {
+        Alert.alert(
+          'Not Yet Available',
+          `You cannot track this prayer yet. ${prayerActions.nextActionText || ''}`,
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+
       // Get today's record
       const record = await TrackingService.getDailyRecord(new Date());
-      
+
       // Get current status
       const currentStatus = record.prayers[prayerName]?.status || 'pending';
-      
+
       setSelectedPrayer({
         name: prayerName,
         time,
@@ -130,7 +164,7 @@ export default function HomeScreen() {
   // Update prayer status using context
   const handleUpdatePrayerStatus = async (status: PrayerStatus) => {
     if (!selectedPrayer) return;
-    
+
     try {
       await updatePrayerStatus(
         selectedPrayer.name,
@@ -146,11 +180,10 @@ export default function HomeScreen() {
           'Marked as missed from HomeScreen'
         );
       }
-      
-      // Close modal
-      setTrackingModalVisible(false);
-      setSelectedPrayer(null);
-      
+
+      // Close modal with proper timing
+      handleDismissModal();
+
       Alert.alert(
         'Prayer Tracked',
         `${PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].english} marked as ${status}${status === PrayerStatus.MISSED ? ' and added to Qada debt' : ''}`,
@@ -235,17 +268,19 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        <PrayerGrid
-          prayerTimes={state.prayerTimes}
-          currentPrayer={state.currentPrayer}
-          nextPrayer={state.nextPrayer}
-          formatTime={formatTime}
-          onPrayerPress={handlePrayerTrack}
-          prayerNames={PRAYER_NAMES_WITH_ICONS}
-        />
+        {state.prayerTimes && (
+          <PrayerGrid
+            prayerTimes={state.prayerTimes}
+            currentPrayer={state.currentPrayer}
+            nextPrayer={state.nextPrayer}
+            formatTime={formatTime}
+            onPrayerPress={handlePrayerTrack}
+            prayerNames={PRAYER_NAMES_WITH_ICONS}
+          />
+        )}
 
         {/* Sunrise & Sunset */}
-        {state.settings.showSunriseSunset && (state.prayerTimes.sunrise || state.prayerTimes.sunset) && (
+        {state.settings.showSunriseSunset && state.prayerTimes && (state.prayerTimes.sunrise || state.prayerTimes.sunset) && (
           <Card style={styles.sunCard}>
             <Card.Content>
               <View style={styles.sunTimesContainer}>
@@ -338,203 +373,138 @@ export default function HomeScreen() {
       <Portal>
         <Modal
           visible={trackingModalVisible}
-          onDismiss={() => setTrackingModalVisible(false)}
+          onDismiss={handleDismissModal}
           contentContainerStyle={styles.modalContainer}
         >
-          {selectedPrayer && (
-            <View style={styles.modalContent}>
-              {/* Header with Prayer Icon */}
-              <View style={styles.modalHeader}>
-                <View style={[
-                  styles.modalPrayerIcon,
-                  { backgroundColor: PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].color + '20' }
-                ]}>
-                  <MaterialCommunityIcons
-                    name={PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].icon as any}
-                    size={32}
-                    color={PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].color}
-                  />
-                </View>
-                <View style={styles.modalHeaderContent}>
-                   <Text 
-                     variant="headlineMedium" 
-                     style={[
-                       styles.modalTitle,
-                       { fontSize: isSmallScreen ? 18 : isMediumScreen ? 20 : 22 }
-                     ]}
-                   >
-                     {PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].english}
-                   </Text>
-                   <Text 
-                     variant="bodyMedium" 
-                     style={[
-                       styles.modalSubtitle,
-                       { fontSize: isSmallScreen ? 13 : isMediumScreen ? 14 : 15 }
-                     ]}
-                   >
-                     {PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].arabic}
-                   </Text>
-                </View>
-              </View>
+          {selectedPrayer && state.prayerTimes && (() => {
+            // Get available actions for this prayer
+            const prayerActions = getPrayerActions(
+              selectedPrayer.name,
+              state.prayerTimes,
+              selectedPrayer.status,
+              new Date()
+            );
 
-              {/* Prayer Time Card */}
-              <Card style={styles.timeCard}>
-                <Card.Content style={styles.timeCardContent}>
-                  <View style={styles.timeInfo}>
-                    <MaterialCommunityIcons 
-                      name="clock-outline" 
-                      size={20} 
-                      color={theme.colors.primary} 
-                    />
-                     <Text 
-                       variant="bodyLarge" 
-                       style={[
-                         styles.timeText,
-                         { fontSize: isSmallScreen ? 16 : isMediumScreen ? 18 : 20 }
-                       ]}
-                     >
-                       {formatTime(selectedPrayer.time)}
-                     </Text>
-                  </View>
+            return (
+              <View style={styles.modalContent}>
+                {/* Header with Prayer Icon */}
+                <View style={styles.modalHeader}>
                   <View style={[
-                    styles.statusIndicator,
-                    { 
-                      backgroundColor: selectedPrayer.status === PrayerStatus.COMPLETED ? '#4CAF50' :
-                                       selectedPrayer.status === PrayerStatus.DELAYED ? '#FF9800' :
-                                       selectedPrayer.status === PrayerStatus.MISSED ? '#F44336' :
-                                       theme.colors.outline 
-                    }
+                    styles.modalPrayerIcon,
+                    { backgroundColor: PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].color + '20' }
                   ]}>
-                     <Text 
-                       variant="labelSmall" 
-                       style={[
-                         styles.statusText,
-                         { fontSize: isSmallScreen ? 10 : isMediumScreen ? 11 : 12 }
-                       ]}
-                     >
-                       {selectedPrayer.status === PrayerStatus.COMPLETED ? 'Completed' :
-                        selectedPrayer.status === PrayerStatus.DELAYED ? 'Delayed' :
-                        selectedPrayer.status === PrayerStatus.MISSED ? 'Missed' : 'Pending'}
-                     </Text>
+                    <MaterialCommunityIcons
+                      name={PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].icon as any}
+                      size={32}
+                      color={PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].color}
+                    />
                   </View>
-                </Card.Content>
-              </Card>
+                  <View style={styles.modalHeaderContent}>
+                    <Text
+                      variant="headlineMedium"
+                      style={[
+                        styles.modalTitle,
+                        { fontSize: isSmallScreen ? 18 : isMediumScreen ? 20 : 22 }
+                      ]}
+                    >
+                      {PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].english}
+                    </Text>
+                    <Text
+                      variant="bodyMedium"
+                      style={[
+                        styles.modalSubtitle,
+                        { fontSize: isSmallScreen ? 13 : isMediumScreen ? 14 : 15 }
+                      ]}
+                    >
+                      {PRAYER_NAMES_WITH_ICONS[selectedPrayer.name].arabic}
+                    </Text>
+                  </View>
+                </View>
 
-               {/* Status Selection */}
-               <Text 
-                 variant="titleMedium" 
-                 style={[
-                   styles.selectionTitle,
-                   { fontSize: isSmallScreen ? 16 : isMediumScreen ? 18 : 19 }
-                 ]}
-               >
-                 Update Prayer Status
-               </Text>
-              
-              <View style={styles.statusGrid}>
-                <TouchableOpacity
-                  style={[styles.statusCard, styles.completedCard]}
-                  onPress={() => handleUpdatePrayerStatus(PrayerStatus.COMPLETED)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.statusCardIcon}>
-                    <MaterialCommunityIcons name="check-circle" size={28} color="#4CAF50" />
-                  </View>
-                   <Text 
-                     variant="titleMedium" 
-                     style={[
-                       styles.statusCardTitle,
-                       { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
-                     ]}
-                   >
-                     Completed
-                   </Text>
-                   <Text 
-                     variant="bodySmall" 
-                     style={[
-                       styles.statusCardDescription,
-                       { fontSize: isSmallScreen ? 11 : isMediumScreen ? 12 : 13 }
-                     ]}
-                   >
-                     Prayer performed on time
-                   </Text>
-                </TouchableOpacity>
+                {/* Status Buttons */}
+                <View style={styles.statusGrid}>
+                  {/* Completed Option - Always show if available */}
+                  {prayerActions.availableStatuses.includes(PrayerStatus.COMPLETED) && (
+                    <TouchableOpacity
+                      style={[styles.statusCard, styles.completedCard]}
+                      onPress={() => handleUpdatePrayerStatus(PrayerStatus.COMPLETED)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.statusCardIcon}>
+                        <MaterialCommunityIcons name="check-circle" size={28} color="#4CAF50" />
+                      </View>
+                      <Text
+                        variant="titleMedium"
+                        style={[
+                          styles.statusCardTitle,
+                          { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
+                        ]}
+                      >
+                        Prayed
+                      </Text>
+                      <Text
+                        variant="bodySmall"
+                        style={[
+                          styles.statusCardDescription,
+                          { fontSize: isSmallScreen ? 11 : isMediumScreen ? 12 : 13 }
+                        ]}
+                      >
+                        Prayer performed
+                      </Text>
+                    </TouchableOpacity>
+                  )}
 
-                <TouchableOpacity
-                  style={[styles.statusCard, styles.delayedCard]}
-                  onPress={() => handleUpdatePrayerStatus(PrayerStatus.DELAYED)}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.statusCardIcon}>
-                    <MaterialCommunityIcons name="clock" size={28} color="#FF9800" />
-                  </View>
-                   <Text 
-                     variant="titleMedium" 
-                     style={[
-                       styles.statusCardTitle,
-                       { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
-                     ]}
-                   >
-                     Delayed
-                   </Text>
-                   <Text 
-                     variant="bodySmall" 
-                     style={[
-                       styles.statusCardDescription,
-                       { fontSize: isSmallScreen ? 11 : isMediumScreen ? 12 : 13 }
-                     ]}
-                   >
-                     Prayer performed late
-                   </Text>
-                </TouchableOpacity>
+                  {/* Missed Option - Only for past prayers */}
+                  {prayerActions.availableStatuses.includes(PrayerStatus.MISSED) && (
+                    <TouchableOpacity
+                      style={[styles.statusCard, styles.missedCard]}
+                      onPress={() => handleUpdatePrayerStatus(PrayerStatus.MISSED)}
+                      activeOpacity={0.8}
+                    >
+                      <View style={styles.statusCardIcon}>
+                        <MaterialCommunityIcons name="close-circle" size={28} color="#F44336" />
+                      </View>
+                      <Text
+                        variant="titleMedium"
+                        style={[
+                          styles.statusCardTitle,
+                          { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
+                        ]}
+                      >
+                        Missed
+                      </Text>
+                      <Text
+                        variant="bodySmall"
+                        style={[
+                          styles.statusCardDescription,
+                          { fontSize: isSmallScreen ? 11 : isMediumScreen ? 12 : 13 }
+                        ]}
+                      >
+                        Adds to Qada
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
 
+                {/* Cancel Button */}
                 <TouchableOpacity
-                  style={[styles.statusCard, styles.missedCard]}
-                  onPress={() => handleUpdatePrayerStatus(PrayerStatus.MISSED)}
-                  activeOpacity={0.8}
+                  style={styles.cancelButton}
+                  onPress={handleDismissModal}
+                  activeOpacity={0.7}
                 >
-                  <View style={styles.statusCardIcon}>
-                    <MaterialCommunityIcons name="close-circle" size={28} color="#F44336" />
-                  </View>
-                   <Text 
-                     variant="titleMedium" 
-                     style={[
-                       styles.statusCardTitle,
-                       { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
-                     ]}
-                   >
-                     Missed
-                   </Text>
-                   <Text 
-                     variant="bodySmall" 
-                     style={[
-                       styles.statusCardDescription,
-                       { fontSize: isSmallScreen ? 11 : isMediumScreen ? 12 : 13 }
-                     ]}
-                   >
-                     Prayer not performed
-                   </Text>
+                  <Text
+                    variant="bodyMedium"
+                    style={[
+                      styles.cancelButtonText,
+                      { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
+                    ]}
+                  >
+                    Cancel
+                  </Text>
                 </TouchableOpacity>
               </View>
-
-              {/* Cancel Button */}
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setTrackingModalVisible(false)}
-                activeOpacity={0.7}
-              >
-                 <Text 
-                   variant="bodyMedium" 
-                   style={[
-                     styles.cancelButtonText,
-                     { fontSize: isSmallScreen ? 14 : isMediumScreen ? 16 : 17 }
-                   ]}
-                 >
-                   Cancel
-                 </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+            );
+          })()}
         </Modal>
       </Portal>
     </SafeAreaView>
@@ -616,7 +586,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 24,
-    paddingBottom: 16,
+    paddingBottom: 20,
     backgroundColor: '#F8F9FA',
   },
   modalPrayerIcon: {
@@ -640,53 +610,11 @@ const styles = StyleSheet.create({
      color: '#6B7280',
      fontSize: 14,
    },
-  timeCard: {
-   marginHorizontal: 24,
-   marginBottom: 20,
-   borderRadius: 16,
-   elevation: 2,
-   shadowColor: '#000',
-   shadowOffset: { width: 0, height: 2 },
-   shadowOpacity: 0.1,
-   shadowRadius: 4,
-  },
-  timeCardContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  timeInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  timeText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1C1E',
-  },
-  statusIndicator: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  statusText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  selectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1C1C1E',
-    marginHorizontal: 24,
-    marginBottom: 16,
-  },
    statusGrid: {
      flexDirection: 'row',
      paddingHorizontal: 24,
      gap: 10,
+     marginTop: 20,
      marginBottom: 24,
    },
    statusCard: {
@@ -702,11 +630,6 @@ const styles = StyleSheet.create({
    borderWidth: 2,
    borderColor: '#4CAF50',
   },
-  delayedCard: {
-   backgroundColor: '#FFFBEB',
-   borderWidth: 2,
-   borderColor: '#FF9800',
-  },
   missedCard: {
    backgroundColor: '#FEF2F2',
    borderWidth: 2,
@@ -720,11 +643,6 @@ const styles = StyleSheet.create({
      alignItems: 'center',
      justifyContent: 'center',
      marginBottom: 6,
-     shadowColor: '#000',
-     shadowOffset: { width: 0, height: 1 },
-     shadowOpacity: 0.1,
-     shadowRadius: 2,
-     elevation: 2,
    },
   statusCardTitle: {
    fontSize: 16,

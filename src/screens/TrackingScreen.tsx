@@ -39,6 +39,15 @@ export default function TrackingScreen() {
     notes?: string;
   } | null>(null);
 
+  // Handle modal dismissal with proper cleanup timing
+  const handleDismissModal = useCallback(() => {
+    setModalVisible(false);
+    // Clear selected prayer after animation completes
+    setTimeout(() => {
+      setSelectedPrayer(null);
+    }, 300);
+  }, []);
+
   // Subscribe to reactive updates
   usePrayerReactiveUpdates((data: any) => {
     console.log('TrackingScreen: Prayer status changed:', data);
@@ -139,8 +148,8 @@ export default function TrackingScreen() {
     }
   };
 
-  const formatTime = (date: Date): string => {
-    if (!state.settings) return '';
+  const formatTime = (date: Date | undefined): string => {
+    if (!state.settings || !date) return '';
     return PrayerService.formatPrayerTimeSync(
       date,
       state.settings.timeFormat === '24h',
@@ -416,7 +425,7 @@ export default function TrackingScreen() {
       {/* Prayer Details Modal */}
       <PrayerDetailsModal
         visible={modalVisible && !!selectedPrayer}
-        onDismiss={() => setModalVisible(false)}
+        onDismiss={handleDismissModal}
         prayerName={selectedPrayer?.name || 'fajr'}
         prayerTime={selectedPrayer?.time || ''}
         currentStatus={selectedPrayer?.status || PrayerStatus.PENDING}

@@ -31,6 +31,7 @@
     "@tanstack/react-query-persist-client": "^5.90.9",
     "adhan": "^4.4.3",
     "date-fns": "^3.6.0",
+    "metro-react-native-babel-transformer": "^0.77.0",
     "react": "19.1.1",
     "react-native": "0.82.1",
     "react-native-calendars": "^1.1313.0",

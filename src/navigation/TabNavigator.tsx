@@ -158,13 +158,6 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     flex: 1,
     marginRight: 12,
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    // Elevation for Android
-    elevation: 8,
   },
   tabButton: {
     flex: 1,
@@ -178,13 +171,6 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    // Shadow for iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    // Elevation for Android
-    elevation: 8,
   },
   profileButtonActive: {
     // Optional: Add active state styling

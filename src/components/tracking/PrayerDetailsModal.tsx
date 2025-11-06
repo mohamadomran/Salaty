@@ -74,7 +74,7 @@ export function PrayerDetailsModal({
       case PrayerStatus.DELAYED:
         return 'Delayed';
       case PrayerStatus.QADA:
-        return 'Qada';
+        return 'Add to Qada';
       case PrayerStatus.PENDING:
       default:
         return 'Pending';
@@ -90,7 +90,7 @@ export function PrayerDetailsModal({
       case PrayerStatus.DELAYED:
         return 'clock-alert-outline';
       case PrayerStatus.QADA:
-        return 'restore';
+        return 'plus-circle-outline';
       case PrayerStatus.PENDING:
       default:
         return 'circle-outline';
@@ -140,15 +140,16 @@ export function PrayerDetailsModal({
                       value: status,
                       label: getStatusLabel(status),
                       icon: getStatusIcon(status),
-                      style: selectedStatus === status
-                        ? { 
-                            backgroundColor: 
-                              status === PrayerStatus.COMPLETED ? theme.expressiveColors.prayerCompleted + '20' :
-                              status === PrayerStatus.DELAYED ? theme.expressiveColors.prayerUpcoming + '20' :
-                              status === PrayerStatus.MISSED ? theme.expressiveColors.prayerMissed + '20' :
-                              theme.colors.surfaceVariant + '20'
-                          }
-                        : undefined,
+                       style: selectedStatus === status
+                         ? { 
+                             backgroundColor: 
+                               status === PrayerStatus.COMPLETED ? theme.expressiveColors.prayerCompleted + '20' :
+                               status === PrayerStatus.DELAYED ? theme.expressiveColors.prayerUpcoming + '20' :
+                               status === PrayerStatus.MISSED ? theme.expressiveColors.prayerMissed + '20' :
+                               status === PrayerStatus.QADA ? theme.colors.secondaryContainer + '20' :
+                               theme.colors.surfaceVariant + '20'
+                           }
+                         : undefined,
                     }))
                   : [
                     {
@@ -179,11 +180,11 @@ export function PrayerDetailsModal({
               style={styles.segmentedButtons}
             />
 
-            {/* Qada Button (if missed) */}
-            {selectedStatus === PrayerStatus.MISSED && (
+            {/* Qada Hint (if qada selected) */}
+            {selectedStatus === PrayerStatus.QADA && (
               <View style={styles.qadaHint}>
                 <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                  Tip: Missed prayers can be made up as Qada later from the Qada tab
+                  This prayer will be added to your Qada list to be made up later
                 </Text>
               </View>
             )}

@@ -94,33 +94,36 @@ export function getPrayerActions(
 
   switch (timeStatus) {
     case PrayerTimeStatus.PAST:
+      // Past prayers: Can mark as Completed (prayed) or Missed (adds to qada)
       return {
         canMarkCompleted: true,
         canMarkMissed: true,
-        canMarkDelayed: true,
-        availableStatuses: [PrayerStatus.COMPLETED, PrayerStatus.MISSED, PrayerStatus.DELAYED],
+        canMarkDelayed: false,
+        availableStatuses: [PrayerStatus.COMPLETED, PrayerStatus.MISSED],
         timeStatus,
-        nextActionText: 'Mark prayer status',
+        nextActionText: 'Mark as prayed or missed',
       };
 
     case PrayerTimeStatus.CURRENT:
+      // Current prayer: Can only mark as Completed (prayed)
       return {
         canMarkCompleted: true,
-        canMarkMissed: false, // Can't mark current as missed yet
-        canMarkDelayed: false, // Can't mark as delayed until time passes
+        canMarkMissed: false,
+        canMarkDelayed: false,
         availableStatuses: [PrayerStatus.COMPLETED],
         timeStatus,
         nextActionText: 'Mark as prayed',
       };
 
     case PrayerTimeStatus.FUTURE:
+      // Future prayers: Cannot track yet
       return {
         canMarkCompleted: false,
         canMarkMissed: false,
         canMarkDelayed: false,
-        availableStatuses: [PrayerStatus.PENDING],
+        availableStatuses: [],
         timeStatus,
-        nextActionText: `Wait for ${prayerName} time`,
+        nextActionText: `Prayer time hasn't started yet`,
       };
 
     default:
@@ -128,7 +131,7 @@ export function getPrayerActions(
         canMarkCompleted: false,
         canMarkMissed: false,
         canMarkDelayed: false,
-        availableStatuses: [PrayerStatus.PENDING],
+        availableStatuses: [],
         timeStatus: PrayerTimeStatus.FUTURE,
       };
   }
