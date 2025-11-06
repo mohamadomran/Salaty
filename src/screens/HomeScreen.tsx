@@ -4,8 +4,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View, Alert, TouchableOpacity, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet, View, Alert, TouchableOpacity, Dimensions } from 'react-native';
 import {
   Text,
   Button,
@@ -25,6 +24,9 @@ import {
   HomeScreenSkeleton,
   PrayerTimesCard,
   PrayerGrid,
+  ScreenContainer,
+  SectionHeader,
+  cardStyles,
 } from '../components';
 import { useAppContext } from '../contexts';
 import { usePrayerReactiveUpdates } from '../hooks/useReactiveUpdates';
@@ -197,177 +199,161 @@ export default function HomeScreen() {
   // Show loading skeleton while data is loading
   if (state.isLoading || !state.settings || !state.prayerTimes) {
     return (
-      <SafeAreaView
-        edges={['top', 'left', 'right']}
-        style={[styles.container, { backgroundColor: theme.colors.background }]}
-      >
+      <ScreenContainer testID="home-screen">
         <HomeScreenSkeleton />
-      </SafeAreaView>
+      </ScreenContainer>
     );
   }
 
   return (
-    <SafeAreaView
-      testID="home-screen"
-      edges={['top', 'left', 'right']}
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Compact Date Header */}
-        <View style={styles.headerSection}>
-          <View>
+    <ScreenContainer testID="home-screen">
+      {/* Compact Date Header */}
+      <View style={styles.headerSection}>
+        <View>
+          <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+            TODAY
+          </Text>
+          <Text variant="titleMedium" style={{ fontWeight: '600', marginTop: 2 }}>
+            {new Date().toLocaleDateString('en-US', {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            })}
+          </Text>
+        </View>
+        {hijriDate && (
+          <View style={{ alignItems: 'flex-end' }}>
             <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
-              TODAY
+              HIJRI
             </Text>
-            <Text variant="titleMedium" style={{ fontWeight: '600', marginTop: 2 }}>
-              {new Date().toLocaleDateString('en-US', {
-                weekday: 'short',
-                day: 'numeric',
-                month: 'short',
-              })}
+            <Text
+              variant="titleMedium"
+              style={{
+                fontWeight: '600',
+                marginTop: 2,
+                color: theme.colors.primary
+              }}
+            >
+              {hijriDate.day} {hijriDate.month.en}
             </Text>
           </View>
-          {hijriDate && (
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
-                HIJRI
-              </Text>
-              <Text
-                variant="titleMedium"
-                style={{
-                  fontWeight: '600',
-                  marginTop: 2,
-                  color: theme.colors.primary
-                }}
-              >
-                {hijriDate.day} {hijriDate.month.en}
-              </Text>
-            </View>
-          )}
-        </View>
+        )}
+      </View>
 
-        {/* Hero Section - Next Prayer with Big Clock */}
-        <PrayerTimesCard
+      {/* Hero Section - Next Prayer with Big Clock */}
+      <PrayerTimesCard
+        nextPrayer={state.nextPrayer}
+        locationName={state.locationName}
+        formatTime={formatTime}
+        prayerNames={PRAYER_NAMES_WITH_ICONS}
+      />
+
+      {/* Prayer Times Grid */}
+      <SectionHeader
+        title="Today's Prayers"
+        subtitle={calculationMethods?.find(m => m.id === state.settings?.calculationMethod)?.name ||
+          state.settings?.calculationMethod}
+        showDivider={false}
+      />
+
+      {state.prayerTimes && (
+        <PrayerGrid
+          prayerTimes={state.prayerTimes}
+          currentPrayer={state.currentPrayer}
           nextPrayer={state.nextPrayer}
-          locationName={state.locationName}
           formatTime={formatTime}
+          onPrayerPress={handlePrayerTrack}
           prayerNames={PRAYER_NAMES_WITH_ICONS}
         />
+      )}
 
-        {/* Prayer Times Grid */}
-        <View style={styles.sectionHeader}>
-          <Text variant="titleLarge" style={{ fontWeight: '600' }}>
-            Today's Prayers
-          </Text>
-          <Text variant="bodySmall" style={{ color: theme.colors.outline, marginTop: 4 }}>
-            {calculationMethods?.find(m => m.id === state.settings?.calculationMethod)?.name ||
-              state.settings?.calculationMethod}
-          </Text>
-        </View>
-
-        {state.prayerTimes && (
-          <PrayerGrid
-            prayerTimes={state.prayerTimes}
-            currentPrayer={state.currentPrayer}
-            nextPrayer={state.nextPrayer}
-            formatTime={formatTime}
-            onPrayerPress={handlePrayerTrack}
-            prayerNames={PRAYER_NAMES_WITH_ICONS}
-          />
-        )}
-
-        {/* Sunrise & Sunset */}
-        {state.settings.showSunriseSunset && state.prayerTimes && (state.prayerTimes.sunrise || state.prayerTimes.sunset) && (
-          <Card style={styles.sunCard}>
-            <Card.Content>
-              <View style={styles.sunTimesContainer}>
-                {state.prayerTimes.sunrise && (
-                  <View style={styles.sunTimeItem}>
-                    <View style={[styles.sunTimeIcon, { backgroundColor: theme.colors.primaryContainer }]}>
-                      <MaterialCommunityIcons
-                        name="weather-sunset-up"
-                        size={24}
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                    <View>
-                      <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
-                        Sunrise
-                      </Text>
-                      <Text variant="titleMedium" style={{ fontWeight: '600', marginTop: 2 }}>
-                        {formatTime(state.prayerTimes.sunrise)}
-                      </Text>
-                    </View>
+      {/* Sunrise & Sunset */}
+      {state.settings.showSunriseSunset && state.prayerTimes && (state.prayerTimes.sunrise || state.prayerTimes.sunset) && (
+        <Card style={cardStyles.card}>
+          <Card.Content>
+            <View style={styles.sunTimesContainer}>
+              {state.prayerTimes.sunrise && (
+                <View style={styles.sunTimeItem}>
+                  <View style={[styles.sunTimeIcon, { backgroundColor: theme.colors.primaryContainer }]}>
+                    <MaterialCommunityIcons
+                      name="weather-sunset-up"
+                      size={24}
+                      color={theme.colors.primary}
+                    />
                   </View>
-                )}
-
-                {state.prayerTimes.sunrise && state.prayerTimes.sunset && (
-                  <Divider style={{ width: 1, height: '100%' }} />
-                )}
-
-                {state.prayerTimes.sunset && (
-                  <View style={styles.sunTimeItem}>
-                    <View style={[styles.sunTimeIcon, { backgroundColor: theme.colors.secondaryContainer }]}>
-                      <MaterialCommunityIcons
-                        name="weather-sunset-down"
-                        size={24}
-                        color={theme.colors.secondary}
-                      />
-                    </View>
-                    <View>
-                      <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
-                        Sunset
-                      </Text>
-                      <Text variant="titleMedium" style={{ fontWeight: '600', marginTop: 2 }}>
-                        {formatTime(state.prayerTimes.sunset)}
-                      </Text>
-                    </View>
+                  <View>
+                    <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+                      Sunrise
+                    </Text>
+                    <Text variant="titleMedium" style={{ fontWeight: '600', marginTop: 2 }}>
+                      {formatTime(state.prayerTimes.sunrise)}
+                    </Text>
                   </View>
-                )}
-              </View>
-            </Card.Content>
-          </Card>
-        )}
+                </View>
+              )}
 
-        {/* Quick Actions */}
-        {state.location && state.prayerTimes && (
-          <Card style={styles.quickActionsCard}>
-            <Card.Content>
-              <Text variant="titleMedium" style={{ fontWeight: '600', marginBottom: 16 }}>
-                Quick Actions
-              </Text>
-              <View style={styles.quickActionsGrid}>
-                <Button
-                  mode="elevated"
-                  icon="compass"
-                  onPress={() => {
-                    Alert.alert('Qibla', 'Qibla compass feature coming soon!');
-                  }}
-                  style={styles.quickActionButton}
-                  contentStyle={styles.quickActionButtonContent}
-                >
-                  Find Qibla
-                </Button>
-                <Button
-                  mode="elevated"
-                  icon="account-clock-outline"
-                  onPress={() => {
-                    navigation.navigate('Qada' as never);
-                  }}
-                  style={styles.quickActionButton}
-                  contentStyle={styles.quickActionButtonContent}
-                >
-                  Qada Prayers
-                </Button>
-              </View>
-            </Card.Content>
-          </Card>
-        )}
+              {state.prayerTimes.sunrise && state.prayerTimes.sunset && (
+                <Divider style={{ width: 1, height: '100%' }} />
+              )}
 
-      </ScrollView>
+              {state.prayerTimes.sunset && (
+                <View style={styles.sunTimeItem}>
+                  <View style={[styles.sunTimeIcon, { backgroundColor: theme.colors.secondaryContainer }]}>
+                    <MaterialCommunityIcons
+                      name="weather-sunset-down"
+                      size={24}
+                      color={theme.colors.secondary}
+                    />
+                  </View>
+                  <View>
+                    <Text variant="labelSmall" style={{ color: theme.colors.outline }}>
+                      Sunset
+                    </Text>
+                    <Text variant="titleMedium" style={{ fontWeight: '600', marginTop: 2 }}>
+                      {formatTime(state.prayerTimes.sunset)}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          </Card.Content>
+        </Card>
+      )}
+
+      {/* Quick Actions */}
+      {state.location && state.prayerTimes && (
+        <Card style={cardStyles.card}>
+          <Card.Content>
+            <Text variant="titleMedium" style={{ fontWeight: '600', marginBottom: 16 }}>
+              Quick Actions
+            </Text>
+            <View style={styles.quickActionsGrid}>
+              <Button
+                mode="elevated"
+                icon="compass"
+                onPress={() => {
+                  Alert.alert('Qibla', 'Qibla compass feature coming soon!');
+                }}
+                style={styles.quickActionButton}
+                contentStyle={styles.quickActionButtonContent}
+              >
+                Find Qibla
+              </Button>
+              <Button
+                mode="elevated"
+                icon="account-clock-outline"
+                onPress={() => {
+                  navigation.navigate('Qada' as never);
+                }}
+                style={styles.quickActionButton}
+                contentStyle={styles.quickActionButtonContent}
+              >
+                Qada Prayers
+              </Button>
+            </View>
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Prayer Tracking Modal */}
       <Portal>
@@ -507,18 +493,11 @@ export default function HomeScreen() {
           })()}
         </Modal>
       </Portal>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 100,
-  },
   headerSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -526,14 +505,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 4,
   },
-  sectionHeader: {
-    marginBottom: 16,
-    paddingHorizontal: 4,
-  },
-  sunCard: {
-    marginBottom: 16,
-    borderRadius: 20,
-  },
+
   sunTimesContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -553,9 +525,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  quickActionsCard: {
-    borderRadius: 20,
-  },
+
   quickActionsGrid: {
     flexDirection: 'row',
     gap: 12,

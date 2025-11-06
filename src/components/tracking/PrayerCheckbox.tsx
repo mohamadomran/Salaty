@@ -18,6 +18,7 @@ interface PrayerCheckboxProps {
   prayerTimes?: PrayerTimes; // For time-based logic
   onPress: () => void; // Opens modal for detailed status change
   disabled?: boolean;
+  variant?: 'current' | 'upcoming' | 'completed'; // Section type for styling
 }
 
 export function PrayerCheckbox({
@@ -27,6 +28,7 @@ export function PrayerCheckbox({
   prayerTimes,
   onPress,
   disabled = false,
+  variant,
 }: PrayerCheckboxProps) {
   const theme = useTheme() as ExpressiveTheme;
 
@@ -83,10 +85,38 @@ export function PrayerCheckbox({
     return theme.colors.onSurface;
   };
 
+  const getContainerStyle = () => {
+    if (!variant) return {};
+
+    switch (variant) {
+      case 'current':
+        return {
+          backgroundColor: theme.expressiveColors.prayerActive + '10',
+          borderLeftWidth: 3,
+          borderLeftColor: theme.expressiveColors.prayerActive,
+        };
+      case 'upcoming':
+        return {
+          backgroundColor: theme.colors.surfaceVariant + '30',
+        };
+      case 'completed':
+        return {
+          backgroundColor: 'transparent',
+          opacity: 0.7,
+        };
+      default:
+        return {};
+    }
+  };
+
   return (
     <TouchableOpacity
       testID={`prayer-checkbox-${prayerName.toLowerCase()}`}
-      style={[styles.container, isActuallyDisabled && styles.disabled]}
+      style={[
+        styles.container,
+        getContainerStyle(),
+        isActuallyDisabled && styles.disabled,
+      ]}
       onPress={handlePress}
       disabled={isActuallyDisabled}
       activeOpacity={0.7}

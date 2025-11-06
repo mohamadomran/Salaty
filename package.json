@@ -34,6 +34,7 @@
     "metro-react-native-babel-transformer": "^0.77.0",
     "react": "19.1.1",
     "react-native": "0.82.1",
+    "react-native-bootsplash": "^6.3.11",
     "react-native-calendars": "^1.1313.0",
     "react-native-geolocation-service": "^5.3.1",
     "react-native-gesture-handler": "^2.29.1",

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -67,6 +67,8 @@ export default function StatisticsScreen() {
   const [trends, setTrends] = useState<TrendData | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [selectedPrayer, setSelectedPrayer] = useState<PrayerAnalytics | null>(null);
+  
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   // Subscribe to reactive updates
   useReactiveUpdates({
@@ -410,24 +412,41 @@ export default function StatisticsScreen() {
       </View>
 
       {/* Category Selector */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.categorySelector}
-        contentContainerStyle={styles.categoryContainer}
-      >
-        {(['overview', 'prayers', 'streaks', 'trends'] as StatCategory[]).map((cat) => (
-          <Button
-            key={cat}
-            mode={category === cat ? 'contained' : 'outlined'}
-            onPress={() => setCategory(cat)}
-            style={styles.categoryButton}
-            compact
-          >
-            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-          </Button>
-        ))}
-      </ScrollView>
+      <View style={styles.categorySelector}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryContainer}
+        >
+          {(['overview', 'prayers', 'streaks', 'trends'] as StatCategory[]).map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              onPress={() => setCategory(cat)}
+              style={[
+                styles.categoryPill,
+                category === cat && [
+                  styles.categoryPillActive,
+                  { backgroundColor: theme.colors.primary },
+                ],
+              ]}
+              activeOpacity={0.7}
+            >
+              <Text
+                variant="labelLarge"
+                style={[
+                  styles.categoryPillText,
+                  category === cat && [
+                    styles.categoryPillTextActive,
+                    { color: theme.colors.onPrimary },
+                  ],
+                ]}
+              >
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Content */}
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -482,10 +501,10 @@ export default function StatisticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ExpressiveTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.background,
   },
   loadingContainer: {
     flex: 1,
@@ -495,30 +514,49 @@ const styles = StyleSheet.create({
   header: {
     padding: 16,
     paddingBottom: 8,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.colors.outline,
   },
   title: {
     fontWeight: '700',
     marginBottom: 16,
     textAlign: 'center',
+    color: theme.colors.onSurface,
   },
   timeRangeSelector: {
     marginTop: 8,
   },
   categorySelector: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: theme.colors.outline,
+    paddingVertical: 12,
   },
   categoryContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
+    gap: 10,
   },
-  categoryButton: {
-    marginRight: 8,
+  categoryPill: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    backgroundColor: theme.colors.surfaceVariant,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    minWidth: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryPillActive: {
+    borderColor: 'transparent',
+  },
+  categoryPillText: {
+    fontWeight: '600',
+    color: theme.colors.onSurfaceVariant,
+  },
+  categoryPillTextActive: {
+    fontWeight: '700',
   },
   content: {
     flex: 1,
@@ -542,6 +580,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     marginBottom: 16,
     fontWeight: '600',
+    color: theme.colors.onSurface,
   },
   prayerList: {
     gap: 12,
@@ -552,7 +591,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.surfaceVariant,
     borderRadius: 8,
   },
   prayerInfo: {
@@ -560,6 +599,7 @@ const styles = StyleSheet.create({
   },
   prayerName: {
     fontWeight: '600',
+    color: theme.colors.onSurface,
   },
   prayerMetrics: {
     alignItems: 'flex-end',
@@ -577,6 +617,7 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginBottom: 16,
+    backgroundColor: theme.colors.outline,
   },
   prayerStatsGrid: {
     flexDirection: 'row',
@@ -595,9 +636,10 @@ const styles = StyleSheet.create({
   },
   insightText: {
     lineHeight: 22,
+    color: theme.colors.onSurface,
   },
   positiveInsight: {
-    color: '#4CAF50',
+    color: theme.expressiveColors.success,
     fontWeight: '600',
   },
   trendsCard: {
@@ -609,19 +651,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
     fontWeight: '600',
+    color: theme.colors.onSurface,
   },
   modalContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: theme.colors.backdrop,
     padding: 20,
     justifyContent: 'center',
   },
   modalCard: {
     borderRadius: 16,
+    backgroundColor: theme.colors.surface,
   },
   modalTitle: {
     marginBottom: 16,
     textAlign: 'center',
     fontWeight: '600',
+    color: theme.colors.onSurface,
   },
   detailStats: {
     gap: 12,
@@ -632,7 +677,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: theme.colors.outlineVariant,
   },
   modalButton: {
     marginTop: 8,

@@ -8,6 +8,7 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import RNBootSplash from 'react-native-bootsplash';
 
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -32,6 +33,8 @@ function AppContent(): React.JSX.Element {
     const checkOnboarding = async () => {
       const isCompleted = await SettingsService.isOnboardingCompleted();
       setOnboardingCompleted(isCompleted);
+      // Hide splash screen once app is ready
+      await RNBootSplash.hide({ fade: true });
     };
     checkOnboarding();
   }, []);

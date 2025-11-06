@@ -3,10 +3,10 @@
  * Displays prayer tracking statistics
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Text, useTheme } from 'react-native-paper';
-import { lightTheme } from '../../theme';
+import type { ExpressiveTheme } from '../../theme';
 
 interface StatItem {
   label: string;
@@ -21,7 +21,8 @@ interface StatsCardProps {
 }
 
 export function StatsCard({ title, stats, icon }: StatsCardProps) {
-  const theme = useTheme();
+  const theme = useTheme<ExpressiveTheme>();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <Card style={styles.card} mode="elevated">
@@ -35,16 +36,16 @@ export function StatsCard({ title, stats, icon }: StatsCardProps) {
           {stats.map((stat, index) => (
             <View key={index} style={styles.statItem}>
               <Text
-                variant="headlineMedium"
+                variant="titleLarge"
                 style={[
                   styles.statValue,
-                  { color: stat.color || lightTheme.colors.primary },
+                  { color: stat.color || theme.colors.primary },
                 ]}
               >
                 {stat.value}
               </Text>
               <Text
-                variant="bodySmall"
+                variant="labelSmall"
                 style={{ color: theme.colors.onSurfaceVariant }}
               >
                 {stat.label}
@@ -57,10 +58,11 @@ export function StatsCard({ title, stats, icon }: StatsCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ExpressiveTheme) => StyleSheet.create({
   card: {
     marginBottom: 16,
     borderRadius: 24,
+    backgroundColor: theme.colors.surface,
   },
   header: {
     flexDirection: 'row',
@@ -70,6 +72,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
+    color: theme.colors.onSurface,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -77,9 +80,11 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
+    minWidth: 80,
   },
   statValue: {
-    fontWeight: '700',
-    marginBottom: 4,
+    fontWeight: '600',
+    marginBottom: 2,
+    fontSize: 24,
   },
 });
