@@ -28,3 +28,4 @@ export { cardStyles, getCardStyle, getContentStyle } from './CardStyles';
 export { CountdownTimer } from './tracking/CountdownTimer';
 export { PrayerTimesCard } from './tracking/PrayerTimesCard';
 export { PrayerGrid } from './tracking/PrayerGrid';
+export { StatsCard } from './tracking/StatsCard';

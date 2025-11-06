@@ -11,12 +11,6 @@ import {
   expressiveColors,
   darkExpressiveColors,
 } from './colors';
-import {
-  enhancedLightColors,
-  enhancedDarkColors,
-  enhancedExpressiveColors,
-  enhancedDarkExpressiveColors,
-} from './enhancedColors';
 import { typography } from './typography';
 import { shapes, componentShapes, shapeAnimations } from './shapes';
 
@@ -57,12 +51,12 @@ export const lightTheme: ExpressiveTheme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    ...enhancedLightColors,
+    ...lightColors,
   },
   roundness: 16, // More refined rounded corners for premium feel
 
   // Custom expressive properties
-  expressiveColors: enhancedExpressiveColors,
+  expressiveColors,
   shapes,
   componentShapes,
   shapeAnimations,
@@ -76,12 +70,12 @@ export const darkTheme: ExpressiveTheme = {
   ...MD3DarkTheme,
   colors: {
     ...MD3DarkTheme.colors,
-    ...enhancedDarkColors,
+    ...darkColors,
   },
   roundness: 16, // More refined rounded corners for premium feel
 
   // Custom expressive properties with dark mode overrides
-  expressiveColors: enhancedDarkExpressiveColors,
+  expressiveColors: darkExpressiveColors,
   shapes,
   componentShapes,
   shapeAnimations,
@@ -97,12 +91,6 @@ export {
   expressiveColors,
   darkExpressiveColors,
 } from './colors';
-export {
-  enhancedLightColors,
-  enhancedDarkColors,
-  enhancedExpressiveColors,
-  enhancedDarkExpressiveColors,
-} from './enhancedColors';
 export { typography } from './typography';
 export { shapes, componentShapes, shapeAnimations } from './shapes';
 

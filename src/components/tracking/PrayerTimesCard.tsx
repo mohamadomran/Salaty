@@ -10,6 +10,24 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { CountdownTimer } from './CountdownTimer';
 import type { ExpressiveTheme } from '../../theme';
 
+// Function to get prayer colors from theme
+const getPrayerColor = (prayerName: string, theme: ExpressiveTheme) => {
+  switch (prayerName) {
+    case 'fajr':
+      return theme.colors.secondary;
+    case 'dhuhr':
+      return theme.colors.primary;
+    case 'asr':
+      return theme.colors.tertiary;
+    case 'maghrib':
+      return theme.expressiveColors.goldAccent;
+    case 'isha':
+      return theme.expressiveColors.prayerActive;
+    default:
+      return theme.colors.primary;
+  }
+};
+
 interface PrayerTimesCardProps {
   nextPrayer: {
     name: string;
@@ -17,7 +35,7 @@ interface PrayerTimesCardProps {
   } | null;
   locationName: string;
   formatTime: (date: Date) => string;
-  prayerNames: Record<string, { english: string; arabic: string; icon: string; color: string }>;
+  prayerNames: Record<string, { english: string; arabic: string; icon: string }>;
 }
 
 export const PrayerTimesCard: React.FC<PrayerTimesCardProps> = React.memo(({ 

@@ -3,13 +3,15 @@
  * An expandable/collapsible section for organizing settings
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   LayoutAnimation,
   Platform,
+  Animated,
+  Easing,
 } from 'react-native';
 import { Card, Text, Icon, useTheme } from 'react-native-paper';
 
@@ -33,17 +35,62 @@ export const CollapsibleSettingsSection: React.FC<
   children,
   defaultExpanded = false,
   onExpansionChange,
-testID,
+  testID,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const theme = useTheme();
+  
+  // Animation refs
+  const animatedHeight = useRef(new Animated.Value(defaultExpanded ? 1 : 0)).current;
+  const chevronRotation = useRef(new Animated.Value(defaultExpanded ? 1 : 0)).current;
+  const contentHeight = useRef<number>(0);
 
   const toggleExpansion = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     const newExpanded = !expanded;
+    
+    // Configure layout animation for content layout changes
+    LayoutAnimation.configureNext({
+      duration: 300,
+      create: {
+        type: LayoutAnimation.Types.easeInEaseOut,
+        property: LayoutAnimation.Properties.opacity,
+      },
+      update: {
+        type: LayoutAnimation.Types.easeInEaseOut,
+      },
+    });
+
+    // Animate height
+    Animated.timing(animatedHeight, {
+      toValue: newExpanded ? 1 : 0,
+      duration: 300,
+      easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+      useNativeDriver: false,
+    }).start();
+
+    // Animate chevron rotation
+    Animated.timing(chevronRotation, {
+      toValue: newExpanded ? 1 : 0,
+      duration: 300,
+      easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+      useNativeDriver: true,
+    }).start();
+
     setExpanded(newExpanded);
     onExpansionChange?.(newExpanded);
   };
+
+  // Chevron rotation interpolation
+  const chevronRotate = chevronRotation.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '180deg'],
+  });
+
+  // Height interpolation
+  const heightAnimation = animatedHeight.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, contentHeight.current || 0],
+  });
 
   return (
     <Card testID={testID} style={styles.card} elevation={0}>
@@ -69,17 +116,35 @@ testID,
                 {title}
               </Text>
             </View>
-            <Icon
-              source={expanded ? 'chevron-up' : 'chevron-down'}
-              size={24}
-              color={theme.colors.onPrimaryContainer}
-            />
+            <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
+              <Icon
+                source="chevron-down"
+                size={24}
+                color={theme.colors.onPrimaryContainer}
+              />
+            </Animated.View>
           </View>
         </TouchableOpacity>
 
-        {expanded && (
-          <Card.Content style={styles.content}>{children}</Card.Content>
-        )}
+        <Animated.View 
+          style={[
+            styles.animatedContent,
+            {
+              height: heightAnimation,
+              opacity: animatedHeight,
+            }
+          ]}
+        >
+          <View
+            style={styles.contentWrapper}
+            onLayout={(event) => {
+              const { height } = event.nativeEvent.layout;
+              contentHeight.current = height;
+            }}
+          >
+            <Card.Content style={styles.content}>{children}</Card.Content>
+          </View>
+        </Animated.View>
       </View>
     </Card>
   );
@@ -110,6 +175,15 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontWeight: '600',
+  },
+  animatedContent: {
+    overflow: 'hidden',
+  },
+  contentWrapper: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   content: {
     paddingTop: 16,

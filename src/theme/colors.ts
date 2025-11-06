@@ -1,109 +1,99 @@
 /**
- * Sophisticated Purple & Gold Color Palette for Salaty
- * Royal, spiritual aesthetic with muted tones and Islamic gold accents
- * OLED-optimized dark mode with true black backgrounds
+ * Enhanced Islamic Color Palette for Salaty
+ * Deep teal primary with gold accents - more spiritual and calming
+ * Improved contrast and accessibility
  */
 
 export const lightColors = {
-  // Primary - Muted Royal Purple
-  primary: '#6B4E9B',
+  // Primary - Deep Islamic Teal
+  primary: '#006A6A',
   onPrimary: '#FFFFFF',
-  primaryContainer: '#E8DFF5',
-  onPrimaryContainer: '#2A1944',
+  primaryContainer: '#B2E8E8',
+  onPrimaryContainer: '#001F1F',
 
-  // Secondary - Muted Gold/Brass
-  secondary: '#C9A961',
+  // Secondary - Rich Islamic Gold
+  secondary: '#B8860B',
   onSecondary: '#FFFFFF',
-  secondaryContainer: '#F5EDD9',
-  onSecondaryContainer: '#3D2F1A',
+  secondaryContainer: '#F8E4B1',
+  onSecondaryContainer: '#2D1F00',
 
-  // Tertiary - Dusty Purple
-  tertiary: '#8B7BA8',
+  // Tertiary - Soft Sage Green
+  tertiary: '#5A7A7A',
   onTertiary: '#FFFFFF',
-  tertiaryContainer: '#EDE8F3',
-  onTertiaryContainer: '#3A2D4F',
+  tertiaryContainer: '#D1E7E7',
+  onTertiaryContainer: '#0F2D2D',
 
-  // Error / Destructive
-  error: '#C07B7B',
+  // Error - Warm Red
+  error: '#BA1A1A',
   onError: '#FFFFFF',
-  errorContainer: '#F5E5E5',
-  onErrorContainer: '#5C2F2F',
+  errorContainer: '#FFDAD6',
+  onErrorContainer: '#410002',
 
-  // Background
-  background: '#FAFAFA',
-  onBackground: '#1A0F2A',
+  // Background - Warm White
+  background: '#FFFBFE',
+  onBackground: '#0D0F0F',
 
-  // Surface / Card
+  // Surface - Pure White
   surface: '#FFFFFF',
-  onSurface: '#1A0F2A',
-  surfaceVariant: '#F3EFF7',
-  onSurfaceVariant: '#4A3570',
+  onSurface: '#0D0F0F',
+  surfaceVariant: '#E5E5E5',
+  onSurfaceVariant: '#2D2D2D',
 
-  // Outline / Border
-  outline: 'rgba(107, 78, 155, 0.12)',
-  outlineVariant: 'rgba(107, 78, 155, 0.06)',
+  // Outline & Borders
+  outline: '#5A5A5A',
+  outlineVariant: '#CAC4D0',
 
-  // Other surfaces
-  surfaceDisabled: 'rgba(107, 78, 155, 0.12)',
-  onSurfaceDisabled: 'rgba(107, 78, 155, 0.38)',
-  backdrop: 'rgba(42, 25, 68, 0.5)',
-
-  // Elevation overlays
+  // Enhanced elevation system
   elevation: {
     level0: 'transparent',
-    level1: '#FCFCFC',
-    level2: '#F9F9F9',
-    level3: '#F6F6F6',
-    level4: '#F3F3F3',
-    level5: '#F0F0F0',
+    level1: '#FAFAFA',
+    level2: '#F5F5F5',
+    level3: '#F0F0F0',
+    level4: '#ECECEC',
+    level5: '#E8E8E8',
   },
 };
 
 export const darkColors = {
-  // Primary - Light Muted Purple for dark mode
-  primary: '#C4B1E0',
-  onPrimary: '#3A2459',
-  primaryContainer: '#4F3872',
-  onPrimaryContainer: '#E8DFF5',
+  // Primary - Light Teal for dark mode
+  primary: '#4CDADA',
+  onPrimary: '#003737',
+  primaryContainer: '#004F4F',
+  onPrimaryContainer: '#B2E8E8',
 
-  // Secondary - Warm Gold for dark mode
-  secondary: '#D4B876',
-  onSecondary: '#3A2E18',
-  secondaryContainer: '#54462C',
-  onSecondaryContainer: '#F5EDD9',
+  // Secondary - Warm Gold
+  secondary: '#FFD700',
+  onSecondary: '#4A2C00',
+  secondaryContainer: '#6B4E00',
+  onSecondaryContainer: '#F8E4B1',
 
-  // Tertiary - Light Dusty Purple
-  tertiary: '#B5A8C7',
-  onTertiary: '#2D2435',
-  tertiaryContainer: '#3F3549',
-  onTertiaryContainer: '#EDE8F3',
+  // Tertiary - Light Sage
+  tertiary: '#B0C7C7',
+  onTertiary: '#1C2D2D',
+  tertiaryContainer: '#2D4242',
+  onTertiaryContainer: '#D1E7E7',
 
-  // Error / Destructive
-  error: '#D89999',
-  onError: '#5C2F2F',
-  errorContainer: '#7A4545',
-  onErrorContainer: '#F5E5E5',
+  // Error - Light Red
+  error: '#FFB4AB',
+  onError: '#690005',
+  errorContainer: '#93000A',
+  onErrorContainer: '#FFDAD6',
 
-  // Background - True Black for OLED
+  // Background - True Black (OLED optimized)
   background: '#000000',
   onBackground: '#FFFFFF',
 
-  // Surface / Card - Elevated Dark Gray
+  // Surface - Dark Gray
   surface: '#1A1A1A',
   onSurface: '#FFFFFF',
-  surfaceVariant: '#2D2435',
-  onSurfaceVariant: '#E0D0F0',
+  surfaceVariant: '#2F2F2F',
+  onSurfaceVariant: '#F0F0F0',
 
-  // Outline / Border
-  outline: 'rgba(196, 177, 224, 0.15)',
-  outlineVariant: 'rgba(196, 177, 224, 0.08)',
+  // Outline & Borders
+  outline: '#B0B0B0',
+  outlineVariant: '#49454F',
 
-  // Other surfaces
-  surfaceDisabled: 'rgba(196, 177, 224, 0.12)',
-  onSurfaceDisabled: 'rgba(196, 177, 224, 0.38)',
-  backdrop: 'rgba(0, 0, 0, 0.8)',
-
-  // Elevation overlays for OLED
+  // Dark elevation overlays
   elevation: {
     level0: 'transparent',
     level1: '#1A1A1A',
@@ -114,76 +104,80 @@ export const darkColors = {
   },
 };
 
-// Expressive color extensions for special states and Islamic elements
+// Enhanced expressive colors for Islamic elements
 export const expressiveColors = {
-  // Prayer time indicators - Updated for purple theme
-  prayerActive: '#9B59D6', // Medium purple for current prayer
-  prayerUpcoming: '#D4B876', // Gold for next prayer
-  prayerCompleted: '#7BA897', // Muted sage green for done
-  prayerMissed: '#C07B7B', // Muted rose for missed
+  // Prayer states with better contrast
+  prayerActive: '#4CDADA', // Bright teal for current prayer
+  prayerUpcoming: '#FFD700', // Gold for next prayer
+  prayerCompleted: '#5A9A5A', // Sage green for completed
+  prayerMissed: '#E57373', // Soft red for missed
+  prayerDelayed: '#FFB74D', // Orange for delayed
 
   // Qibla compass
-  qiblaDirection: '#E6C86E', // Bright gold for Qibla arrow
-  compassBackground: 'rgba(107, 78, 155, 0.05)',
+  qiblaDirection: '#FFD700', // Gold for Qibla
+  compassBackground: 'rgba(0, 106, 106, 0.1)',
+  compassRose: '#4CDADA', // Teal for compass directions
 
-  // Navigation colors
-  navigationActive: '#C9A961', // Gold for active tab
-  navigationInactive: '#8B7BA8', // Muted purple for inactive
+  // Navigation
+  navigationActive: '#FFD700', // Gold for active
+  navigationInactive: '#5A7A7A', // Muted teal for inactive
   navigationBackgroundLight: '#FFFFFF',
   navigationBackgroundDark: '#1A1A1A',
 
   // Islamic design elements
-  geometricPattern: 'rgba(107, 78, 155, 0.03)', // Subtle pattern overlay
-  goldAccent: '#C9A961', // Primary gold accent
-  goldShimmer: '#E6C86E', // Brighter gold for highlights
+  geometricPattern: 'rgba(0, 106, 106, 0.05)',
+  goldAccent: '#FFD700', // Pure gold
+  goldShimmer: '#FFED4E', // Bright gold shimmer
+  islamicGreen: '#006A6A', // Traditional Islamic green
+  deepTeal: '#004F4F',
 
   // Success states
-  success: '#7BA897',
+  success: '#5A9A5A',
   onSuccess: '#FFFFFF',
-  successContainer: '#E5F1ED',
-  onSuccessContainer: '#2D4F42',
+  successContainer: '#D1E7E7',
+  onSuccessContainer: '#0F2D2D',
 
   // Warning states
-  warning: '#D4A855',
-  onWarning: '#3A2E18',
-  warningContainer: '#F5EDD9',
-  onWarningContainer: '#54462C',
+  warning: '#B8860B',
+  onWarning: '#FFFFFF',
+  warningContainer: '#F8E4B1',
+  onWarningContainer: '#2D1F00',
 
   // Additional semantic colors
-  muted: '#EDE8F3',
-  mutedForeground: '#8B7BA8',
-  accent: '#E8DFF5',
-  accentForeground: '#2A1944',
+  muted: '#E5E5E5',
+  mutedForeground: '#5A5A5A',
+  accent: '#B2E8E8',
+  accentForeground: '#001F1F',
   input: 'transparent',
-  inputBackground: '#F3EFF7',
-  switchBackground: '#C4B1E0',
-  ring: '#B5A8C7',
+  inputBackground: '#F5F5F5',
+  switchBackground: '#4CDADA',
+  ring: '#4CDADA',
+
+  // Gradients for special elements
+  gradients: {
+    prayerCard: ['#FFFFFF', '#F8FBFB'],
+    goldGradient: ['#FFD700', '#FFED4E'],
+    tealGradient: ['#006A6A', '#4CDADA'],
+    sunsetGradient: ['#FF6B6B', '#FFD700'],
+  },
 };
 
-// Additional dark mode expressive colors
+// Dark mode expressive colors
 export const darkExpressiveColors = {
-  // Navigation for dark mode
-  navigationBackgroundLight: '#FFFFFF',
-  navigationBackgroundDark: '#1A1A1A',
+  ...expressiveColors,
 
   // Dark mode adjustments
-  geometricPattern: 'rgba(196, 177, 224, 0.05)',
-  compassBackground: 'rgba(196, 177, 224, 0.08)',
+  geometricPattern: 'rgba(76, 218, 218, 0.08)',
+  compassBackground: 'rgba(0, 106, 106, 0.15)',
+  prayerCompleted: '#A5D4BF', // Lighter sage for dark mode
+  success: '#A5D4BF',
+  successContainer: '#1C3A32',
 
-  // Prayer colors - lighter for dark mode
-  prayerCompleted: '#A5D4BF', // Lighter sage green for better contrast
-
-  // Success states - lighter for dark mode
-  success: '#A5D4BF', // Lighter sage green
-  successContainer: '#2D4F42',
-
-  // Semantic adjustments
-  muted: '#2D2435',
-  mutedForeground: '#D0C0E0',
-  accent: '#4F3872',
-  accentForeground: '#FFFFFF',
-  input: '#2D2435',
-  inputBackground: '#1A1A1A',
-  switchBackground: '#4F3872',
-  ring: '#6B4E9B',
+  // Dark mode gradients
+  gradients: {
+    prayerCard: ['#1A1A1A', '#242424'],
+    goldGradient: ['#FFD700', '#B8860B'],
+    tealGradient: ['#4CDADA', '#006A6A'],
+    sunsetGradient: ['#FF6B6B', '#B8860B'],
+  },
 };

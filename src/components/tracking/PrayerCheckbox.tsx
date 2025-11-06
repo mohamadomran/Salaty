@@ -127,7 +127,7 @@ export function PrayerCheckbox({
           icon={getIcon()}
           iconColor={getIconColor()}
           size={32}
-          disabled={true}
+          onPress={handlePress}
           style={styles.checkbox}
         />
         <View style={styles.textContainer}>

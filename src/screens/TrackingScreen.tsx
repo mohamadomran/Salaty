@@ -13,7 +13,7 @@ import {
   SunnahCheckbox,
   CalendarView,
 } from '../components/tracking';
-import { ScreenContainer, SectionHeader, cardStyles } from '../components';
+import { ScreenContainer, PageHeader, cardStyles } from '../components';
 import { TrackingService } from '../services/tracking';
 import { PrayerService } from '../services/prayer';
 import { useAppContext } from '../contexts';
@@ -36,7 +36,6 @@ export default function TrackingScreen() {
     name: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
     time: string;
     status: PrayerStatus;
-    notes?: string;
   } | null>(null);
 
   // Handle modal dismissal with proper cleanup timing
@@ -75,7 +74,6 @@ export default function TrackingScreen() {
       name: prayerName,
       time: formatTime(state.prayerTimes[prayerName]),
       status: state.dailyRecord.prayers[prayerName].status,
-      notes: state.dailyRecord.prayers[prayerName].notes,
     };
 
     console.log('Setting selectedPrayer:', prayer);
@@ -84,10 +82,7 @@ export default function TrackingScreen() {
     console.log('Modal should be visible now');
   };
 
-  const handleConfirmModal = async (
-    status: PrayerStatus,
-    notes?: string,
-  ) => {
+  const handleConfirmModal = async (status: PrayerStatus) => {
     if (!selectedPrayer) return;
 
     try {
@@ -96,16 +91,6 @@ export default function TrackingScreen() {
         status,
         new Date(),
       );
-      
-      // Update notes separately if provided
-      if (notes) {
-        await TrackingService.updatePrayerStatus(
-          selectedPrayer.name,
-          status,
-          new Date(),
-          notes,
-        );
-      }
     } catch (error) {
       console.error('Error updating prayer status:', error);
     }
@@ -201,7 +186,6 @@ export default function TrackingScreen() {
         name: prayer,
         time: formatTime(state.prayerTimes![prayer]),
         status: prayerRecord.status,
-        notes: prayerRecord.notes,
       };
 
       if (timeStatus === PrayerTimeStatus.CURRENT) {
@@ -368,7 +352,7 @@ export default function TrackingScreen() {
       }
     >
       {/* Header */}
-      <SectionHeader
+      <PageHeader
         title="Today's Prayers"
         subtitle={new Date().toLocaleDateString('en-US', {
           weekday: 'long',
@@ -376,7 +360,6 @@ export default function TrackingScreen() {
           month: 'long',
           day: 'numeric',
         })}
-        showDivider={false}
       />
 
       {/* Stats Card */}
@@ -461,7 +444,6 @@ export default function TrackingScreen() {
         prayerName={selectedPrayer?.name || 'fajr'}
         prayerTime={selectedPrayer?.time || ''}
         currentStatus={selectedPrayer?.status || PrayerStatus.PENDING}
-        currentNotes={selectedPrayer?.notes}
         prayerTimes={state.prayerTimes || undefined}
         onConfirm={handleConfirmModal}
       />

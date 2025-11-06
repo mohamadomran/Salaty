@@ -24,6 +24,7 @@ import { useAppContext } from '../contexts';
 import { useReactiveUpdates } from '../hooks/useReactiveUpdates';
 import { QadaDebt, QadaPrayerRecord } from '../types';
 import type { ExpressiveTheme } from '../theme';
+import { PageHeader } from '../components';
 
 export default function QadaScreen() {
   const theme = useTheme<ExpressiveTheme>();
@@ -259,14 +260,10 @@ export default function QadaScreen() {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <Text variant="headlineMedium" style={styles.title}>
-            Qada Prayers (قضاء)
-          </Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>
-            Track and complete missed prayers
-          </Text>
-        </View>
+        <PageHeader
+          title="Qada Prayers"
+          subtitle="Track and complete missed prayers"
+        />
 
         {/* Summary Card */}
         <Card testID="qada-summary-card" style={styles.summaryCard} mode="elevated">
@@ -430,17 +427,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     color: '#006A6A',
-  },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontWeight: '700',
-    color: '#006A6A',
-    marginBottom: 4,
-  },
-  subtitle: {
-    color: '#4A6363',
   },
   summaryCard: {
     marginBottom: 24,

@@ -24,9 +24,8 @@ interface PrayerDetailsModalProps {
   prayerName: PrayerName;
   prayerTime: string;
   currentStatus: PrayerStatus;
-  currentNotes?: string;
   prayerTimes?: PrayerTimes; // For time-based logic
-  onConfirm: (status: PrayerStatus, notes?: string) => void;
+  onConfirm: (status: PrayerStatus) => void;
 }
 
 export function PrayerDetailsModal({
@@ -35,13 +34,11 @@ export function PrayerDetailsModal({
   prayerName,
   prayerTime,
   currentStatus,
-  currentNotes,
   prayerTimes,
   onConfirm,
 }: PrayerDetailsModalProps) {
   const theme = useTheme<ExpressiveTheme>();
   const [selectedStatus, setSelectedStatus] = useState<PrayerStatus>(currentStatus);
-  const [notes, setNotes] = useState(currentNotes || '');
 
   // Get available actions based on prayer time
   const prayerActions = prayerTimes ? 
@@ -50,18 +47,16 @@ export function PrayerDetailsModal({
   // Update local state when props change
   useEffect(() => {
     setSelectedStatus(currentStatus);
-    setNotes(currentNotes || '');
-  }, [currentStatus, currentNotes, visible]);
+  }, [currentStatus, visible]);
 
   const handleConfirm = () => {
-    onConfirm(selectedStatus, notes.trim() || undefined);
+    onConfirm(selectedStatus);
     onDismiss();
   };
 
   const handleCancel = () => {
     // Reset to current values
     setSelectedStatus(currentStatus);
-    setNotes(currentNotes || '');
     onDismiss();
   };
 
@@ -135,48 +130,30 @@ export function PrayerDetailsModal({
               onValueChange={(value) => setSelectedStatus(value as PrayerStatus)}
               buttons={
                 // Filter buttons based on available actions
-                prayerActions 
+                prayerActions
                   ? prayerActions.availableStatuses.map(status => ({
                       value: status,
                       label: getStatusLabel(status),
                       icon: getStatusIcon(status),
-                       style: selectedStatus === status
-                         ? { 
-                             backgroundColor: 
-                               status === PrayerStatus.COMPLETED ? theme.expressiveColors.prayerCompleted + '20' :
-                               status === PrayerStatus.DELAYED ? theme.expressiveColors.prayerUpcoming + '20' :
-                               status === PrayerStatus.MISSED ? theme.expressiveColors.prayerMissed + '20' :
-                               status === PrayerStatus.QADA ? theme.colors.secondaryContainer + '20' :
-                               theme.colors.surfaceVariant + '20'
-                           }
-                         : undefined,
                     }))
                   : [
                     {
                       value: PrayerStatus.COMPLETED,
                       label: 'Prayed',
                       icon: getStatusIcon(PrayerStatus.COMPLETED),
-                      style: selectedStatus === PrayerStatus.COMPLETED
-                        ? { backgroundColor: theme.expressiveColors.prayerCompleted + '20' }
-                        : undefined,
                     },
                     {
                       value: PrayerStatus.DELAYED,
                       label: 'Delayed',
                       icon: getStatusIcon(PrayerStatus.DELAYED),
-                      style: selectedStatus === PrayerStatus.DELAYED
-                        ? { backgroundColor: theme.expressiveColors.prayerUpcoming + '20' }
-                        : undefined,
                     },
                     {
                       value: PrayerStatus.MISSED,
                       label: 'Missed',
                       icon: getStatusIcon(PrayerStatus.MISSED),
-                      style: selectedStatus === PrayerStatus.MISSED
-                        ? { backgroundColor: theme.expressiveColors.prayerMissed + '20' }
-                    : undefined,
-                },
-              ]}
+                    },
+                  ]
+              }
               style={styles.segmentedButtons}
             />
 
@@ -189,20 +166,7 @@ export function PrayerDetailsModal({
               </View>
             )}
 
-            {/* Notes Input */}
-            <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-              Notes (Optional)
-            </Text>
-            <TextInput
-              testID="prayer-notes-input"
-              mode="outlined"
-              value={notes}
-              onChangeText={setNotes}
-              placeholder="Add notes..."
-              multiline
-              numberOfLines={3}
-              style={styles.notesInput}
-            />
+            
           </ScrollView>
         </Dialog.Content>
 
@@ -255,9 +219,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  notesInput: {
-    marginBottom: 8,
-  },
+
   confirmButton: {
     marginLeft: 8,
   },

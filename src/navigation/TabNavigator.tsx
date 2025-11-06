@@ -43,7 +43,7 @@ const CustomTabBar = React.memo(({ state, descriptors, navigation }: any) => {
         <View
           style={[
             styles.darkPill,
-            { backgroundColor: theme.dark ? '#1C1C1E' : '#1C1C1E' },
+            { backgroundColor: theme.colors.surface },
           ]}
         >
           {state.routes.slice(0, 4).map((route: any, index: number) => {
@@ -75,7 +75,7 @@ const CustomTabBar = React.memo(({ state, descriptors, navigation }: any) => {
                 <Icon
                   source={iconMap[route.name] || 'circle'}
                   size={24}
-                  color={isFocused ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)'}
+                  color={isFocused ? theme.expressiveColors.goldAccent : theme.colors.onSurfaceVariant}
                 />
               </TouchableOpacity>
             );
@@ -90,14 +90,14 @@ const CustomTabBar = React.memo(({ state, descriptors, navigation }: any) => {
           onPress={() => navigation.navigate('Settings')}
           style={[
             styles.profileButton,
-            { backgroundColor: theme.dark ? '#FFFFFF' : '#FFFFFF' },
+            { backgroundColor: theme.expressiveColors.goldAccent },
             state.index === 4 && styles.profileButtonActive,
           ]}
         >
           <Icon
             source={iconMap['Settings']}
             size={26}
-            color={state.index === 4 ? '#1C1C1E' : '#1C1C1E'}
+            color={state.index === 4 ? theme.colors.onPrimary : theme.colors.onPrimary}
           />
         </TouchableOpacity>
       </View>

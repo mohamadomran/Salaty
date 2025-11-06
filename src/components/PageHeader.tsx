@@ -39,26 +39,26 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           <IconButton
             icon="arrow-left"
             size={24}
-            iconColor={theme.colors.onBackground}
+            iconColor={theme.colors.onPrimary}
             onPress={onBackPress}
           />
         )}
         {icon && !showBackButton && (
-          <View style={styles.iconContainer}>
-            <Icon source={icon} size={28} color={theme.colors.onBackground} />
+          <View style={[styles.iconContainer, { backgroundColor: theme.colors.primary }]}>
+            <Icon source={icon} size={28} color={theme.colors.onPrimary} />
           </View>
         )}
         <View style={styles.titleSection}>
           <Text
-            variant="headlineMedium"
-            style={[styles.title, { color: theme.colors.onBackground }]}
+            variant="displaySmall"
+            style={[styles.title, { color: '#FFFFFF' }]}
           >
             {title}
           </Text>
           {subtitle && (
             <Text
               variant="bodyMedium"
-              style={[styles.subtitle, { color: theme.colors.onSurfaceVariant }]}
+              style={[styles.subtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}
             >
               {subtitle}
             </Text>
@@ -72,7 +72,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             key={index}
             icon={action.icon}
             size={24}
-            iconColor={theme.colors.onBackground}
+            iconColor={theme.colors.onSurface}
             onPress={action.onPress}
           />
         ))}
@@ -94,10 +94,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   titleSection: {
     flex: 1,
     marginLeft: 8,
+    alignItems: 'flex-start',
   },
   rightSection: {
     flexDirection: 'row',
@@ -113,8 +115,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
+    textAlign: 'left',
   },
   subtitle: {
     marginTop: 4,
+    textAlign: 'left',
   },
 });

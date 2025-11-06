@@ -59,14 +59,22 @@ export function getPrayerTimeStatus(
     return PrayerTimeStatus.FUTURE;
   }
 
-  // Check if this prayer is current one
+  // Simple time comparison - if prayer time has passed, it's PAST
+  const timeDiff = prayerTime.getTime() - currentTime.getTime();
+  
+  if (timeDiff > 0) {
+    // Prayer time is in the future
+    return PrayerTimeStatus.FUTURE;
+  }
+
+  // Check if this prayer is the most recent past prayer (making it "current" for tracking)
   const nextPrayerIndex = prayerTimesArray.findIndex(p => 
     p.time.getTime() > currentTime.getTime()
   );
 
   if (nextPrayerIndex === -1) {
-    // After Isha, all prayers are past
-    return PrayerTimeStatus.PAST;
+    // After Isha, all prayers are past, but the last one (isha) is considered "current" for tracking
+    return currentIndex === prayerTimesArray.length - 1 ? PrayerTimeStatus.CURRENT : PrayerTimeStatus.PAST;
   }
 
   const currentPrayerIndex = nextPrayerIndex === 0 ? 
@@ -74,10 +82,8 @@ export function getPrayerTimeStatus(
 
   if (currentIndex === currentPrayerIndex) {
     return PrayerTimeStatus.CURRENT;
-  } else if (currentIndex < currentPrayerIndex) {
-    return PrayerTimeStatus.PAST;
   } else {
-    return PrayerTimeStatus.FUTURE;
+    return PrayerTimeStatus.PAST;
   }
 }
 
@@ -87,7 +93,7 @@ export function getPrayerTimeStatus(
 export function getPrayerActions(
   prayerName: PrayerName,
   prayerTimes: PrayerTimes,
-  _currentStatus: PrayerStatus,
+  currentStatus: PrayerStatus,
   currentTime: Date = new Date()
 ): PrayerActions {
   const timeStatus = getPrayerTimeStatus(prayerName, prayerTimes, currentTime);
@@ -95,24 +101,33 @@ export function getPrayerActions(
   switch (timeStatus) {
     case PrayerTimeStatus.PAST:
       // Past prayers: Can mark as Completed (prayed) or Missed (adds to qada)
+      // If already completed, can also change to other statuses
+      const pastStatuses = currentStatus === PrayerStatus.PENDING 
+        ? [PrayerStatus.COMPLETED, PrayerStatus.MISSED]
+        : [PrayerStatus.COMPLETED, PrayerStatus.MISSED, PrayerStatus.DELAYED];
+      
       return {
         canMarkCompleted: true,
         canMarkMissed: true,
-        canMarkDelayed: false,
-        availableStatuses: [PrayerStatus.COMPLETED, PrayerStatus.MISSED],
+        canMarkDelayed: currentStatus !== PrayerStatus.PENDING,
+        availableStatuses: pastStatuses,
         timeStatus,
-        nextActionText: 'Mark as prayed or missed',
+        nextActionText: currentStatus === PrayerStatus.PENDING ? 'Mark as prayed or missed' : 'Update status',
       };
 
     case PrayerTimeStatus.CURRENT:
-      // Current prayer: Can only mark as Completed (prayed)
+      // Current prayer: Can mark as Completed, or if already completed, can update
+      const currentStatuses = currentStatus === PrayerStatus.PENDING
+        ? [PrayerStatus.COMPLETED]
+        : [PrayerStatus.COMPLETED, PrayerStatus.DELAYED];
+      
       return {
         canMarkCompleted: true,
         canMarkMissed: false,
-        canMarkDelayed: false,
-        availableStatuses: [PrayerStatus.COMPLETED],
+        canMarkDelayed: currentStatus !== PrayerStatus.PENDING,
+        availableStatuses: currentStatuses,
         timeStatus,
-        nextActionText: 'Mark as prayed',
+        nextActionText: currentStatus === PrayerStatus.PENDING ? 'Mark as prayed' : 'Update status',
       };
 
     case PrayerTimeStatus.FUTURE:
