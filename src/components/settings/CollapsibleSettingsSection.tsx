@@ -39,7 +39,7 @@ export const CollapsibleSettingsSection: React.FC<
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const theme = useTheme();
-  
+
   // Animation refs
   const animatedHeight = useRef(new Animated.Value(defaultExpanded ? 1 : 0)).current;
   const chevronRotation = useRef(new Animated.Value(defaultExpanded ? 1 : 0)).current;
@@ -47,26 +47,15 @@ export const CollapsibleSettingsSection: React.FC<
 
   const toggleExpansion = () => {
     const newExpanded = !expanded;
-    
-    // Configure layout animation for content layout changes
-    LayoutAnimation.configureNext({
-      duration: 300,
-      create: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-        property: LayoutAnimation.Properties.opacity,
-      },
-      update: {
-        type: LayoutAnimation.Types.easeInEaseOut,
-      },
-    });
 
-    // Animate height
-    Animated.timing(animatedHeight, {
-      toValue: newExpanded ? 1 : 0,
-      duration: 300,
-      easing: Easing.bezier(0.4, 0.0, 0.2, 1),
-      useNativeDriver: false,
-    }).start();
+    // Configure layout animation for smooth content changes
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(
+        300,
+        LayoutAnimation.Types.easeInEaseOut,
+        LayoutAnimation.Properties.opacity
+      )
+    );
 
     // Animate chevron rotation
     Animated.timing(chevronRotation, {
@@ -74,6 +63,14 @@ export const CollapsibleSettingsSection: React.FC<
       duration: 300,
       easing: Easing.bezier(0.4, 0.0, 0.2, 1),
       useNativeDriver: true,
+    }).start();
+
+    // Animate height
+    Animated.timing(animatedHeight, {
+      toValue: newExpanded ? 1 : 0,
+      duration: 300,
+      easing: Easing.bezier(0.4, 0.0, 0.2, 1),
+      useNativeDriver: false,
     }).start();
 
     setExpanded(newExpanded);
@@ -87,9 +84,9 @@ export const CollapsibleSettingsSection: React.FC<
   });
 
   // Height interpolation
-  const heightAnimation = animatedHeight.interpolate({
+  const maxHeight = animatedHeight.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, contentHeight.current || 0],
+    outputRange: [0, contentHeight.current || 2000], // Use large number if not measured yet
   });
 
   return (
@@ -100,17 +97,17 @@ export const CollapsibleSettingsSection: React.FC<
           activeOpacity={0.7}
           style={[
             styles.headerContainer,
-            { backgroundColor: theme.colors.primaryContainer },
+            { backgroundColor: theme.colors.primary },
           ]}
         >
           <View style={styles.headerContent}>
             <View style={styles.headerLeft}>
-              <Icon source={icon} size={24} color={theme.colors.onPrimaryContainer} />
+              <Icon source={icon} size={24} color={theme.colors.onPrimary} />
               <Text
                 variant="titleMedium"
                 style={[
                   styles.headerTitle,
-                  { color: theme.colors.onPrimaryContainer },
+                  { color: theme.colors.onPrimary },
                 ]}
               >
                 {title}
@@ -120,18 +117,19 @@ export const CollapsibleSettingsSection: React.FC<
               <Icon
                 source="chevron-down"
                 size={24}
-                color={theme.colors.onPrimaryContainer}
+                color={theme.colors.onPrimary}
               />
             </Animated.View>
           </View>
         </TouchableOpacity>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.animatedContent,
             {
-              height: heightAnimation,
+              maxHeight: maxHeight,
               opacity: animatedHeight,
+              backgroundColor: theme.colors.surface,
             }
           ]}
         >
@@ -139,7 +137,9 @@ export const CollapsibleSettingsSection: React.FC<
             style={styles.contentWrapper}
             onLayout={(event) => {
               const { height } = event.nativeEvent.layout;
-              contentHeight.current = height;
+              if (height > 0 && contentHeight.current !== height) {
+                contentHeight.current = height;
+              }
             }}
           >
             <Card.Content style={styles.content}>{children}</Card.Content>
@@ -180,10 +180,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   contentWrapper: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
+    // Removed position absolute to allow natural height
   },
   content: {
     paddingTop: 16,

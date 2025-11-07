@@ -20,7 +20,8 @@
     "no": "No",
     "search": "Search",
     "all": "All",
-    "none": "None"
+    "none": "None",
+    "total": "Total"
   },
   "prayers": {
     "fajr": "Fajr",
@@ -184,7 +185,8 @@
     "detecting": "Detecting your location...",
     "city": "City",
     "country": "Country",
-    "coordinates": "Coordinates"
+    "coordinates": "Coordinates",
+    "noLocationSet": "No location set"
   },
   "errors": {
     "generic": "Something went wrong",

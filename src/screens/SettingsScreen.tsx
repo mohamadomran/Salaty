@@ -36,7 +36,7 @@ import {
   Language,
   ImportExportDialog,
 } from '../components/settings';
-import { SkeletonCard } from '../components/LoadingSkeleton';
+import { Skeleton } from '../components';
 import { PageHeader } from '../components/PageHeader';
 import { LocationSetupScreen } from './';
 import { LocationPreferenceService } from '../services/location';
@@ -301,9 +301,18 @@ export default function SettingsScreen() {
       >
         <View style={styles.content}>
           <PageHeader title={t('settings.title')} />
-          <SkeletonCard variant="settings" />
-          <SkeletonCard variant="settings" />
-          <SkeletonCard variant="settings" />
+          <View style={styles.skeletonCard}>
+            <Skeleton width={150} height={24} style={styles.skeletonMargin} />
+            <Skeleton width="100%" height={16} style={styles.skeletonMargin} />
+            <Skeleton width="80%" height={16} style={styles.skeletonMargin} />
+            <Skeleton width="100%" height={48} />
+          </View>
+          <View style={styles.skeletonCard}>
+            <Skeleton width={150} height={24} style={styles.skeletonMargin} />
+            <Skeleton width="100%" height={16} style={styles.skeletonMargin} />
+            <Skeleton width="80%" height={16} style={styles.skeletonMargin} />
+            <Skeleton width="100%" height={48} />
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -351,7 +360,7 @@ export default function SettingsScreen() {
               <View style={{ padding: 20, alignItems: 'center' }}>
                 <ActivityIndicator size="large" />
                 <Text style={{ marginTop: 10, color: theme.colors.onSurfaceVariant }}>
-                  Loading calculation methods...
+                  {t('common.loading')}
                 </Text>
               </View>
             )}
@@ -360,10 +369,10 @@ export default function SettingsScreen() {
             {methodsError && !calculationMethods && (
               <View style={{ padding: 20, alignItems: 'center' }}>
                 <Text style={{ color: theme.colors.error, marginBottom: 10 }}>
-                  Failed to load calculation methods
+                  {t('errors.generic')}
                 </Text>
                 <Button mode="contained" onPress={() => refetchMethods()}>
-                  Retry
+                  {t('common.retry')}
                 </Button>
               </View>
             )}
@@ -371,7 +380,7 @@ export default function SettingsScreen() {
             {/* Background Refresh Indicator */}
             {methodsRefetching && calculationMethods && (
               <Text style={{ padding: 10, color: theme.colors.primary, textAlign: 'center' }}>
-                Syncing methods...
+                {t('common.loading')}
               </Text>
             )}
 
@@ -513,8 +522,8 @@ export default function SettingsScreen() {
             <Divider style={styles.divider} />
 
             <List.Item
-              title="Show Sunrise & Sunset"
-              description="Display sunrise and sunset times with prayer times"
+              title={t('settings.showSunriseSunset')}
+              description={t('settings.showSunriseSunsetDesc')}
               left={props => <List.Icon {...props} icon="weather-sunset" />}
               right={() => (
                 <Switch
@@ -528,13 +537,13 @@ export default function SettingsScreen() {
           {/* Notifications Section */}
           <CollapsibleSettingsSection
             testID="notifications-setting"
-            title="Notifications"
+            title={t('settings.notifications')}
             icon="bell"
             defaultExpanded={false}
           >
             <List.Item
-              title="Enable Notifications"
-              description="Receive prayer time notifications"
+              title={t('settings.enableNotifications')}
+              description={t('settings.notificationsDesc')}
               left={props => <List.Icon {...props} icon="bell-ring" />}
               right={() => (
                 <Switch
@@ -549,16 +558,14 @@ export default function SettingsScreen() {
               variant="bodySmall"
               style={[styles.comingSoon, { color: theme.colors.outline }]}
             >
-              Full notification features coming in a future update. This will
-              include customizable reminder times, notification sounds, and per-prayer
-              notification settings.
+              {t('settings.comingSoon')}
             </Text>
           </CollapsibleSettingsSection>
 
           {/* Location Section */}
           <CollapsibleSettingsSection
             testID="location-setting"
-            title="Location"
+            title={t('settings.location')}
             icon="map-marker"
             defaultExpanded={false}
           >
@@ -568,16 +575,16 @@ export default function SettingsScreen() {
                   variant="labelLarge"
                   style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
                 >
-                  Current Location
+                  {t('settings.currentLocation')}
                 </Text>
                 <List.Item
-                  title={locationInfo.source === 'gps' ? 'GPS Location' : 'Manual Location'}
+                  title={locationInfo.source === 'gps' ? t('settings.gpsLocation') : t('settings.manualLocation')}
                   description={
                     locationInfo.cityName || locationInfo.displayName
                       ? `${locationInfo.cityName || locationInfo.displayName}${locationInfo.country ? `, ${locationInfo.country}` : ''}`
                       : locationInfo.coordinates
                         ? `${locationInfo.coordinates.latitude.toFixed(4)}, ${locationInfo.coordinates.longitude.toFixed(4)}`
-                        : 'No location set'
+                        : t('location.noLocationSet')
                   }
                   left={props => (
                     <List.Icon
@@ -598,20 +605,20 @@ export default function SettingsScreen() {
               icon="map-marker-radius"
               style={styles.changeLocationButton}
             >
-              Change Location
+              {t('settings.changeLocation')}
             </Button>
 
             <Text
               variant="bodySmall"
               style={[styles.description, { color: theme.colors.outline, marginTop: 12 }]}
             >
-              Changing your location will update prayer times to match your new location.
+              {t('settings.locationChangeDesc')}
             </Text>
           </CollapsibleSettingsSection>
 
           {/* Advanced Settings Section */}
           <CollapsibleSettingsSection
-            title="Advanced"
+            title={t('settings.advanced')}
             icon="cog"
             defaultExpanded={false}
           >
@@ -621,13 +628,13 @@ export default function SettingsScreen() {
               icon="swap-horizontal"
               style={styles.importExportButton}
             >
-              Import / Export Settings
+              {t('settings.importExport')}
             </Button>
 
             <Divider style={styles.divider} />
 
             <List.Item
-              title="App Version"
+              title={t('settings.appVersion')}
               description={settings.version}
               left={props => <List.Icon {...props} icon="information" />}
             />
@@ -643,7 +650,7 @@ export default function SettingsScreen() {
               ]}
               textColor={theme.colors.error}
             >
-              Reset to Defaults
+              {t('settings.resetToDefaults')}
             </Button>
           </CollapsibleSettingsSection>
         </View>
@@ -673,7 +680,7 @@ export default function SettingsScreen() {
         onDismiss={() => setSnackbarVisible(false)}
         duration={2500}
         action={{
-          label: 'OK',
+          label: t('common.ok'),
           onPress: () => setSnackbarVisible(false),
         }}
         style={styles.snackbar}
@@ -728,5 +735,13 @@ const styles = StyleSheet.create({
   },
   snackbar: {
     marginBottom: 80,
+  },
+  skeletonCard: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  skeletonMargin: {
+    marginBottom: 12,
   },
 });

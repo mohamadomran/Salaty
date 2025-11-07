@@ -73,7 +73,7 @@ export default function StatisticsScreen() {
       const { stats, analytics, performance } = await StatisticsService.getOptimizedStats(
         startDate,
         endDate,
-        { includeTrends: true, useCache: true }
+        { includeTrends: false, useCache: true }
       );
       const prayerAnalytics: PrayerAnalytics[] = [];
       
@@ -230,7 +230,7 @@ export default function StatisticsScreen() {
                 <Text variant="titleMedium" style={{ color: theme.colors.primary }}>
                   {prayer.total}
                 </Text>
-                <Text variant="bodySmall">Total</Text>
+                <Text variant="bodySmall">{t('common.total')}</Text>
               </View>
             </View>
           </Card.Content>
@@ -243,7 +243,7 @@ export default function StatisticsScreen() {
     return (
       <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text variant="bodyLarge">Loading analytics...</Text>
+          <Text variant="bodyLarge">{t('common.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -267,9 +267,9 @@ export default function StatisticsScreen() {
           value={timeRange}
           onValueChange={setTimeRange}
           buttons={[
-            { value: 'week', label: 'Week' },
-            { value: 'month', label: 'Month' },
-            { value: 'year', label: 'Year' },
+            { value: 'week', label: t('statistics.week') },
+            { value: 'month', label: t('statistics.month') },
+            { value: 'year', label: t('statistics.year') },
           ]}
           style={styles.timeRangeSelector}
         />
@@ -298,7 +298,7 @@ const createStyles = (theme: ExpressiveTheme) => StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 100, // Space for bottom navigation
+    paddingBottom: 120, // Space for bottom navigation
   },
   timeRangeSelector: {
     marginBottom: 24,

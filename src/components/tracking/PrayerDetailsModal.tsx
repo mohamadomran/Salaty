@@ -14,9 +14,12 @@ import {
   SegmentedButtons,
   useTheme,
 } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { PrayerStatus, PrayerName, PrayerTimes } from '../../types';
 import type { ExpressiveTheme } from '../../theme';
 import { getPrayerActions } from '../../utils/prayerTimeLogic';
+import { useLanguage } from '../../contexts';
+import { getPrayerName } from '../../constants/prayerNames';
 
 interface PrayerDetailsModalProps {
   visible: boolean;
@@ -38,6 +41,8 @@ export function PrayerDetailsModal({
   onConfirm,
 }: PrayerDetailsModalProps) {
   const theme = useTheme<ExpressiveTheme>();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [selectedStatus, setSelectedStatus] = useState<PrayerStatus>(currentStatus);
 
   // Get available actions based on prayer time
@@ -63,16 +68,16 @@ export function PrayerDetailsModal({
   const getStatusLabel = (status: PrayerStatus): string => {
     switch (status) {
       case PrayerStatus.COMPLETED:
-        return 'Prayed';
+        return t('status.prayed');
       case PrayerStatus.MISSED:
-        return 'Missed';
+        return t('status.missed');
       case PrayerStatus.DELAYED:
-        return 'Delayed';
+        return t('status.delayed');
       case PrayerStatus.QADA:
-        return 'Add to Qada';
+        return t('status.addToQada');
       case PrayerStatus.PENDING:
       default:
-        return 'Pending';
+        return t('status.pending');
     }
   };
 
@@ -101,7 +106,7 @@ export function PrayerDetailsModal({
         style={styles.dialog}
       >
         <Dialog.Title testID="prayer-title-text" style={styles.title}>
-          {prayerName} Prayer
+          {getPrayerName(prayerName, language)}
         </Dialog.Title>
 
         <Dialog.Content>
@@ -109,13 +114,13 @@ export function PrayerDetailsModal({
             {/* Prayer Time */}
             <View style={styles.timeContainer}>
               <Text testID="prayer-time-text" variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                Time: {prayerTime}
+                {t('prayerDetails.time', { time: prayerTime })}
               </Text>
             </View>
 
             {/* Status Selection */}
             <Text variant="titleSmall" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-              Status
+              {t('prayerDetails.status')}
             </Text>
             
             {/* Time-based message */}
@@ -139,17 +144,17 @@ export function PrayerDetailsModal({
                   : [
                     {
                       value: PrayerStatus.COMPLETED,
-                      label: 'Prayed',
+                      label: getStatusLabel(PrayerStatus.COMPLETED),
                       icon: getStatusIcon(PrayerStatus.COMPLETED),
                     },
                     {
                       value: PrayerStatus.DELAYED,
-                      label: 'Delayed',
+                      label: getStatusLabel(PrayerStatus.DELAYED),
                       icon: getStatusIcon(PrayerStatus.DELAYED),
                     },
                     {
                       value: PrayerStatus.MISSED,
-                      label: 'Missed',
+                      label: getStatusLabel(PrayerStatus.MISSED),
                       icon: getStatusIcon(PrayerStatus.MISSED),
                     },
                   ]
@@ -161,24 +166,24 @@ export function PrayerDetailsModal({
             {selectedStatus === PrayerStatus.QADA && (
               <View style={styles.qadaHint}>
                 <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                  This prayer will be added to your Qada list to be made up later
+                  {t('prayerDetails.qadaHint')}
                 </Text>
               </View>
             )}
 
-            
+
           </ScrollView>
         </Dialog.Content>
 
         <Dialog.Actions>
-          <Button testID="close-modal-button" onPress={handleCancel}>Cancel</Button>
+          <Button testID="close-modal-button" onPress={handleCancel}>{t('common.cancel')}</Button>
           <Button
             testID="save-notes-button"
             onPress={handleConfirm}
             mode="contained"
             style={styles.confirmButton}
           >
-            Confirm
+            {t('common.confirm')}
           </Button>
         </Dialog.Actions>
       </Dialog>

@@ -27,7 +27,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   contentContainerStyle,
   style,
   edges = ['top', 'left', 'right'],
-  paddingBottom = 100,
+  paddingBottom = 120,
   testID,
 }) => {
   const theme = useTheme<ExpressiveTheme>();

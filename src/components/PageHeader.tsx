@@ -54,14 +54,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         <View style={styles.titleSection}>
           <Text
             variant="displaySmall"
-            style={[styles.title, { color: '#FFFFFF', textAlign: isRTL ? 'right' : 'left' }]}
+            style={[styles.title, { color: theme.colors.onSurface, textAlign: isRTL ? 'right' : 'left' }]}
           >
             {title}
           </Text>
           {subtitle && (
             <Text
               variant="bodyMedium"
-              style={[styles.subtitle, { color: 'rgba(255, 255, 255, 0.8)', textAlign: isRTL ? 'right' : 'left' }]}
+              style={[styles.subtitle, { color: theme.colors.onSurfaceVariant, textAlign: isRTL ? 'right' : 'left' }]}
             >
               {subtitle}
             </Text>

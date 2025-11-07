@@ -2,6 +2,9 @@
  * Component exports
  */
 
+// Common/Base Components
+export * from './common';
+
 export { GeometricPattern } from './GeometricPattern';
 export { GoldAccent } from './GoldAccent';
 export { default as ErrorBoundary } from './ErrorBoundary';

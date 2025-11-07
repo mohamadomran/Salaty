@@ -43,7 +43,7 @@ const CustomTabBar = React.memo(({ state, descriptors, navigation }: any) => {
         <View
           style={[
             styles.darkPill,
-            { backgroundColor: theme.colors.surface },
+            { backgroundColor: theme.colors.elevation.level2 },
           ]}
         >
           {state.routes.slice(0, 4).map((route: any, index: number) => {
@@ -158,6 +158,17 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     flex: 1,
     marginRight: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   tabButton: {
     flex: 1,
@@ -171,6 +182,17 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 8,
+      },
+    }),
   },
   profileButtonActive: {
     // Optional: Add active state styling

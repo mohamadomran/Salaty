@@ -20,7 +20,8 @@
     "no": "لا",
     "search": "بحث",
     "all": "الكل",
-    "none": "لا شيء"
+    "none": "لا شيء",
+    "total": "المجموع"
   },
   "prayers": {
     "fajr": "الفجر",
@@ -184,7 +185,8 @@
     "detecting": "جار اكتشاف موقعك...",
     "city": "المدينة",
     "country": "البلد",
-    "coordinates": "الإحداثيات"
+    "coordinates": "الإحداثيات",
+    "noLocationSet": "لم يتم تحديد موقع"
   },
   "errors": {
     "generic": "حدث خطأ ما",
