@@ -5,6 +5,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 ## ✨ Features
 
 ### 🎯 Core Functionality
+
 - **Accurate Prayer Times**: All 5 daily prayers (Fajr, Dhuhr, Asr, Maghrib, Isha) with precise calculations
 - **10 Calculation Methods**: Including Umm Al-Qura (Makkah), Muslim World League, and more
 - **Location-Based**: Automatic location detection with manual override options
@@ -12,6 +13,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - **Madhab Support**: Shafi'i and Hanafi jurisprudence for Asr calculation
 
 ### 📊 Prayer Tracking System
+
 - **Daily Checklist**: Interactive checkboxes for all 5 prayers with status management
 - **Smart Status Tracking**: Pending → Completed → Delayed → Missed
 - **Progress Statistics**: Real-time completion rates and daily summaries
@@ -19,6 +21,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - **Pull-to-Refresh**: Quick data synchronization
 
 ### 🎨 Design & UX
+
 - **Material Design 3 Expressive**: Modern, elevated design with Islamic theming
 - **Dynamic Theming**: Light/Dark/Auto modes with seamless transitions
 - **Responsive Layout**: Optimized for both iOS and Android devices
@@ -26,6 +29,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - **Smooth Animations**: Spring-based transitions and micro-interactions
 
 ### ⚙️ Settings & Customization
+
 - **Prayer Calculation**: Method selector with 10+ calculation options
 - **Time Formats**: 12/24 hour display toggle
 - **Sunrise/Sunset**: Optional display of additional Islamic times
@@ -35,6 +39,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 ## 🛠 Tech Stack
 
 ### Core Technologies
+
 - **React Native**: 0.82.1 - Cross-platform mobile framework
 - **TypeScript**: 5.8.3 - Type-safe development
 - **React Native Paper**: 5.14.5 - Material Design 3 components
@@ -42,6 +47,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - **TanStack Query**: 5.90.7 - Data fetching and caching
 
 ### Specialized Libraries
+
 - **Adhan**: 4.4.3 - Islamic prayer time calculations
 - **React Native Geolocation**: 5.3.1 - Location services
 - **AsyncStorage**: 1.24.0 - Local data persistence
@@ -50,6 +56,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - **React Native Reanimated**: 4.1.3 - Smooth animations
 
 ### Development Tools
+
 - **ESLint**: Code quality and consistency
 - **Prettier**: Code formatting
 - **Jest**: Unit testing
@@ -59,6 +66,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 ## 📱 Screens
 
 ### 🏠 Home Screen
+
 - Current location display with coordinates
 - Next prayer countdown with time remaining
 - Complete daily prayer schedule
@@ -67,6 +75,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - Settings summary display
 
 ### ✅ Tracking Screen
+
 - Today's prayer checklist with interactive checkboxes
 - Real-time progress statistics
 - Status cycling (Pending → Completed → Delayed → Missed)
@@ -74,12 +83,14 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 - Export/import backup options
 
 ### 🧭 Qibla Screen
+
 - Compass integration for Qibla direction
 - Distance to Kaaba display
 - Calibration instructions
 - Haptic feedback when aligned
 
 ### ⚙️ Settings Screen
+
 - Prayer calculation method selector (10 methods)
 - Madhab selector (Shafi'i/Hanafi)
 - Time format toggle (12/24 hour)
@@ -90,6 +101,7 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - **Node.js**: 20+
 - **React Native CLI**: Global installation
 - **iOS Development** (macOS only):
@@ -103,12 +115,14 @@ A modern React Native application for accurate Islamic prayer times, Qibla direc
 ### Installation
 
 1. **Clone the repository**:
+
 ```bash
 git clone <repository-url>
 cd Salaty
 ```
 
 2. **Install dependencies**:
+
 ```bash
 npm install
 # or
@@ -116,6 +130,7 @@ yarn install
 ```
 
 3. **iOS: Install CocoaPods dependencies**:
+
 ```bash
 cd ios && pod install && cd ..
 ```
@@ -123,6 +138,7 @@ cd ios && pod install && cd ..
 ### Running the App
 
 1. **Start Metro Bundler**:
+
 ```bash
 npm start
 # or
@@ -130,6 +146,7 @@ yarn start
 ```
 
 2. **Run on iOS**:
+
 ```bash
 npm run ios
 # or
@@ -137,6 +154,7 @@ yarn ios
 ```
 
 3. **Run on Android**:
+
 ```bash
 npm run android
 # or
@@ -175,6 +193,7 @@ src/
 ## 🎨 Design System
 
 ### Color Palette
+
 - **Primary**: Teal (#006A6A) - Islamic theme
 - **Background**: White (#FAFDFD) / Dark (#191C1C)
 - **Prayer Completed**: Green (#00C853)
@@ -183,12 +202,14 @@ src/
 - **Qibla Gold**: (#FFD700)
 
 ### Typography
+
 - **Display Large**: 48px, Bold - Countdown timers
 - **Headline Large**: 32px, Bold - Prayer names
 - **Title Large**: 22px, Semibold - Card titles
 - **Body Large**: 16px, Regular - Content text
 
 ### Design Principles
+
 - **Large Rounded Corners**: 24px for modern card design
 - **Bold Typography**: Enhanced readability for prayer names
 - **Color-Coded Status**: Visual feedback for prayer states
@@ -198,6 +219,7 @@ src/
 ## ⚙️ Configuration
 
 ### Prayer Calculation Methods
+
 1. **Umm Al-Qura, Makkah** (Default)
 2. Muslim World League
 3. Egyptian General Authority
@@ -210,12 +232,14 @@ src/
 10. Singapore
 
 ### Madhab Settings
+
 - **Shafi'i** (Default): Asr when shadow = object length
 - **Hanafi**: Asr when shadow = 2× object length
 
 ## 🧪 Testing
 
 ### Unit Tests
+
 ```bash
 npm test
 # or
@@ -223,6 +247,7 @@ yarn test
 ```
 
 ### End-to-End Tests
+
 ```bash
 # Build and run iOS tests
 npm run build:e2e:ios
@@ -238,24 +263,28 @@ npm run test:e2e:android
 ### Common Issues
 
 **Metro bundler issues**:
+
 ```bash
 npm run clean:cache
 npm start -- --reset-cache
 ```
 
 **iOS build errors**:
+
 ```bash
 cd ios && rm -rf build && pod install && cd ..
 npm run ios
 ```
 
 **Android build errors**:
+
 ```bash
 cd android && ./gradlew clean && cd ..
 npm run android
 ```
 
 **Java version issues**:
+
 ```bash
 export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 ```
@@ -265,16 +294,19 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 See [TODO.md](./TODO.md) for the complete development roadmap and upcoming features:
 
 ### 🚧 Priority 1: Core Improvements
+
 - [ ] Hijri calendar integration
 - [ ] Offline-first architecture (30+ days caching)
 - [ ] Prayer calculation API fallback
 
 ### 🚧 Priority 2: Cloud Features
+
 - [ ] Google Cloud Storage backup (Android)
 - [ ] iCloud backup (iOS)
 - [ ] Automatic sync functionality
 
 ### 🚧 Priority 3: Enhanced Features
+
 - [ ] Qibla compass implementation
 - [ ] Prayer notifications with Adhan
 - [ ] Statistics and history tracking
@@ -293,8 +325,6 @@ See [TODO.md](./TODO.md) for the complete development roadmap and upcoming featu
 
 ---
 
-**Version**: 0.0.1  
-**Last Updated**: November 2025  
-**Status**: Active Development  
-
-For detailed development roadmap and design specifications, see [TODO.md](./TODO.md).
+**Version**: 0.0.1
+**Last Updated**: November 2025
+**Status**: Active Development
