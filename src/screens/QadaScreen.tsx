@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 120, // Extra padding to clear bottom nav bar + FAB
   },
   content: {
     flex: 1,
@@ -550,6 +550,6 @@ emptyText: {
     position: 'absolute',
     margin: 16,
     right: 0,
-    bottom: 0,
+    bottom: 80, // Position above bottom nav bar
   },
 });

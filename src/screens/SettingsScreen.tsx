@@ -1,7 +1,7 @@
 /**
- * Settings Screen - App Settings (Redesigned)
+ * Settings Screen - App Settings
  * Configure calculation method, notifications, display, etc.
- * Features: Collapsible sections, search, import/export, language selection
+ * Features: Segmented sections, search, import/export, language selection
  */
 
 import React, { useState, useEffect } from 'react';
@@ -17,24 +17,33 @@ import {
   Button,
   Snackbar,
   ActivityIndicator,
+  Icon,
 } from 'react-native-paper';
 import { SettingsService } from '../services';
+import { NotificationPreferencesService } from '../services/notifications';
 import {
   AppSettings,
   CalculationMethodInfo,
   Madhab,
   TimeFormat,
   ThemeMode,
+  PrayerName,
+  PrayerNotificationSettings as PrayerNotificationSettingsType,
+  NotificationPreferences,
 } from '../types';
 import { useThemeContext, useAppContext, useLanguage } from '../contexts';
 import { useSettingsReactiveUpdates } from '../hooks/useReactiveUpdates';
 import { useCalculationMethods } from '../hooks/useCalculationMethods';
 import {
-  CollapsibleSettingsSection,
+  useNotificationPreferences,
+  usePrayerTimeNotifications,
+} from '../hooks/useNotifications';
+import {
   SettingsSearchBar,
   LanguagePicker,
   Language,
   ImportExportDialog,
+  PrayerNotificationSettings,
 } from '../components/settings';
 import { Skeleton } from '../components';
 import { PageHeader } from '../components/PageHeader';
@@ -55,6 +64,9 @@ export default function SettingsScreen() {
   const [locationInfo, setLocationInfo] = useState<LocationPreference | null>(null);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [notificationPrefs, setNotificationPrefs] = useState<NotificationPreferences | null>(null);
+  const [showPrayerNotificationModal, setShowPrayerNotificationModal] = useState(false);
+  const [selectedPrayer, setSelectedPrayer] = useState<PrayerName>('fajr');
 
   // Fetch calculation methods with TanStack Query (cache-first, 7-day cache)
   const {
@@ -65,14 +77,18 @@ export default function SettingsScreen() {
     isFetching: methodsRefetching,
   } = useCalculationMethods();
 
+  // Notification reschedule hooks
+  const { rescheduleOnPreferenceChange } = useNotificationPreferences();
+  const { rescheduleOnPrayerTimeChange } = usePrayerTimeNotifications();
+
   useEffect(() => {
     loadSettings();
     loadLocation();
+    loadNotificationPreferences();
   }, []);
 
   // Subscribe to reactive updates
   useSettingsReactiveUpdates((data: any) => {
-    console.log('SettingsScreen: Settings changed:', data);
     // Update local settings state to reflect changes
     if (data.settings) {
       setSettings(data.settings);
@@ -100,6 +116,15 @@ export default function SettingsScreen() {
     }
   };
 
+  const loadNotificationPreferences = async () => {
+    try {
+      const prefs = await NotificationPreferencesService.getPreferences();
+      setNotificationPrefs(prefs);
+    } catch (error) {
+      console.error('Failed to load notification preferences:', error);
+    }
+  };
+
   const handleLocationChange = () => {
     setShowLocationSetup(true);
   };
@@ -108,6 +133,9 @@ export default function SettingsScreen() {
     setShowLocationSetup(false);
     await loadLocation();
     showToast('Location updated successfully');
+
+    // Location changed, prayer times changed, reschedule notifications
+    await rescheduleOnPrayerTimeChange();
   };
 
   const showToast = (message: string) => {
@@ -127,6 +155,9 @@ export default function SettingsScreen() {
         calculationMethod: methodId as AppSettings['calculationMethod'],
       });
       showToast('Calculation method updated');
+
+      // Prayer times changed, reschedule notifications
+      await rescheduleOnPrayerTimeChange();
     } catch (error) {
       console.error('Failed to update calculation method:', error);
       Alert.alert('Error', 'Failed to update calculation method');
@@ -140,6 +171,9 @@ export default function SettingsScreen() {
       await SettingsService.setMadhab(madhab);
       setSettings({ ...settings, madhab });
       showToast('Madhab updated');
+
+      // Madhab affects Asr time, reschedule notifications
+      await rescheduleOnPrayerTimeChange();
     } catch (error) {
       console.error('Failed to update madhab:', error);
       Alert.alert('Error', 'Failed to update madhab');
@@ -219,19 +253,61 @@ export default function SettingsScreen() {
   };
 
   const handleNotificationsToggle = async () => {
-    if (!settings) return;
+    if (!settings || !notificationPrefs) return;
 
     try {
-      const newValue = !settings.notificationsEnabled;
+      const newValue = !notificationPrefs.global.enabled;
+      await NotificationPreferencesService.toggleNotifications(newValue);
       await SettingsService.updateNotificationSettings({ enabled: newValue });
+
       setSettings({ ...settings, notificationsEnabled: newValue });
+      setNotificationPrefs({ ...notificationPrefs, global: { ...notificationPrefs.global, enabled: newValue } });
+
       showToast(
         newValue ? 'Notifications enabled' : 'Notifications disabled',
       );
+
+      // Notification preferences changed, reschedule or cancel notifications
+      await rescheduleOnPreferenceChange();
     } catch (error) {
       console.error('Failed to toggle notifications:', error);
       Alert.alert('Error', 'Failed to update notifications');
     }
+  };
+
+  const handleOpenPrayerSettings = (prayerName: PrayerName) => {
+    setSelectedPrayer(prayerName);
+    setShowPrayerNotificationModal(true);
+  };
+
+  const handleSavePrayerSettings = async (prayerSettings: PrayerNotificationSettingsType) => {
+    if (!notificationPrefs) return;
+
+    try {
+      const updatedPrefs = await NotificationPreferencesService.updatePrayerSettings(
+        selectedPrayer,
+        prayerSettings
+      );
+      setNotificationPrefs(updatedPrefs);
+      showToast(`${t(`prayers.${selectedPrayer}`)} notification settings saved`);
+
+      // Reschedule notifications with new preferences
+      await rescheduleOnPreferenceChange();
+    } catch (error) {
+      console.error('Failed to save prayer settings:', error);
+      Alert.alert('Error', 'Failed to save notification settings');
+    }
+  };
+
+  const getPrayerIcon = (prayer: PrayerName): string => {
+    const icons: Record<PrayerName, string> = {
+      fajr: 'weather-sunset-up',
+      dhuhr: 'weather-sunny',
+      asr: 'weather-sunset-down',
+      maghrib: 'weather-sunset',
+      isha: 'weather-night',
+    };
+    return icons[prayer];
   };
 
   const handleImport = async (importedSettings: AppSettings) => {
@@ -329,12 +405,13 @@ export default function SettingsScreen() {
           <PageHeader title={t('settings.title')} />
 
           {/* Prayer Settings Section */}
-          <CollapsibleSettingsSection
-            testID="prayer-settings-section"
-            title={t('settings.prayerSettings')}
-            icon="mosque"
-            defaultExpanded={false}
-          >
+          <View style={styles.sectionHeader}>
+            <Icon source="mosque" size={24} color={theme.colors.primary} />
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              {t('settings.prayerSettings')}
+            </Text>
+          </View>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
             <Text
               testID="calculation-method-setting"
               variant="labelLarge"
@@ -442,14 +519,16 @@ export default function SettingsScreen() {
               ]}
               style={styles.segmentedButtons}
             />
-          </CollapsibleSettingsSection>
+          </View>
 
           {/* Display & Appearance Section */}
-          <CollapsibleSettingsSection
-            title={t('settings.displayAppearance')}
-            icon="palette"
-            defaultExpanded={false}
-          >
+          <View style={styles.sectionHeader}>
+            <Icon source="palette" size={24} color={theme.colors.primary} />
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              {t('settings.displayAppearance')}
+            </Text>
+          </View>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
             <Text
               variant="labelLarge"
               style={[styles.label, { color: theme.colors.onSurfaceVariant }]}
@@ -532,43 +611,111 @@ export default function SettingsScreen() {
                 />
               )}
             />
-          </CollapsibleSettingsSection>
+          </View>
 
           {/* Notifications Section */}
-          <CollapsibleSettingsSection
-            testID="notifications-setting"
-            title={t('settings.notifications')}
-            icon="bell"
-            defaultExpanded={false}
-          >
+          <View style={styles.sectionHeader}>
+            <Icon source="bell" size={24} color={theme.colors.primary} />
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              {t('settings.notifications')}
+            </Text>
+          </View>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
+            {/* Master toggle */}
             <List.Item
               title={t('settings.enableNotifications')}
               description={t('settings.notificationsDesc')}
               left={props => <List.Icon {...props} icon="bell-ring" />}
               right={() => (
                 <Switch
-                  value={settings.notificationsEnabled}
+                  value={notificationPrefs?.global.enabled || false}
                   onValueChange={handleNotificationsToggle}
-                  disabled
                 />
               )}
             />
 
-            <Text
-              variant="bodySmall"
-              style={[styles.comingSoon, { color: theme.colors.outline }]}
-            >
-              {t('settings.comingSoon')}
-            </Text>
-          </CollapsibleSettingsSection>
+            {notificationPrefs?.global.enabled && (
+              <>
+                <Divider style={styles.divider} />
+
+                {/* Per-prayer settings */}
+                <Text
+                  variant="labelLarge"
+                  style={[styles.label, { color: theme.colors.onSurfaceVariant, marginTop: 8 }]}
+                >
+                  {t('settings.prayerNotificationSettings')}
+                </Text>
+                <Text
+                  variant="bodySmall"
+                  style={[styles.description, { color: theme.colors.outline }]}
+                >
+                  {t('settings.customizeNotifications')}
+                </Text>
+
+                {(['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'] as PrayerName[]).map((prayer) => {
+                  const prayerSettings = notificationPrefs.perPrayer[prayer];
+                  const reminderCount = prayerSettings.preReminderEnabled ? prayerSettings.reminderMinutes.length : 0;
+
+                  return (
+                    <List.Item
+                      key={prayer}
+                      title={t(`prayers.${prayer}`)}
+                      description={
+                        prayerSettings.enabled
+                          ? `${reminderCount} ${t('settings.reminderMinutes').toLowerCase()} • ${prayerSettings.atTimeEnabled ? t('settings.atTimeNotification') : t('settings.atTimeNotification') + ' off'} • ${prayerSettings.missedAlertEnabled ? t('settings.missedPrayerAlert') : t('settings.missedPrayerAlert') + ' off'}`
+                          : t('common.disabled')
+                      }
+                      left={props => (
+                        <List.Icon
+                          {...props}
+                          icon={getPrayerIcon(prayer)}
+                          color={prayerSettings.enabled ? theme.colors.primary : theme.colors.outline}
+                        />
+                      )}
+                      right={props => <List.Icon {...props} icon="chevron-right" />}
+                      onPress={() => handleOpenPrayerSettings(prayer)}
+                      style={styles.listItem}
+                    />
+                  );
+                })}
+
+                <Divider style={styles.divider} />
+
+                {/* Global notification settings preview */}
+                <Text
+                  variant="labelLarge"
+                  style={[styles.label, { color: theme.colors.onSurfaceVariant, marginTop: 8 }]}
+                >
+                  {t('settings.globalSettings')}
+                </Text>
+
+                <List.Item
+                  title={t('settings.vibration')}
+                  description={notificationPrefs.global.vibrationEnabled ? t('common.enabled') : t('common.disabled')}
+                  left={props => <List.Icon {...props} icon="vibrate" />}
+                  right={() => (
+                    <Switch
+                      value={notificationPrefs.global.vibrationEnabled}
+                      onValueChange={async (value) => {
+                        const updated = await NotificationPreferencesService.updateGlobalSettings({ vibrationEnabled: value });
+                        setNotificationPrefs(updated);
+                        showToast(`${t('settings.vibration')} ${value ? t('common.enabled').toLowerCase() : t('common.disabled').toLowerCase()}`);
+                      }}
+                    />
+                  )}
+                />
+              </>
+            )}
+          </View>
 
           {/* Location Section */}
-          <CollapsibleSettingsSection
-            testID="location-setting"
-            title={t('settings.location')}
-            icon="map-marker"
-            defaultExpanded={false}
-          >
+          <View style={styles.sectionHeader}>
+            <Icon source="map-marker" size={24} color={theme.colors.primary} />
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              {t('settings.location')}
+            </Text>
+          </View>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
             {locationInfo && (
               <>
                 <Text
@@ -614,14 +761,16 @@ export default function SettingsScreen() {
             >
               {t('settings.locationChangeDesc')}
             </Text>
-          </CollapsibleSettingsSection>
+          </View>
 
           {/* Advanced Settings Section */}
-          <CollapsibleSettingsSection
-            title={t('settings.advanced')}
-            icon="cog"
-            defaultExpanded={false}
-          >
+          <View style={styles.sectionHeader}>
+            <Icon source="cog" size={24} color={theme.colors.primary} />
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              {t('settings.advanced')}
+            </Text>
+          </View>
+          <View style={[styles.section, { backgroundColor: theme.colors.surface }]}>
             <Button
               mode="contained"
               onPress={() => setShowImportExport(true)}
@@ -652,7 +801,7 @@ export default function SettingsScreen() {
             >
               {t('settings.resetToDefaults')}
             </Button>
-          </CollapsibleSettingsSection>
+          </View>
         </View>
       </ScrollView>
 
@@ -673,6 +822,17 @@ export default function SettingsScreen() {
       >
         <LocationSetupScreen onComplete={handleLocationSetupComplete} />
       </Modal>
+
+      {/* Prayer Notification Settings Modal */}
+      {notificationPrefs && (
+        <PrayerNotificationSettings
+          visible={showPrayerNotificationModal}
+          onDismiss={() => setShowPrayerNotificationModal(false)}
+          prayerName={selectedPrayer}
+          settings={notificationPrefs.perPrayer[selectedPrayer]}
+          onSave={handleSavePrayerSettings}
+        />
+      )}
 
       {/* Toast Notifications */}
       <Snackbar
@@ -702,6 +862,22 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
     paddingBottom: 100,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 24,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  sectionTitle: {
+    fontWeight: '700',
+  },
+  section: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 8,
   },
   label: {
     marginTop: 8,

@@ -13,3 +13,4 @@ export * from './network';
 export * from './cache';
 export * from './sync';
 export * from './statistics';
+export * from './notifications';

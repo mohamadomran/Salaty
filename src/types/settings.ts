@@ -4,6 +4,7 @@
  */
 
 import { CalculationMethod } from './prayer';
+import { NotificationPreferences } from './notifications';
 
 /**
  * Madhab/School for Asr calculation
@@ -32,10 +33,13 @@ export interface AppSettings {
   timeFormat: TimeFormat;
   showSunriseSunset: boolean;
 
-  // Notifications (future)
-  notificationsEnabled: boolean;
-  notificationSound: boolean;
-  reminderMinutes: number;
+  // Notifications - Enhanced
+  notifications: NotificationPreferences;
+
+  // Deprecated (kept for migration)
+  notificationsEnabled?: boolean;
+  notificationSound?: boolean;
+  reminderMinutes?: number;
 
   // App
   themeMode: ThemeMode;

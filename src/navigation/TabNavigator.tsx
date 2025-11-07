@@ -13,7 +13,6 @@ import type { RootTabParamList } from './types';
 import {
   HomeScreen,
   TrackingScreen,
-  QiblaScreen,
   SettingsScreen,
   QadaScreen,
   StatisticsScreen,
@@ -28,7 +27,6 @@ const iconMap: Record<string, string> = {
   Tracking: 'view-grid',
   Qada: 'history',
   Statistics: 'chart-line',
-  Qibla: 'compass',
   Settings: 'account',
 };
 
@@ -86,18 +84,18 @@ const CustomTabBar = React.memo(({ state, descriptors, navigation }: any) => {
         <TouchableOpacity
           testID="settings-tab"
           accessibilityRole="button"
-          accessibilityState={state.index === 4 ? { selected: true } : {}}
+          accessibilityState={state.index === 3 ? { selected: true } : {}}
           onPress={() => navigation.navigate('Settings')}
           style={[
             styles.profileButton,
             { backgroundColor: theme.expressiveColors.goldAccent },
-            state.index === 4 && styles.profileButtonActive,
+            state.index === 3 && styles.profileButtonActive,
           ]}
         >
           <Icon
             source={iconMap['Settings']}
             size={26}
-            color={state.index === 4 ? theme.colors.onPrimary : theme.colors.onPrimary}
+            color={state.index === 3 ? theme.colors.onPrimary : theme.colors.onPrimary}
           />
         </TouchableOpacity>
       </View>
@@ -112,7 +110,6 @@ const AnimatedHomeScreen = React.memo(() => <HomeScreen />);
 const AnimatedTrackingScreen = React.memo(() => <TrackingScreen />);
 const AnimatedQadaScreen = React.memo(() => <QadaScreen />);
 const AnimatedStatisticsScreen = React.memo(() => <StatisticsScreen />);
-const AnimatedQiblaScreen = React.memo(() => <QiblaScreen />);
 const AnimatedSettingsScreen = React.memo(() => <SettingsScreen />);
 
 export default function TabNavigator() {
@@ -129,7 +126,6 @@ export default function TabNavigator() {
       <Tab.Screen name="Tracking" component={AnimatedTrackingScreen} />
       <Tab.Screen name="Qada" component={AnimatedQadaScreen} />
       <Tab.Screen name="Statistics" component={AnimatedStatisticsScreen} />
-      <Tab.Screen name="Qibla" component={AnimatedQiblaScreen} />
       <Tab.Screen name="Settings" component={AnimatedSettingsScreen} />
     </Tab.Navigator>
   );

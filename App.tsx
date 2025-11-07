@@ -18,6 +18,7 @@ import { ErrorBoundary } from './src/components';
 import { OnboardingScreen } from './src/screens';
 import { SettingsService } from './src/services';
 import { queryClient, asyncStoragePersister } from './src/lib/queryClient';
+import { useNotifications } from './src/hooks';
 import './src/localization'; // Initialize i18n
 
 // Configure icon library for react-native-paper
@@ -29,6 +30,13 @@ function AppContent(): React.JSX.Element {
   const { theme, isDark, isLoading } = useThemeContext();
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
+  // Initialize notification system
+  const { initialize: initializeNotifications } = useNotifications({
+    autoInitialize: false, // Manual control after onboarding
+    daysAhead: 7,
+    rescheduleOnForeground: true,
+  });
+
   // Check onboarding status
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -39,6 +47,13 @@ function AppContent(): React.JSX.Element {
     };
     checkOnboarding();
   }, []);
+
+  // Initialize notifications after onboarding is complete
+  useEffect(() => {
+    if (onboardingCompleted === true) {
+      initializeNotifications();
+    }
+  }, [onboardingCompleted, initializeNotifications]);
 
   // Handle onboarding completion
   const handleOnboardingComplete = () => {

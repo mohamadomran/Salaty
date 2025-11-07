@@ -14,6 +14,14 @@ export const STORAGE_KEYS = {
   SETTINGS: '@salaty:settings',
   STATISTICS: '@salaty:statistics',
   LAST_SYNC: '@salaty:last_sync',
+
+  // Notification storage keys
+  NOTIFICATION_PREFERENCES: '@salaty:notification_preferences',
+  SCHEDULED_NOTIFICATIONS: '@salaty:scheduled_notifications',
+  NOTIFICATION_LOGS: '@salaty:notification_logs',
+  NOTIFICATION_STATS: '@salaty:notification_stats',
+  NOTIFICATION_PERMISSION_STATUS: '@salaty:notification_permission_status',
+  BACKGROUND_TASKS: '@salaty:background_tasks',
 } as const;
 
 class StorageService {

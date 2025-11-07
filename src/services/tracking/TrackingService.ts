@@ -18,6 +18,7 @@ import {
 } from '../../types';
 import { OfflineSyncService } from '../sync';
 import { NetworkService } from '../network';
+import { NotificationService } from '../notifications';
 
 class TrackingServiceClass {
   private static instance: TrackingServiceClass;
@@ -131,6 +132,16 @@ class TrackingServiceClass {
         notes,
         updatedAt: dailyRecord.updatedAt,
       }, 'high');
+    }
+
+    // Cancel missed prayer notification if prayer was completed
+    if (status === PrayerStatus.COMPLETED || status === PrayerStatus.DELAYED) {
+      try {
+        await this.cancelMissedPrayerNotification(prayerName, dateKey);
+      } catch (error) {
+        console.error('[TrackingService] Failed to cancel missed prayer notification:', error);
+        // Don't throw - tracking update should succeed even if notification cancel fails
+      }
     }
 
     return dailyRecord;
@@ -717,12 +728,35 @@ class TrackingServiceClass {
   }> {
     const dailyRecords = await this.getAllRecords();
     const qadaDebt = await this.getQadaDebt();
-    
+
     return {
       dailyRecords,
       qadaDebt,
       exportedAt: new Date().toISOString(),
     };
+  }
+
+  /**
+   * Cancel missed prayer notification for a specific prayer
+   * Called when user marks prayer as completed or delayed
+   *
+   * @private
+   */
+  private async cancelMissedPrayerNotification(
+    prayerName: 'fajr' | 'dhuhr' | 'asr' | 'maghrib' | 'isha',
+    dateKey: string
+  ): Promise<void> {
+    try {
+      // Generate notification ID format that matches NotificationScheduler
+      // Format: missed_prayer_{prayerName}_{dateKey}
+      const notificationId = `missed_prayer_${prayerName}_${dateKey}`;
+
+      console.log(`[TrackingService] Canceling missed prayer notification: ${notificationId}`);
+      await NotificationService.cancelNotification(notificationId);
+    } catch (error) {
+      console.error('[TrackingService] Error canceling missed prayer notification:', error);
+      throw error;
+    }
   }
 }
 
