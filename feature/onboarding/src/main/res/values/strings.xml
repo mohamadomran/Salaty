@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Welcome Page -->
+    <string name="onboarding_welcome_title">Welcome to Salaty</string>
+    <string name="onboarding_welcome_description">Your companion for prayer times and daily tracking. Let\'s get you set up in just a few steps.</string>
+    <string name="onboarding_get_started">Get Started</string>
+
+    <!-- Location Page -->
+    <string name="onboarding_location_title">Set Your Location</string>
+    <string name="onboarding_location_description">We need your location to calculate accurate prayer times for your area.</string>
+    <string name="onboarding_detect_location">Detect My Location</string>
+    <string name="onboarding_detecting_location">Detecting your location…</string>
+    <string name="onboarding_grant_permission">Grant Permission</string>
+
+    <!-- Notifications Page -->
+    <string name="onboarding_notifications_title">Stay on Time</string>
+    <string name="onboarding_notifications_description">Enable notifications to receive prayer time reminders and never miss a prayer.</string>
+    <string name="onboarding_enable_notifications">Enable Notifications</string>
+
+    <!-- Complete Page -->
+    <string name="onboarding_complete_title">You\'re All Set!</string>
+    <string name="onboarding_complete_description">Salaty is ready to help you stay connected with your prayers. May your journey be blessed.</string>
+    <string name="onboarding_start_app">Start Using Salaty</string>
+
+    <!-- Common -->
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_skip">Skip for now</string>
+    <string name="onboarding_back">Back</string>
+</resources>

@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.mohamad.salaty.core.designsystem.theme.SalatyTheme
+import com.mohamad.salaty.feature.onboarding.OnboardingScreen
 import com.mohamad.salaty.navigation.SalatyNavHost
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -35,26 +36,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val themeSettings by viewModel.themeSettings.collectAsState()
+            val uiState by viewModel.uiState.collectAsState()
 
             SalatyApp(
-                themeMode = themeSettings.themeMode,
-                dynamicColors = themeSettings.dynamicColors
+                themeMode = uiState.themeMode,
+                dynamicColors = uiState.dynamicColors,
+                onboardingCompleted = uiState.onboardingCompleted
             )
         }
     }
 }
 
 /**
- * Root composable that applies theme settings.
+ * Root composable that applies theme settings and handles onboarding.
  *
  * @param themeMode The theme mode: "system", "light", or "dark"
  * @param dynamicColors Whether to use Material You dynamic colors
+ * @param onboardingCompleted Whether onboarding has been completed (null = loading)
  */
 @Composable
 private fun SalatyApp(
     themeMode: String,
-    dynamicColors: Boolean
+    dynamicColors: Boolean,
+    onboardingCompleted: Boolean?
 ) {
     // Determine if dark theme should be used based on mode
     val darkTheme = when (themeMode) {
@@ -71,7 +75,19 @@ private fun SalatyApp(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            SalatyNavHost()
+            when (onboardingCompleted) {
+                null -> {
+                    // Loading state - show nothing or splash
+                }
+                false -> {
+                    OnboardingScreen(
+                        onComplete = { /* State will update automatically */ }
+                    )
+                }
+                true -> {
+                    SalatyNavHost()
+                }
+            }
         }
     }
 }

@@ -11,6 +11,15 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /**
+ * Main app UI state including theme and onboarding status.
+ */
+data class MainUiState(
+    val themeMode: String = "system",
+    val dynamicColors: Boolean = true,
+    val onboardingCompleted: Boolean? = null // null = loading
+)
+
+/**
  * Theme settings state for the app.
  */
 data class ThemeSettings(
@@ -28,6 +37,24 @@ data class ThemeSettings(
 class MainViewModel @Inject constructor(
     salatyPreferences: SalatyPreferences
 ) : ViewModel() {
+
+    /**
+     * Main UI state including theme and onboarding status.
+     * Uses WhileSubscribed to stop collecting when the app goes to background.
+     */
+    val uiState: StateFlow<MainUiState> = salatyPreferences.userPreferences
+        .map { prefs ->
+            MainUiState(
+                themeMode = prefs.themeMode,
+                dynamicColors = prefs.dynamicColors,
+                onboardingCompleted = prefs.onboardingCompleted
+            )
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = MainUiState()
+        )
 
     /**
      * Theme settings flow that emits current theme configuration.

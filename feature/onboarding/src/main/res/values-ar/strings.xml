@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Welcome Page -->
+    <string name="onboarding_welcome_title">مرحباً بك في صلاتي</string>
+    <string name="onboarding_welcome_description">رفيقك لمواقيت الصلاة والمتابعة اليومية. دعنا نساعدك في الإعداد في بضع خطوات.</string>
+    <string name="onboarding_get_started">ابدأ الآن</string>
+
+    <!-- Location Page -->
+    <string name="onboarding_location_title">حدد موقعك</string>
+    <string name="onboarding_location_description">نحتاج إلى موقعك لحساب مواقيت الصلاة بدقة لمنطقتك.</string>
+    <string name="onboarding_detect_location">اكتشاف موقعي</string>
+    <string name="onboarding_detecting_location">جاري اكتشاف موقعك…</string>
+    <string name="onboarding_grant_permission">منح الإذن</string>
+
+    <!-- Notifications Page -->
+    <string name="onboarding_notifications_title">كن في الوقت</string>
+    <string name="onboarding_notifications_description">فعّل الإشعارات لتلقي تذكيرات بمواقيت الصلاة ولا تفوّت أي صلاة.</string>
+    <string name="onboarding_enable_notifications">تفعيل الإشعارات</string>
+
+    <!-- Complete Page -->
+    <string name="onboarding_complete_title">أنت جاهز!</string>
+    <string name="onboarding_complete_description">صلاتي جاهز لمساعدتك في البقاء على اتصال بصلواتك. بارك الله في رحلتك.</string>
+    <string name="onboarding_start_app">ابدأ استخدام صلاتي</string>
+
+    <!-- Common -->
+    <string name="onboarding_continue">متابعة</string>
+    <string name="onboarding_skip">تخطي الآن</string>
+    <string name="onboarding_back">رجوع</string>
+</resources>
