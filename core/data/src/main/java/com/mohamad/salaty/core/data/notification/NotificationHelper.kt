@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.mohamad.salaty.core.designsystem.getLocalizedName
 import com.mohamad.salaty.core.domain.model.PrayerName
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -78,7 +79,7 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val prayerDisplayName = PrayerName.displayName(prayer)
+        val prayerDisplayName = prayer.getLocalizedName(context)
         val prayerArabicName = PrayerName.arabicName(prayer)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID_PRAYER)

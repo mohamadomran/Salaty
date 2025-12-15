@@ -23,10 +23,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mohamad.salaty.feature.statistics.R
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
 import com.mohamad.salaty.core.designsystem.component.SalatyElevatedCard
 
@@ -91,7 +93,7 @@ private fun ErrorContent(
             modifier = Modifier.padding(24.dp)
         ) {
             Text(
-                text = "Something went wrong",
+                text = stringResource(R.string.statistics_error_title),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -120,7 +122,7 @@ private fun StatisticsContent(
     ) {
         // Header
         Text(
-            text = "Statistics",
+            text = stringResource(R.string.statistics_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -154,7 +156,7 @@ private fun StatisticsContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Completion Rate",
+                    text = stringResource(R.string.statistics_completion_rate),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -197,7 +199,7 @@ private fun StatisticsContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Current Streak",
+                        text = stringResource(R.string.statistics_current_streak),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -208,7 +210,7 @@ private fun StatisticsContent(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "days",
+                        text = stringResource(R.string.statistics_days),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -226,7 +228,7 @@ private fun StatisticsContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Longest Streak",
+                        text = stringResource(R.string.statistics_longest_streak),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -237,7 +239,7 @@ private fun StatisticsContent(
                         color = MaterialTheme.colorScheme.tertiary
                     )
                     Text(
-                        text = "days",
+                        text = stringResource(R.string.statistics_days),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -256,7 +258,7 @@ private fun StatisticsContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Perfect Days",
+                    text = stringResource(R.string.statistics_perfect_days),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -267,7 +269,7 @@ private fun StatisticsContent(
                     color = MaterialTheme.colorScheme.secondary
                 )
                 Text(
-                    text = "all 5 prayers on time",
+                    text = stringResource(R.string.statistics_perfect_days_description),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -285,24 +287,24 @@ private fun StatisticsContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Breakdown",
+                    text = stringResource(R.string.statistics_breakdown),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
 
-                StatRow("Total Prayers", uiState.totalPrayers.toString())
+                StatRow(stringResource(R.string.statistics_total_prayers), uiState.totalPrayers.toString())
                 StatRow(
-                    "Prayed On Time",
+                    stringResource(R.string.statistics_prayed_on_time),
                     uiState.prayedOnTime.toString(),
                     MaterialTheme.colorScheme.primary
                 )
                 StatRow(
-                    "Prayed Late",
+                    stringResource(R.string.statistics_prayed_late),
                     uiState.prayedLate.toString(),
                     MaterialTheme.colorScheme.tertiary
                 )
                 StatRow(
-                    "Missed",
+                    stringResource(R.string.statistics_missed),
                     uiState.missed.toString(),
                     MaterialTheme.colorScheme.error
                 )

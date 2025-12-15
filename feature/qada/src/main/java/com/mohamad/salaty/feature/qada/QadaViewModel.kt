@@ -19,8 +19,7 @@ import javax.inject.Inject
  */
 data class QadaItem(
     val prayerName: PrayerName,
-    val count: Int,
-    val displayName: String = PrayerName.displayName(prayerName)
+    val count: Int
 )
 
 /**

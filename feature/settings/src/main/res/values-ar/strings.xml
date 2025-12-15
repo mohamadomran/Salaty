@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings Screen -->
+    <string name="settings_title">الإعدادات</string>
+
+    <!-- Location Section -->
+    <string name="settings_section_location">الموقع</string>
+    <string name="settings_current_location">الموقع الحالي</string>
+    <string name="settings_location_not_set">غير محدد</string>
+    <string name="settings_locations_title">المواقع</string>
+    <string name="settings_detect_location">اكتشاف موقعي</string>
+    <string name="settings_detecting">جاري الاكتشاف…</string>
+    <string name="settings_no_locations">لا توجد مواقع محفوظة. اكتشف موقعك أو أضف موقعاً يدوياً.</string>
+    <string name="settings_saved_locations">المواقع المحفوظة</string>
+    <string name="settings_add_manually">إضافة يدوية</string>
+    <string name="settings_add_location">إضافة موقع</string>
+    <string name="settings_location_name">اسم الموقع</string>
+    <string name="settings_location_name_hint">مثال: المنزل، العمل، المسجد</string>
+    <string name="settings_location_name_required">الاسم مطلوب</string>
+    <string name="settings_latitude">خط العرض</string>
+    <string name="settings_latitude_hint">مثال: 43.6532</string>
+    <string name="settings_latitude_invalid">خط عرض غير صالح (-90 إلى 90)</string>
+    <string name="settings_longitude">خط الطول</string>
+    <string name="settings_longitude_hint">مثال: -79.3832</string>
+    <string name="settings_longitude_invalid">خط طول غير صالح (-180 إلى 180)</string>
+    <string name="settings_timezone">المنطقة الزمنية: %1$s</string>
+
+    <!-- Prayer Calculation Section -->
+    <string name="settings_section_prayer_calculation">حساب مواقيت الصلاة</string>
+    <string name="settings_calculation_method">طريقة الحساب</string>
+    <string name="settings_madhab">المذهب (حساب العصر)</string>
+    <string name="settings_madhab_dialog_title">المذهب (المدرسة الفقهية)</string>
+    <string name="settings_high_latitude_rule">قاعدة خطوط العرض العالية</string>
+    <string name="settings_time_adjustments">تعديلات الوقت</string>
+    <string name="settings_time_adjustments_subtitle">ضبط مواقيت الصلاة بدقة</string>
+    <string name="settings_adjustments_description">تعديل مواقيت الصلاة بـ +/- دقائق</string>
+
+    <!-- Notifications Section -->
+    <string name="settings_section_notifications">الإشعارات</string>
+    <string name="settings_prayer_notifications">إشعارات الصلاة</string>
+    <string name="settings_prayer_notifications_subtitle">تلقي إشعارات لمواقيت الصلاة</string>
+    <string name="settings_per_prayer_settings">إعدادات كل صلاة</string>
+    <string name="settings_per_prayer_settings_subtitle">تخصيص إعدادات كل صلاة</string>
+    <string name="settings_vibrate">الاهتزاز</string>
+    <string name="settings_vibrate_subtitle">اهتزاز عند الإشعار</string>
+    <string name="settings_notification_description">تفعيل أو تعطيل الإشعارات لكل صلاة</string>
+
+    <!-- Display Section -->
+    <string name="settings_section_display">العرض</string>
+    <string name="settings_theme">المظهر</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_theme_system">تلقائي (النظام)</string>
+    <string name="settings_dynamic_colors">الألوان الديناميكية</string>
+    <string name="settings_dynamic_colors_subtitle">استخدام ألوان Material You</string>
+    <string name="settings_24hour_format">تنسيق 24 ساعة</string>
+    <string name="settings_24hour_format_subtitle">استخدام تنسيق الوقت بـ 24 ساعة</string>
+
+    <!-- About Section -->
+    <string name="settings_section_about">حول التطبيق</string>
+    <string name="settings_version">الإصدار</string>
+
+    <!-- Permission Dialog -->
+    <string name="settings_permission_title">مطلوب إذن الموقع</string>
+    <string name="settings_permission_message">مطلوب إذن الموقع لاكتشاف موقعك الحالي تلقائياً لحساب مواقيت الصلاة بدقة. يرجى منح الإذن لاستخدام هذه الميزة.</string>
+    <string name="settings_grant_permission">منح الإذن</string>
+
+    <!-- Common Buttons -->
+    <string name="settings_cancel">إلغاء</string>
+    <string name="settings_close">إغلاق</string>
+    <string name="settings_done">تم</string>
+    <string name="settings_save">حفظ</string>
+    <string name="settings_delete">حذف</string>
+    <string name="settings_decrease">إنقاص</string>
+    <string name="settings_increase">زيادة</string>
+</resources>

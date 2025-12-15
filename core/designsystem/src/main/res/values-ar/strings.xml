@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prayer Names -->
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_sunrise">الشروق</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_isha">العشاء</string>
+
+    <!-- Prayer Status -->
+    <string name="prayer_status_pending">معلّق</string>
+    <string name="prayer_status_prayed">صليت</string>
+    <string name="prayer_status_prayed_late">صليت متأخراً</string>
+    <string name="prayer_status_missed">فاتني</string>
+
+    <!-- Calculation Methods -->
+    <string name="calculation_method_mwl">رابطة العالم الإسلامي</string>
+    <string name="calculation_method_mwl_desc">الفجر: 18°، العشاء: 17°</string>
+    <string name="calculation_method_egyptian">الهيئة المصرية العامة</string>
+    <string name="calculation_method_egyptian_desc">الفجر: 19.5°، العشاء: 17.5°</string>
+    <string name="calculation_method_karachi">جامعة العلوم الإسلامية، كراتشي</string>
+    <string name="calculation_method_karachi_desc">الفجر: 18°، العشاء: 18°</string>
+    <string name="calculation_method_umm_al_qura">جامعة أم القرى، مكة</string>
+    <string name="calculation_method_umm_al_qura_desc">الفجر: 18.5°، العشاء: 90 دقيقة بعد المغرب</string>
+    <string name="calculation_method_dubai">دبي</string>
+    <string name="calculation_method_dubai_desc">الفجر: 18.2°، العشاء: 18.2°</string>
+    <string name="calculation_method_qatar">قطر</string>
+    <string name="calculation_method_qatar_desc">الفجر: 18°، العشاء: 90 دقيقة بعد المغرب</string>
+    <string name="calculation_method_kuwait">الكويت</string>
+    <string name="calculation_method_kuwait_desc">الفجر: 18°، العشاء: 17.5°</string>
+    <string name="calculation_method_moonsighting">لجنة رؤية الهلال</string>
+    <string name="calculation_method_moonsighting_desc">الفجر: 18°، العشاء: 18°</string>
+    <string name="calculation_method_singapore">سنغافورة</string>
+    <string name="calculation_method_singapore_desc">الفجر: 20°، العشاء: 18°</string>
+    <string name="calculation_method_turkey">تركيا (الديانة)</string>
+    <string name="calculation_method_turkey_desc">الفجر: 18°، العشاء: 17°</string>
+    <string name="calculation_method_tehran">طهران</string>
+    <string name="calculation_method_tehran_desc">الفجر: 17.7°، العشاء: 14°</string>
+    <string name="calculation_method_isna">إسنا (أمريكا الشمالية)</string>
+    <string name="calculation_method_isna_desc">الفجر: 15°، العشاء: 15°</string>
+
+    <!-- Madhab -->
+    <string name="madhab_shafi">الشافعي</string>
+    <string name="madhab_shafi_desc">معامل الظل: 1 (قياسي)</string>
+    <string name="madhab_hanafi">الحنفي</string>
+    <string name="madhab_hanafi_desc">معامل الظل: 2 (وقت عصر متأخر)</string>
+
+    <!-- High Latitude Rule -->
+    <string name="high_lat_middle_of_night">منتصف الليل</string>
+    <string name="high_lat_middle_of_night_desc">الفجر والعشاء يقسمان الليل إلى نصفين</string>
+    <string name="high_lat_seventh_of_night">سُبع الليل</string>
+    <string name="high_lat_seventh_of_night_desc">الفجر/العشاء هما 1/7 من الليل من الشروق/الغروب</string>
+    <string name="high_lat_twilight_angle">زاوية الشفق</string>
+    <string name="high_lat_twilight_angle_desc">يستخدم طريقة زاوية الشفق</string>
+
+    <!-- Time Range for Statistics -->
+    <string name="time_range_week">أسبوع</string>
+    <string name="time_range_month">شهر</string>
+    <string name="time_range_year">سنة</string>
+    <string name="time_range_all">كل الوقت</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_tracking">المتابعة</string>
+    <string name="nav_statistics">الإحصائيات</string>
+    <string name="nav_qada">القضاء</string>
+    <string name="nav_settings">الإعدادات</string>
+</resources>

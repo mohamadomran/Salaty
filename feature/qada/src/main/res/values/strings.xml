@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Qada Screen -->
+    <string name="qada_title">Qada Prayers</string>
+    <string name="qada_subtitle">Makeup prayers you need to complete</string>
+    <string name="qada_error_title">Something went wrong</string>
+
+    <!-- Summary -->
+    <string name="qada_total_pending">Total Pending</string>
+    <string name="qada_prayer_singular">prayer</string>
+    <string name="qada_prayer_plural">prayers</string>
+
+    <!-- By Prayer Section -->
+    <string name="qada_by_prayer">By Prayer</string>
+    <string name="qada_decrease">Decrease</string>
+    <string name="qada_increase">Increase</string>
+
+    <!-- FAB -->
+    <string name="qada_complete_action">Complete Qada</string>
+
+    <!-- Dialog -->
+    <string name="qada_complete_dialog_title">Complete Qada</string>
+    <string name="qada_complete_dialog_message">Mark one %1$s Qada prayer as completed?</string>
+    <string name="qada_complete">Complete</string>
+    <string name="qada_cancel">Cancel</string>
+</resources>

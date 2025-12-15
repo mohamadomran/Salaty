@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Qada Screen -->
+    <string name="qada_title">صلوات القضاء</string>
+    <string name="qada_subtitle">الصلوات الفائتة التي تحتاج لقضائها</string>
+    <string name="qada_error_title">حدث خطأ ما</string>
+
+    <!-- Summary -->
+    <string name="qada_total_pending">إجمالي المعلّق</string>
+    <string name="qada_prayer_singular">صلاة</string>
+    <string name="qada_prayer_plural">صلوات</string>
+
+    <!-- By Prayer Section -->
+    <string name="qada_by_prayer">حسب الصلاة</string>
+    <string name="qada_decrease">إنقاص</string>
+    <string name="qada_increase">زيادة</string>
+
+    <!-- FAB -->
+    <string name="qada_complete_action">إتمام القضاء</string>
+
+    <!-- Dialog -->
+    <string name="qada_complete_dialog_title">إتمام القضاء</string>
+    <string name="qada_complete_dialog_message">تأكيد إتمام صلاة قضاء %1$s؟</string>
+    <string name="qada_complete">إتمام</string>
+    <string name="qada_cancel">إلغاء</string>
+</resources>

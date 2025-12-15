@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prayer Names -->
+    <string name="prayer_fajr">Fajr</string>
+    <string name="prayer_sunrise">Sunrise</string>
+    <string name="prayer_dhuhr">Dhuhr</string>
+    <string name="prayer_asr">Asr</string>
+    <string name="prayer_maghrib">Maghrib</string>
+    <string name="prayer_isha">Isha</string>
+
+    <!-- Prayer Status -->
+    <string name="prayer_status_pending">Pending</string>
+    <string name="prayer_status_prayed">Prayed</string>
+    <string name="prayer_status_prayed_late">Prayed Late</string>
+    <string name="prayer_status_missed">Missed</string>
+
+    <!-- Calculation Methods -->
+    <string name="calculation_method_mwl">Muslim World League</string>
+    <string name="calculation_method_mwl_desc">Fajr: 18°, Isha: 17°</string>
+    <string name="calculation_method_egyptian">Egyptian General Authority</string>
+    <string name="calculation_method_egyptian_desc">Fajr: 19.5°, Isha: 17.5°</string>
+    <string name="calculation_method_karachi">University of Islamic Sciences, Karachi</string>
+    <string name="calculation_method_karachi_desc">Fajr: 18°, Isha: 18°</string>
+    <string name="calculation_method_umm_al_qura">Umm al-Qura University, Makkah</string>
+    <string name="calculation_method_umm_al_qura_desc">Fajr: 18.5°, Isha: 90 min after Maghrib</string>
+    <string name="calculation_method_dubai">Dubai</string>
+    <string name="calculation_method_dubai_desc">Fajr: 18.2°, Isha: 18.2°</string>
+    <string name="calculation_method_qatar">Qatar</string>
+    <string name="calculation_method_qatar_desc">Fajr: 18°, Isha: 90 min after Maghrib</string>
+    <string name="calculation_method_kuwait">Kuwait</string>
+    <string name="calculation_method_kuwait_desc">Fajr: 18°, Isha: 17.5°</string>
+    <string name="calculation_method_moonsighting">Moonsighting Committee</string>
+    <string name="calculation_method_moonsighting_desc">Fajr: 18°, Isha: 18°</string>
+    <string name="calculation_method_singapore">Singapore</string>
+    <string name="calculation_method_singapore_desc">Fajr: 20°, Isha: 18°</string>
+    <string name="calculation_method_turkey">Turkey (Diyanet)</string>
+    <string name="calculation_method_turkey_desc">Fajr: 18°, Isha: 17°</string>
+    <string name="calculation_method_tehran">Tehran</string>
+    <string name="calculation_method_tehran_desc">Fajr: 17.7°, Isha: 14°</string>
+    <string name="calculation_method_isna">ISNA (North America)</string>
+    <string name="calculation_method_isna_desc">Fajr: 15°, Isha: 15°</string>
+
+    <!-- Madhab -->
+    <string name="madhab_shafi">Shafi\'i</string>
+    <string name="madhab_shafi_desc">Shadow factor: 1 (Standard)</string>
+    <string name="madhab_hanafi">Hanafi</string>
+    <string name="madhab_hanafi_desc">Shadow factor: 2 (Later Asr time)</string>
+
+    <!-- High Latitude Rule -->
+    <string name="high_lat_middle_of_night">Middle of the Night</string>
+    <string name="high_lat_middle_of_night_desc">Fajr and Isha split night in half</string>
+    <string name="high_lat_seventh_of_night">Seventh of the Night</string>
+    <string name="high_lat_seventh_of_night_desc">Fajr/Isha are 1/7 of night from sunrise/sunset</string>
+    <string name="high_lat_twilight_angle">Twilight Angle</string>
+    <string name="high_lat_twilight_angle_desc">Uses the twilight angle based method</string>
+
+    <!-- Time Range for Statistics -->
+    <string name="time_range_week">Week</string>
+    <string name="time_range_month">Month</string>
+    <string name="time_range_year">Year</string>
+    <string name="time_range_all">All Time</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_tracking">Tracking</string>
+    <string name="nav_statistics">Statistics</string>
+    <string name="nav_qada">Qada</string>
+    <string name="nav_settings">Settings</string>
+</resources>

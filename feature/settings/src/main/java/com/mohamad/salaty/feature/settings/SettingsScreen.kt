@@ -64,10 +64,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import android.Manifest
+import com.mohamad.salaty.feature.settings.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -76,6 +78,7 @@ import com.google.accompanist.permissions.shouldShowRationale
 import com.mohamad.salaty.core.data.database.entity.LocationEntity
 import com.mohamad.salaty.core.data.preferences.UserPreferences
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
+import com.mohamad.salaty.core.designsystem.localizedName
 import com.mohamad.salaty.core.domain.model.CalculationMethod
 import com.mohamad.salaty.core.domain.model.HighLatitudeRule
 import com.mohamad.salaty.core.domain.model.Madhab
@@ -169,60 +172,60 @@ private fun SettingsContent(
         ) {
             // Header
             Text(
-                text = "Settings",
+                text = stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
         // Location Section
-        SettingsSection(title = "Location") {
+        SettingsSection(title = stringResource(R.string.settings_section_location)) {
             SettingsClickableItem(
                 icon = Icons.Default.LocationOn,
-                title = "Current Location",
-                subtitle = uiState.currentLocation?.name ?: "Not set",
+                title = stringResource(R.string.settings_current_location),
+                subtitle = uiState.currentLocation?.name ?: stringResource(R.string.settings_location_not_set),
                 onClick = { showLocationDialog = true }
             )
         }
 
         // Prayer Calculation Section
-        SettingsSection(title = "Prayer Calculation") {
+        SettingsSection(title = stringResource(R.string.settings_section_prayer_calculation)) {
             SettingsClickableItem(
                 icon = Icons.Default.Calculate,
-                title = "Calculation Method",
+                title = stringResource(R.string.settings_calculation_method),
                 subtitle = uiState.preferences.calculationMethod.displayName,
                 onClick = { showCalculationMethodDialog = true }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             SettingsClickableItem(
                 icon = Icons.Default.Schedule,
-                title = "Madhab (Asr Calculation)",
+                title = stringResource(R.string.settings_madhab),
                 subtitle = uiState.preferences.madhab.displayName,
                 onClick = { showMadhabDialog = true }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             SettingsClickableItem(
                 icon = Icons.Default.MyLocation,
-                title = "High Latitude Rule",
+                title = stringResource(R.string.settings_high_latitude_rule),
                 subtitle = HighLatitudeRule.entries.find {
                     it.name.lowercase() == uiState.preferences.highLatitudeRule
-                }?.displayName ?: "Middle of the Night",
+                }?.displayName ?: stringResource(R.string.settings_theme_system),
                 onClick = { showHighLatitudeDialog = true }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             SettingsClickableItem(
                 icon = Icons.Default.Tune,
-                title = "Time Adjustments",
-                subtitle = "Fine-tune prayer times",
+                title = stringResource(R.string.settings_time_adjustments),
+                subtitle = stringResource(R.string.settings_time_adjustments_subtitle),
                 onClick = { showAdjustmentsDialog = true }
             )
         }
 
         // Notifications Section
-        SettingsSection(title = "Notifications") {
+        SettingsSection(title = stringResource(R.string.settings_section_notifications)) {
             SettingsSwitchItem(
                 icon = Icons.Default.Notifications,
-                title = "Prayer Notifications",
-                subtitle = "Get notified for prayer times",
+                title = stringResource(R.string.settings_prayer_notifications),
+                subtitle = stringResource(R.string.settings_prayer_notifications_subtitle),
                 checked = uiState.preferences.notificationsEnabled,
                 onCheckedChange = viewModel::setNotificationsEnabled
             )
@@ -230,15 +233,15 @@ private fun SettingsContent(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SettingsClickableItem(
                     icon = Icons.Default.NotificationsActive,
-                    title = "Per-Prayer Settings",
-                    subtitle = "Configure individual prayers",
+                    title = stringResource(R.string.settings_per_prayer_settings),
+                    subtitle = stringResource(R.string.settings_per_prayer_settings_subtitle),
                     onClick = { showNotificationSettingsDialog = true }
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SettingsSwitchItem(
                     icon = Icons.Default.Vibration,
-                    title = "Vibrate",
-                    subtitle = "Vibrate on notification",
+                    title = stringResource(R.string.settings_vibrate),
+                    subtitle = stringResource(R.string.settings_vibrate_subtitle),
                     checked = uiState.preferences.notificationVibrate,
                     onCheckedChange = viewModel::setNotificationVibrate
                 )
@@ -246,43 +249,43 @@ private fun SettingsContent(
         }
 
         // Display Section
-        SettingsSection(title = "Display") {
+        SettingsSection(title = stringResource(R.string.settings_section_display)) {
             SettingsClickableItem(
                 icon = when (uiState.preferences.themeMode) {
                     "light" -> Icons.Default.LightMode
                     "dark" -> Icons.Default.DarkMode
                     else -> Icons.Default.SettingsBrightness
                 },
-                title = "Theme",
+                title = stringResource(R.string.settings_theme),
                 subtitle = when (uiState.preferences.themeMode) {
-                    "light" -> "Light"
-                    "dark" -> "Dark"
-                    else -> "System default"
+                    "light" -> stringResource(R.string.settings_theme_light)
+                    "dark" -> stringResource(R.string.settings_theme_dark)
+                    else -> stringResource(R.string.settings_theme_system)
                 },
                 onClick = { showThemeDialog = true }
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             SettingsSwitchItem(
                 icon = Icons.Default.DarkMode,
-                title = "Dynamic Colors",
-                subtitle = "Use Material You colors",
+                title = stringResource(R.string.settings_dynamic_colors),
+                subtitle = stringResource(R.string.settings_dynamic_colors_subtitle),
                 checked = uiState.preferences.dynamicColors,
                 onCheckedChange = viewModel::setDynamicColors
             )
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             SettingsSwitchItem(
                 icon = Icons.Default.AccessTime,
-                title = "24-Hour Format",
-                subtitle = "Use 24-hour time format",
+                title = stringResource(R.string.settings_24hour_format),
+                subtitle = stringResource(R.string.settings_24hour_format_subtitle),
                 checked = uiState.preferences.timeFormat24h,
                 onCheckedChange = viewModel::setTimeFormat24h
             )
         }
 
         // About Section
-        SettingsSection(title = "About") {
+        SettingsSection(title = stringResource(R.string.settings_section_about)) {
             SettingsClickableItem(
-                title = "Version",
+                title = stringResource(R.string.settings_version),
                 subtitle = "1.0.0",
                 onClick = { }
             )
@@ -366,9 +369,9 @@ private fun SettingsContent(
     if (showPermissionRationaleDialog) {
         AlertDialog(
             onDismissRequest = { showPermissionRationaleDialog = false },
-            title = { Text("Location Permission Needed") },
+            title = { Text(stringResource(R.string.settings_permission_title)) },
             text = {
-                Text("Location permission is required to automatically detect your current location for accurate prayer times. Please grant the permission to use this feature.")
+                Text(stringResource(R.string.settings_permission_message))
             },
             confirmButton = {
                 TextButton(
@@ -377,12 +380,12 @@ private fun SettingsContent(
                         locationPermissionState.launchPermissionRequest()
                     }
                 ) {
-                    Text("Grant Permission")
+                    Text(stringResource(R.string.settings_grant_permission))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showPermissionRationaleDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.settings_cancel))
                 }
             }
         )
@@ -846,7 +849,7 @@ private fun AdjustmentsDialog(
                 PrayerName.ordered.forEach { prayer ->
                     val currentAdjustment = preferences.getAdjustment(prayer)
                     AdjustmentRow(
-                        prayerName = PrayerName.displayName(prayer),
+                        prayerName = prayer.localizedName(),
                         adjustment = currentAdjustment,
                         onIncrease = { onAdjustmentChanged(prayer, currentAdjustment + 1) },
                         onDecrease = { onAdjustmentChanged(prayer, currentAdjustment - 1) }
@@ -951,7 +954,7 @@ private fun NotificationSettingsDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = PrayerName.displayName(prayer),
+                            text = prayer.localizedName(),
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Switch(

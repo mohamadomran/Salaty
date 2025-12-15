@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Statistics Screen -->
+    <string name="statistics_title">الإحصائيات</string>
+    <string name="statistics_error_title">حدث خطأ ما</string>
+
+    <!-- Time Range -->
+    <string name="statistics_range_week">أسبوع</string>
+    <string name="statistics_range_month">شهر</string>
+    <string name="statistics_range_year">سنة</string>
+    <string name="statistics_range_all">الكل</string>
+
+    <!-- Cards -->
+    <string name="statistics_completion_rate">نسبة الإتمام</string>
+    <string name="statistics_current_streak">السلسلة الحالية</string>
+    <string name="statistics_longest_streak">أطول سلسلة</string>
+    <string name="statistics_days">أيام</string>
+    <string name="statistics_perfect_days">أيام مثالية</string>
+    <string name="statistics_perfect_days_description">كل الصلوات الخمس في وقتها</string>
+
+    <!-- Breakdown -->
+    <string name="statistics_breakdown">التفصيل</string>
+    <string name="statistics_total_prayers">إجمالي الصلوات</string>
+    <string name="statistics_prayed_on_time">صليت في الوقت</string>
+    <string name="statistics_prayed_late">صليت متأخراً</string>
+    <string name="statistics_missed">فاتت</string>
+</resources>

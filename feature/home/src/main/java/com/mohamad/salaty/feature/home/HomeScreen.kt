@@ -27,11 +27,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mohamad.salaty.feature.home.R
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
 import com.mohamad.salaty.core.designsystem.component.SalatyElevatedCard
+import com.mohamad.salaty.core.designsystem.localizedName
 import com.mohamad.salaty.core.domain.model.DailyPrayerTimes
 import com.mohamad.salaty.core.domain.model.HijriDate
 import com.mohamad.salaty.core.domain.model.PrayerName
@@ -98,7 +101,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.primary
             )
             Text(
-                text = "Loading prayer times...",
+                text = stringResource(R.string.home_loading_prayer_times),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -122,7 +125,7 @@ private fun ErrorContent(
             modifier = Modifier.padding(24.dp)
         ) {
             Text(
-                text = "Something went wrong",
+                text = stringResource(R.string.home_error_title),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -133,7 +136,7 @@ private fun ErrorContent(
                 textAlign = TextAlign.Center
             )
             FilledTonalButton(onClick = onRetry) {
-                Text("Retry")
+                Text(stringResource(R.string.home_retry))
             }
         }
     }
@@ -164,13 +167,13 @@ private fun NoLocationContent(
                 )
 
                 Text(
-                    text = "Set Your Location",
+                    text = stringResource(R.string.home_set_location_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "To calculate accurate prayer times, we need your location.",
+                    text = stringResource(R.string.home_set_location_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -186,7 +189,7 @@ private fun NoLocationContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text("Set Location")
+                    Text(stringResource(R.string.home_set_location_button))
                 }
             }
         }
@@ -214,7 +217,7 @@ private fun PrayerTimesContent(
     ) {
         // Header
         Text(
-            text = "Prayer Times",
+            text = stringResource(R.string.home_prayer_times_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -234,7 +237,12 @@ private fun PrayerTimesContent(
             // Hijri Date
             if (hijriDate != null) {
                 Text(
-                    text = "${hijriDate.day} ${hijriDate.monthName} ${hijriDate.year} AH",
+                    text = stringResource(
+                        R.string.home_hijri_date_format,
+                        hijriDate.day,
+                        hijriDate.monthName,
+                        hijriDate.year
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -256,7 +264,7 @@ private fun PrayerTimesContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Next Prayer",
+                        text = stringResource(R.string.home_next_prayer),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -264,7 +272,7 @@ private fun PrayerTimesContent(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = PrayerName.displayName(nextPrayer),
+                        text = nextPrayer.localizedName(),
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -287,7 +295,7 @@ private fun PrayerTimesContent(
                     )
 
                     Text(
-                        text = "remaining",
+                        text = stringResource(R.string.home_remaining),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -305,7 +313,7 @@ private fun PrayerTimesContent(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Today's Prayer Times",
+                    text = stringResource(R.string.home_todays_prayer_times),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -317,7 +325,7 @@ private fun PrayerTimesContent(
                     val isPassed = prayerTime.isBefore(now) && prayer != nextPrayer
 
                     PrayerTimeRow(
-                        name = PrayerName.displayName(prayer),
+                        name = prayer.localizedName(),
                         time = prayerTime,
                         isNext = isNext,
                         isPassed = isPassed

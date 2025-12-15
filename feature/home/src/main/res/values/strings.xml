@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home Screen -->
+    <string name="home_loading_prayer_times">Loading prayer times…</string>
+    <string name="home_error_title">Something went wrong</string>
+    <string name="home_set_location_title">Set Your Location</string>
+    <string name="home_set_location_description">To calculate accurate prayer times, we need your location.</string>
+    <string name="home_set_location_button">Set Location</string>
+    <string name="home_prayer_times_title">Prayer Times</string>
+    <string name="home_next_prayer">Next Prayer</string>
+    <string name="home_remaining">remaining</string>
+    <string name="home_todays_prayer_times">Today\'s Prayer Times</string>
+    <string name="home_retry">Retry</string>
+    <string name="home_hijri_date_format">%1$d %2$s %3$d AH</string>
+</resources>

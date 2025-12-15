@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Statistics Screen -->
+    <string name="statistics_title">Statistics</string>
+    <string name="statistics_error_title">Something went wrong</string>
+
+    <!-- Time Range -->
+    <string name="statistics_range_week">Week</string>
+    <string name="statistics_range_month">Month</string>
+    <string name="statistics_range_year">Year</string>
+    <string name="statistics_range_all">All</string>
+
+    <!-- Cards -->
+    <string name="statistics_completion_rate">Completion Rate</string>
+    <string name="statistics_current_streak">Current Streak</string>
+    <string name="statistics_longest_streak">Longest Streak</string>
+    <string name="statistics_days">days</string>
+    <string name="statistics_perfect_days">Perfect Days</string>
+    <string name="statistics_perfect_days_description">all 5 prayers on time</string>
+
+    <!-- Breakdown -->
+    <string name="statistics_breakdown">Breakdown</string>
+    <string name="statistics_total_prayers">Total Prayers</string>
+    <string name="statistics_prayed_on_time">Prayed On Time</string>
+    <string name="statistics_prayed_late">Prayed Late</string>
+    <string name="statistics_missed">Missed</string>
+</resources>

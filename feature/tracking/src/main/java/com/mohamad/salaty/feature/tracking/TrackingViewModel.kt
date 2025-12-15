@@ -20,8 +20,7 @@ import javax.inject.Inject
  */
 data class PrayerTrackingItem(
     val prayerName: PrayerName,
-    val status: PrayerStatus,
-    val displayName: String = PrayerName.displayName(prayerName)
+    val status: PrayerStatus
 )
 
 /**

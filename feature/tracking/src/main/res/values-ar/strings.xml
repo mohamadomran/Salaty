@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tracking Screen -->
+    <string name="tracking_title">المتابعة اليومية</string>
+    <string name="tracking_error_title">حدث خطأ ما</string>
+    <string name="tracking_today">اليوم</string>
+    <string name="tracking_previous_day">اليوم السابق</string>
+    <string name="tracking_next_day">اليوم التالي</string>
+    <string name="tracking_todays_progress">تقدم اليوم</string>
+    <string name="tracking_days_progress">تقدم اليوم</string>
+    <string name="tracking_prayers_completed">%1$d من %2$d صلوات مكتملة</string>
+    <string name="tracking_prayers_section">الصلوات</string>
+
+    <!-- Status Chips -->
+    <string name="tracking_status_done">تمام</string>
+    <string name="tracking_status_late">متأخر</string>
+    <string name="tracking_status_miss">فاتت</string>
+</resources>

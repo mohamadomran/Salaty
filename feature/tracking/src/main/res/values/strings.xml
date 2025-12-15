@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tracking Screen -->
+    <string name="tracking_title">Daily Tracking</string>
+    <string name="tracking_error_title">Something went wrong</string>
+    <string name="tracking_today">Today</string>
+    <string name="tracking_previous_day">Previous day</string>
+    <string name="tracking_next_day">Next day</string>
+    <string name="tracking_todays_progress">Today\'s Progress</string>
+    <string name="tracking_days_progress">Day\'s Progress</string>
+    <string name="tracking_prayers_completed">%1$d of %2$d prayers completed</string>
+    <string name="tracking_prayers_section">Prayers</string>
+
+    <!-- Status Chips -->
+    <string name="tracking_status_done">Done</string>
+    <string name="tracking_status_late">Late</string>
+    <string name="tracking_status_miss">Miss</string>
+</resources>

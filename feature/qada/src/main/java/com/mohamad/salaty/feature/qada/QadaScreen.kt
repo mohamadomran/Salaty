@@ -30,12 +30,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mohamad.salaty.feature.qada.R
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
 import com.mohamad.salaty.core.designsystem.component.SalatyElevatedCard
+import com.mohamad.salaty.core.designsystem.localizedName
 import com.mohamad.salaty.core.domain.model.PrayerName
 
 /**
@@ -100,7 +103,7 @@ private fun ErrorContent(
             modifier = Modifier.padding(24.dp)
         ) {
             Text(
-                text = "Something went wrong",
+                text = stringResource(R.string.qada_error_title),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -142,10 +145,10 @@ private fun QadaContent(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Check,
-                        contentDescription = "Complete Qada"
+                        contentDescription = stringResource(R.string.qada_complete_action)
                     )
                     Text(
-                        text = "Complete Qada",
+                        text = stringResource(R.string.qada_complete_action),
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
@@ -162,13 +165,13 @@ private fun QadaContent(
         ) {
             // Header
             Text(
-                text = "Qada Prayers",
+                text = stringResource(R.string.qada_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                text = "Makeup prayers you need to complete",
+                text = stringResource(R.string.qada_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -184,7 +187,7 @@ private fun QadaContent(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Total Pending",
+                        text = stringResource(R.string.qada_total_pending),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -201,7 +204,7 @@ private fun QadaContent(
                     )
 
                     Text(
-                        text = if (uiState.totalCount == 1) "prayer" else "prayers",
+                        text = stringResource(if (uiState.totalCount == 1) R.string.qada_prayer_singular else R.string.qada_prayer_plural),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -219,14 +222,14 @@ private fun QadaContent(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "By Prayer",
+                        text = stringResource(R.string.qada_by_prayer),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
 
                     uiState.qadaItems.forEach { qada ->
                         QadaRow(
-                            prayerName = qada.displayName,
+                            prayerName = qada.prayerName.localizedName(),
                             count = qada.count,
                             onIncrement = { onIncrement(qada.prayerName) },
                             onDecrement = { onDecrement(qada.prayerName) }
@@ -240,7 +243,7 @@ private fun QadaContent(
     // Complete Dialog
     if (selectedPrayer != null) {
         CompleteQadaDialog(
-            prayerName = PrayerName.displayName(selectedPrayer!!),
+            prayerName = selectedPrayer!!.localizedName(),
             onConfirm = {
                 onMarkCompleted(selectedPrayer!!)
                 selectedPrayer = null
@@ -284,7 +287,7 @@ private fun QadaRow(
             ) {
                 Icon(
                     imageVector = Icons.Default.Remove,
-                    contentDescription = "Decrease",
+                    contentDescription = stringResource(R.string.qada_decrease),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -312,7 +315,7 @@ private fun QadaRow(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Increase",
+                    contentDescription = stringResource(R.string.qada_increase),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -329,19 +332,19 @@ private fun CompleteQadaDialog(
     androidx.compose.material3.AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text("Complete Qada")
+            Text(stringResource(R.string.qada_complete_dialog_title))
         },
         text = {
-            Text("Mark one $prayerName Qada prayer as completed?")
+            Text(stringResource(R.string.qada_complete_dialog_message, prayerName))
         },
         confirmButton = {
             androidx.compose.material3.TextButton(onClick = onConfirm) {
-                Text("Complete")
+                Text(stringResource(R.string.qada_complete))
             }
         },
         dismissButton = {
             androidx.compose.material3.TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.qada_cancel))
             }
         }
     )

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home Screen -->
+    <string name="home_loading_prayer_times">جاري تحميل مواقيت الصلاة…</string>
+    <string name="home_error_title">حدث خطأ ما</string>
+    <string name="home_set_location_title">حدد موقعك</string>
+    <string name="home_set_location_description">نحتاج إلى موقعك لحساب مواقيت الصلاة بدقة.</string>
+    <string name="home_set_location_button">تحديد الموقع</string>
+    <string name="home_prayer_times_title">مواقيت الصلاة</string>
+    <string name="home_next_prayer">الصلاة القادمة</string>
+    <string name="home_remaining">متبقي</string>
+    <string name="home_todays_prayer_times">مواقيت صلاة اليوم</string>
+    <string name="home_retry">إعادة المحاولة</string>
+    <string name="home_hijri_date_format">%1$d %2$s %3$d هـ</string>
+</resources>

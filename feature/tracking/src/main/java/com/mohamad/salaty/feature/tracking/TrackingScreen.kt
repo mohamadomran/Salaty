@@ -31,12 +31,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.mohamad.salaty.feature.tracking.R
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
 import com.mohamad.salaty.core.designsystem.component.SalatyElevatedCard
+import com.mohamad.salaty.core.designsystem.localizedName
 import com.mohamad.salaty.core.domain.model.PrayerName
 import com.mohamad.salaty.core.domain.model.PrayerStatus
 import java.time.LocalDate
@@ -104,7 +107,7 @@ private fun ErrorContent(
             modifier = Modifier.padding(24.dp)
         ) {
             Text(
-                text = "Something went wrong",
+                text = stringResource(R.string.tracking_error_title),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -138,7 +141,7 @@ private fun TrackingContent(
     ) {
         // Header
         Text(
-            text = "Daily Tracking",
+            text = stringResource(R.string.tracking_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -161,7 +164,7 @@ private fun TrackingContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = if (isToday) "Today" else uiState.selectedDate.format(
+                    text = if (isToday) stringResource(R.string.tracking_today) else uiState.selectedDate.format(
                         DateTimeFormatter.ofPattern("EEEE")
                     ),
                     style = MaterialTheme.typography.titleMedium,
@@ -206,7 +209,7 @@ private fun TrackingContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (isToday) "Today's Progress" else "Day's Progress",
+                        text = stringResource(if (isToday) R.string.tracking_todays_progress else R.string.tracking_days_progress),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -233,7 +236,7 @@ private fun TrackingContent(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = "${uiState.prayedCount} of ${uiState.totalCount} prayers completed",
+                    text = stringResource(R.string.tracking_prayers_completed, uiState.prayedCount, uiState.totalCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -251,7 +254,7 @@ private fun TrackingContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Prayers",
+                    text = stringResource(R.string.tracking_prayers_section),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -259,7 +262,7 @@ private fun TrackingContent(
 
                 uiState.prayers.forEach { prayer ->
                     PrayerTrackingRow(
-                        prayerName = prayer.displayName,
+                        prayerName = prayer.prayerName.localizedName(),
                         status = prayer.status,
                         onStatusChange = { newStatus ->
                             onStatusChange(prayer.prayerName, newStatus)
@@ -301,7 +304,7 @@ private fun PrayerTrackingRow(
                         else PrayerStatus.PRAYED
                     )
                 },
-                label = { Text("Done", style = MaterialTheme.typography.labelSmall) },
+                label = { Text(stringResource(R.string.tracking_status_done), style = MaterialTheme.typography.labelSmall) },
                 leadingIcon = if (status == PrayerStatus.PRAYED) {
                     {
                         Icon(
@@ -327,7 +330,7 @@ private fun PrayerTrackingRow(
                         else PrayerStatus.PRAYED_LATE
                     )
                 },
-                label = { Text("Late", style = MaterialTheme.typography.labelSmall) },
+                label = { Text(stringResource(R.string.tracking_status_late), style = MaterialTheme.typography.labelSmall) },
                 leadingIcon = if (status == PrayerStatus.PRAYED_LATE) {
                     {
                         Icon(
@@ -353,7 +356,7 @@ private fun PrayerTrackingRow(
                         else PrayerStatus.MISSED
                     )
                 },
-                label = { Text("Miss", style = MaterialTheme.typography.labelSmall) },
+                label = { Text(stringResource(R.string.tracking_status_miss), style = MaterialTheme.typography.labelSmall) },
                 leadingIcon = if (status == PrayerStatus.MISSED) {
                     {
                         Icon(
