@@ -3,7 +3,9 @@ package com.mohamad.salaty.receiver
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.mohamad.salaty.core.data.notification.DailySchedulerWorker
 import com.mohamad.salaty.core.data.notification.PrayerNotificationScheduler
+import com.mohamad.salaty.widget.WidgetUpdateWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +38,13 @@ class BootReceiver : BroadcastReceiver() {
                 try {
                     notificationScheduler.rescheduleAllNotifications()
                     Timber.d("Prayer notifications rescheduled after boot")
+
+                    // Reinitialize daily scheduler
+                    DailySchedulerWorker.initialize(context)
+
+                    // Reschedule widget updates
+                    WidgetUpdateWorker.schedule(context)
+                    WidgetUpdateWorker.updateNow(context)
                 } catch (e: Exception) {
                     Timber.e(e, "Failed to reschedule notifications after boot")
                 } finally {

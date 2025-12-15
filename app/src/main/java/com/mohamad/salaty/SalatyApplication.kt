@@ -3,7 +3,9 @@ package com.mohamad.salaty
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.mohamad.salaty.core.data.notification.DailySchedulerWorker
 import com.mohamad.salaty.core.data.notification.PrayerNotificationScheduler
+import com.mohamad.salaty.widget.WidgetUpdateWorker
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,12 @@ class SalatyApplication : Application(), Configuration.Provider {
                 Timber.e(e, "Failed to schedule prayer notifications")
             }
         }
+
+        // Initialize daily scheduler for midnight rescheduling
+        DailySchedulerWorker.initialize(this)
+
+        // Schedule periodic widget updates
+        WidgetUpdateWorker.schedule(this)
     }
 
     override val workManagerConfiguration: Configuration
