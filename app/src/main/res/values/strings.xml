@@ -95,4 +95,8 @@
     <string name="confirm">Confirm</string>
     <string name="days">days</string>
     <string name="prayers">prayers</string>
+
+    <!-- Widgets -->
+    <string name="widget_compact_description">Shows the next prayer time with countdown</string>
+    <string name="widget_full_description">Shows all prayer times for today</string>
 </resources>

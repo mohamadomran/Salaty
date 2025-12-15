@@ -78,6 +78,7 @@ dependencies {
     implementation(project(":feature:statistics"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:onboarding"))
+    implementation(project(":feature:compass"))
 
     // AndroidX Core
     implementation(libs.androidx.core.ktx)
@@ -101,6 +102,10 @@ dependencies {
 
     // WorkManager
     implementation(libs.work.runtime.ktx)
+
+    // Glance (App Widgets)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
 
     // Utils
     implementation(libs.timber)
