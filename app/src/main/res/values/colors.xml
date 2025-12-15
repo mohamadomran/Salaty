@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary colors will be handled by Compose M3 Theme -->
+    <!-- These are fallback colors for XML layouts if needed -->
+
+    <color name="teal_primary">#006A6A</color>
+    <color name="teal_primary_dark">#004D4D</color>
+    <color name="gold_accent">#FFD700</color>
+
+    <color name="status_completed">#00C853</color>
+    <color name="status_delayed">#FFA726</color>
+    <color name="status_missed">#FF5252</color>
+    <color name="status_pending">#9E9E9E</color>
+</resources>
