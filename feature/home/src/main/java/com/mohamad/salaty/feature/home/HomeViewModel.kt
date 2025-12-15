@@ -2,8 +2,10 @@ package com.mohamad.salaty.feature.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mohamad.salaty.core.data.calendar.HijriDateConverter
 import com.mohamad.salaty.core.data.repository.PrayerRepository
 import com.mohamad.salaty.core.domain.model.DailyPrayerTimes
+import com.mohamad.salaty.core.domain.model.HijriDate
 import com.mohamad.salaty.core.domain.model.PrayerName
 import com.mohamad.salaty.core.domain.model.PrayerStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,6 +26,7 @@ import javax.inject.Inject
  */
 data class HomeUiState(
     val prayerTimes: DailyPrayerTimes? = null,
+    val hijriDate: HijriDate? = null,
     val currentPrayer: PrayerName? = null,
     val nextPrayer: PrayerName? = null,
     val secondsUntilNextPrayer: Long? = null,
@@ -44,7 +47,8 @@ data class HomeUiState(
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val prayerRepository: PrayerRepository
+    private val prayerRepository: PrayerRepository,
+    private val hijriDateConverter: HijriDateConverter
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -63,6 +67,9 @@ class HomeViewModel @Inject constructor(
                 // Load prayer times
                 val prayerTimes = prayerRepository.getTodayPrayerTimes()
 
+                // Get Hijri date for today
+                val hijriDate = hijriDateConverter.today()
+
                 // Get current and next prayer
                 val (current, next) = prayerRepository.getCurrentAndNextPrayer()
 
@@ -75,6 +82,7 @@ class HomeViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         prayerTimes = prayerTimes,
+                        hijriDate = hijriDate,
                         currentPrayer = current,
                         nextPrayer = next,
                         secondsUntilNextPrayer = secondsUntil,

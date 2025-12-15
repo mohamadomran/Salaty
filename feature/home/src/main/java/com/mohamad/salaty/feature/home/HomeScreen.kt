@@ -33,6 +33,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
 import com.mohamad.salaty.core.designsystem.component.SalatyElevatedCard
 import com.mohamad.salaty.core.domain.model.DailyPrayerTimes
+import com.mohamad.salaty.core.domain.model.HijriDate
 import com.mohamad.salaty.core.domain.model.PrayerName
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -73,6 +74,7 @@ fun HomeScreen(
         uiState.prayerTimes != null -> {
             PrayerTimesContent(
                 prayerTimes = uiState.prayerTimes!!,
+                hijriDate = uiState.hijriDate,
                 nextPrayer = uiState.nextPrayer,
                 currentPrayer = uiState.currentPrayer,
                 countdown = uiState.formattedCountdown,
@@ -194,6 +196,7 @@ private fun NoLocationContent(
 @Composable
 private fun PrayerTimesContent(
     prayerTimes: DailyPrayerTimes,
+    hijriDate: HijriDate?,
     nextPrayer: PrayerName?,
     currentPrayer: PrayerName?,
     countdown: String,
@@ -216,31 +219,24 @@ private fun PrayerTimesContent(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        // Date & Location
-        Row(
+        // Date Section (Gregorian & Hijri)
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            // Gregorian Date
             Text(
-                text = currentDate.format(DateTimeFormatter.ofPattern("EEEE, MMMM d")),
+                text = currentDate.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy")),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            // Hijri Date
+            if (hijriDate != null) {
                 Text(
-                    text = "Your Location",
+                    text = "${hijriDate.day} ${hijriDate.monthName} ${hijriDate.year} AH",
                     style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
                 )
             }
