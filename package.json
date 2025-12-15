@@ -1,7 +1,14 @@
 {
   "name": "salaty",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
+  "license": "PROPRIETARY",
+  "author": {
+    "name": "Mohamad Omran",
+    "email": "contact@mohamadomran.dev",
+    "url": "https://mohamadomran.dev"
+  },
+  "description": "Prayer times and tracking application for Muslims",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",

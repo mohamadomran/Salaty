@@ -1,6 +1,28 @@
 # 🕌 Salaty - Islamic Prayer Times App
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](package.json)
+[![License](https://img.shields.io/badge/license-PROPRIETARY-red.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-green.svg)](#)
+
 A modern React Native application for accurate Islamic prayer times, Qibla direction, and daily salat tracking. Built with Material Design 3 Expressive theme and offline-first architecture.
+
+---
+
+## ⚠️ COPYRIGHT & LICENSE
+
+**This software is proprietary and confidential.**
+
+**© 2025 Salaty. All Rights Reserved.**
+
+- ❌ **NOT allowed to copy, distribute, or modify**
+- ❌ **NOT open source**
+- ✅ **Proprietary license - See [LICENSE](LICENSE) file**
+
+**Unauthorized copying, distribution, or modification is strictly prohibited.**
+
+For licensing inquiries: contact@mohamadomran.dev
+
+---
 
 ## ✨ Features
 
@@ -314,7 +336,22 @@ See [TODO.md](./TODO.md) for the complete development roadmap and upcoming featu
 
 ## 📄 License
 
-[Add your license here]
+**Proprietary License - All Rights Reserved**
+
+This software is protected by copyright law. See [LICENSE](LICENSE) file for complete terms.
+
+### Third-Party Components
+
+This application uses the following open-source libraries (each under their own licenses):
+
+- **React Native** - MIT License
+- **React Native Paper** - MIT License
+- **Adhan.js** - MIT License
+- **Notifee** - Apache License 2.0
+
+See [COPYRIGHT](COPYRIGHT) file for complete third-party attributions.
+
+**Note**: The use of these open-source libraries does NOT affect the proprietary nature of this software.
 
 ## 🙏 Acknowledgments
 
@@ -325,6 +362,8 @@ See [TODO.md](./TODO.md) for the complete development roadmap and upcoming featu
 
 ---
 
-**Version**: 0.0.1
+**Version**: 1.0.0
 **Last Updated**: November 2025
-**Status**: Active Development
+**Status**: Production Release
+**License**: Proprietary - All Rights Reserved
+**© 2025 Salaty**
