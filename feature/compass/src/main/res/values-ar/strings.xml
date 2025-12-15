@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen Title -->
+    <string name="compass_title">بوصلة القبلة</string>
+    <string name="compass_nav_label">القبلة</string>
+
+    <!-- Info Cards -->
+    <string name="compass_qibla_direction">اتجاه القبلة</string>
+    <string name="compass_heading">الاتجاه الحالي</string>
+    <string name="compass_distance">المسافة إلى الكعبة</string>
+
+    <!-- Warnings -->
+    <string name="compass_calibration_needed">دقة البوصلة منخفضة. حرّك هاتفك بشكل رقم 8 للمعايرة.</string>
+    <string name="compass_unavailable">البوصلة غير متوفرة</string>
+    <string name="compass_unavailable_description">جهازك لا يحتوي على المستشعرات المطلوبة لميزة البوصلة.</string>
+
+    <!-- Location Required -->
+    <string name="compass_location_required">الموقع مطلوب</string>
+    <string name="compass_location_required_description">يرجى تحديد موقعك في الإعدادات لاستخدام بوصلة القبلة.</string>
+</resources>

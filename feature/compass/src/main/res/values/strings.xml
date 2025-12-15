@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen Title -->
+    <string name="compass_title">Qibla Compass</string>
+    <string name="compass_nav_label">Qibla</string>
+
+    <!-- Info Cards -->
+    <string name="compass_qibla_direction">Qibla Direction</string>
+    <string name="compass_heading">Current Heading</string>
+    <string name="compass_distance">Distance to Kaaba</string>
+
+    <!-- Warnings -->
+    <string name="compass_calibration_needed">Compass accuracy is low. Move your phone in a figure-8 pattern to calibrate.</string>
+    <string name="compass_unavailable">Compass Unavailable</string>
+    <string name="compass_unavailable_description">Your device does not have the required sensors for the compass feature.</string>
+
+    <!-- Location Required -->
+    <string name="compass_location_required">Location Required</string>
+    <string name="compass_location_required_description">Please set your location in Settings to use the Qibla compass.</string>
+</resources>

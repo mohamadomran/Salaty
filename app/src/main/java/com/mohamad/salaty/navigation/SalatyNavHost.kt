@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.Settings
@@ -25,6 +27,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.mohamad.salaty.core.designsystem.component.SalatyNavigationBar
 import com.mohamad.salaty.core.designsystem.component.SalatyNavigationBarItem
+import com.mohamad.salaty.feature.compass.QiblaCompassScreen
 import com.mohamad.salaty.feature.home.HomeScreen
 import com.mohamad.salaty.feature.qada.QadaScreen
 import com.mohamad.salaty.feature.settings.SettingsScreen
@@ -68,6 +71,13 @@ sealed class Screen(
         selectedIcon = Icons.Filled.BarChart
     )
 
+    data object Compass : Screen(
+        route = "compass",
+        label = "Qibla",
+        icon = Icons.Outlined.Explore,
+        selectedIcon = Icons.Filled.Explore
+    )
+
     data object Settings : Screen(
         route = "settings",
         label = "Settings",
@@ -76,7 +86,7 @@ sealed class Screen(
     )
 
     companion object {
-        val bottomNavItems = listOf(Home, Tracking, Qada, Statistics, Settings)
+        val bottomNavItems = listOf(Home, Tracking, Compass, Qada, Statistics, Settings)
     }
 }
 
@@ -141,6 +151,9 @@ fun SalatyNavHost(
             }
             composable(Screen.Statistics.route) {
                 StatisticsScreen()
+            }
+            composable(Screen.Compass.route) {
+                QiblaCompassScreen()
             }
             composable(Screen.Settings.route) {
                 SettingsScreen()
