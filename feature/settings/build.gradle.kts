@@ -64,6 +64,9 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
+    // Accompanist Permissions
+    implementation(libs.accompanist.permissions)
+
     // Testing
     testImplementation(libs.junit)
 }

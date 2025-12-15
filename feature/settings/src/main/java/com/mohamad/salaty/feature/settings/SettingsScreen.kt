@@ -35,7 +35,11 @@ import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,12 +50,15 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -60,7 +67,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.Manifest
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.mohamad.salaty.core.data.database.entity.LocationEntity
 import com.mohamad.salaty.core.data.preferences.UserPreferences
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
@@ -76,6 +88,7 @@ import java.util.TimeZone
  * Manage app settings and preferences.
  * Material Design 3 Expressive UI.
  */
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun SettingsScreen(
     modifier: Modifier = Modifier,
@@ -109,12 +122,32 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 private fun SettingsContent(
     uiState: SettingsUiState,
     viewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
+    // Location permission state
+    val locationPermissionState = rememberPermissionState(
+        Manifest.permission.ACCESS_FINE_LOCATION
+    )
+
+    // Snackbar for error messages
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // Show error in snackbar
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let { error ->
+            scope.launch {
+                snackbarHostState.showSnackbar(error)
+                viewModel.clearError()
+            }
+        }
+    }
+
     // Dialog states
     var showCalculationMethodDialog by remember { mutableStateOf(false) }
     var showMadhabDialog by remember { mutableStateOf(false) }
@@ -124,20 +157,22 @@ private fun SettingsContent(
     var showAdjustmentsDialog by remember { mutableStateOf(false) }
     var showNotificationSettingsDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showPermissionRationaleDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Header
-        Text(
-            text = "Settings",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Header
+            Text(
+                text = "Settings",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
 
         // Location Section
         SettingsSection(title = "Location") {
@@ -253,7 +288,16 @@ private fun SettingsContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Snackbar for error messages
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        )
     }
 
     // Dialogs
@@ -296,9 +340,19 @@ private fun SettingsContent(
         LocationDialog(
             locations = uiState.locations,
             currentLocation = uiState.currentLocation,
+            isDetectingLocation = uiState.isDetectingLocation,
             onLocationSelected = {
                 viewModel.setDefaultLocation(it.id)
                 showLocationDialog = false
+            },
+            onDetectLocation = {
+                if (locationPermissionState.status.isGranted) {
+                    viewModel.detectLocation()
+                } else if (locationPermissionState.status.shouldShowRationale) {
+                    showPermissionRationaleDialog = true
+                } else {
+                    locationPermissionState.launchPermissionRequest()
+                }
             },
             onAddLocation = {
                 showLocationDialog = false
@@ -306,6 +360,31 @@ private fun SettingsContent(
             },
             onDeleteLocation = viewModel::deleteLocation,
             onDismiss = { showLocationDialog = false }
+        )
+    }
+
+    if (showPermissionRationaleDialog) {
+        AlertDialog(
+            onDismissRequest = { showPermissionRationaleDialog = false },
+            title = { Text("Location Permission Needed") },
+            text = {
+                Text("Location permission is required to automatically detect your current location for accurate prayer times. Please grant the permission to use this feature.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showPermissionRationaleDialog = false
+                        locationPermissionState.launchPermissionRequest()
+                    }
+                ) {
+                    Text("Grant Permission")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPermissionRationaleDialog = false }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 
@@ -512,7 +591,9 @@ private fun HighLatitudeRuleDialog(
 private fun LocationDialog(
     locations: List<LocationEntity>,
     currentLocation: LocationEntity?,
+    isDetectingLocation: Boolean,
     onLocationSelected: (LocationEntity) -> Unit,
+    onDetectLocation: () -> Unit,
     onAddLocation: () -> Unit,
     onDeleteLocation: (Long) -> Unit,
     onDismiss: () -> Unit
@@ -522,15 +603,50 @@ private fun LocationDialog(
         title = { Text("Locations") },
         text = {
             Column {
+                // Detect Location Button
+                Button(
+                    onClick = onDetectLocation,
+                    enabled = !isDetectingLocation,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isDetectingLocation) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Detecting...")
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.MyLocation,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Detect My Location")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(8.dp))
+
                 if (locations.isEmpty()) {
                     Text(
-                        text = "No locations saved. Add a location to calculate prayer times.",
+                        text = "No locations saved. Detect your location or add one manually.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(vertical = 16.dp)
                     )
                 } else {
+                    Text(
+                        text = "Saved Locations",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                     Column(modifier = Modifier.selectableGroup()) {
                         locations.forEach { location ->
                             Row(
@@ -584,7 +700,7 @@ private fun LocationDialog(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Add Location")
+                Text("Add Manually")
             }
         },
         dismissButton = {

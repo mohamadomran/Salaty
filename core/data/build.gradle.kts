@@ -72,6 +72,7 @@ dependencies {
 
     // WorkManager
     implementation(libs.work.runtime.ktx)
+    implementation(libs.hilt.work)
 
     // Prayer Calculation
     implementation(libs.adhan)

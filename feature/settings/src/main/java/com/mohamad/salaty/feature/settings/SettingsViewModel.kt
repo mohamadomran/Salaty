@@ -3,6 +3,8 @@ package com.mohamad.salaty.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mohamad.salaty.core.data.database.entity.LocationEntity
+import com.mohamad.salaty.core.data.location.LocationResult
+import com.mohamad.salaty.core.data.location.LocationService
 import com.mohamad.salaty.core.data.preferences.SalatyPreferences
 import com.mohamad.salaty.core.data.preferences.UserPreferences
 import com.mohamad.salaty.core.data.repository.PrayerRepository
@@ -27,13 +29,15 @@ data class SettingsUiState(
     val locations: List<LocationEntity> = emptyList(),
     val currentLocation: LocationEntity? = null,
     val isLoading: Boolean = true,
+    val isDetectingLocation: Boolean = false,
     val error: String? = null
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val salatyPreferences: SalatyPreferences,
-    private val prayerRepository: PrayerRepository
+    private val prayerRepository: PrayerRepository,
+    private val locationService: LocationService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -100,6 +104,54 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             prayerRepository.deleteLocation(locationId)
         }
+    }
+
+    /**
+     * Detect current location using GPS.
+     * Requires location permission to be granted.
+     */
+    fun detectLocation() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDetectingLocation = true, error = null) }
+
+            when (val result = locationService.detectLocation()) {
+                is LocationResult.Success -> {
+                    val location = result.location
+                    // Save the detected location
+                    prayerRepository.saveLocation(
+                        name = location.name,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        timezone = location.timezone,
+                        setAsDefault = true
+                    )
+                    _uiState.update { it.copy(isDetectingLocation = false) }
+                }
+                is LocationResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            error = result.message
+                        )
+                    }
+                }
+                LocationResult.PermissionDenied -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            error = "Location permission is required to detect your location"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if location permission is granted.
+     */
+    fun hasLocationPermission(): Boolean {
+        return locationService.hasLocationPermission()
     }
 
     // ============================================================================
