@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Release
@@ -62,20 +65,19 @@ jobs:
         run: |
           echo "$ENCODED_KEYSTORE" | base64 -d > release-keystore.jks
 
-      - name: Build Release APK and AAB
+      - name: Build Release APK
         env:
           KEYSTORE_FILE: release-keystore.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: ./gradlew assembleRelease bundleRelease
+        run: ./gradlew assembleRelease
 
-      - name: Rename artifacts
+      - name: Rename APK
         env:
           VERSION: ${{ steps.version.outputs.VERSION }}
         run: |
           mv app/build/outputs/apk/release/app-release.apk "app/build/outputs/apk/release/salaty-${VERSION}.apk"
-          mv app/build/outputs/bundle/release/app-release.aab "app/build/outputs/bundle/release/salaty-${VERSION}.aab"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -83,20 +85,12 @@ jobs:
           name: salaty-release-apk
           path: app/build/outputs/apk/release/salaty-*.apk
 
-      - name: Upload AAB artifact (Play Store)
-        uses: actions/upload-artifact@v4
-        with:
-          name: salaty-release-aab
-          path: app/build/outputs/bundle/release/salaty-*.aab
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.version.outputs.VERSION }}
           name: Salaty v${{ steps.version.outputs.VERSION }}
-          files: |
-            app/build/outputs/apk/release/salaty-*.apk
-            app/build/outputs/bundle/release/salaty-*.aab
+          files: app/build/outputs/apk/release/salaty-*.apk
           generate_release_notes: true
           draft: false
           prerelease: false
