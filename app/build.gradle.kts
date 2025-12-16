@@ -23,8 +23,17 @@ android {
         applicationId = "dev.mohamadomran.salaty"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = try {
+            providers.exec {
+                commandLine("git", "rev-list", "--count", "HEAD")
+            }.standardOutput.asText.get().trim().toIntOrNull() ?: 1
+        } catch (e: Exception) { 1 }
+        versionName = try {
+            val tag = providers.exec {
+                commandLine("git", "describe", "--tags", "--abbrev=0")
+            }.standardOutput.asText.get().trim().removePrefix("v")
+            tag.ifEmpty { "0.1.0" }
+        } catch (e: Exception) { "0.1.0" }
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

@@ -2,14 +2,9 @@ name: Build & Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version name (e.g., 1.0.0)'
-        required: true
-        default: '1.0.0'
 
 jobs:
   build:
@@ -19,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,6 +26,35 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Calculate next version
+        id: version
+        run: |
+          # Get latest tag or default to v0.0.0
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # Parse version components
+          VERSION="${LATEST_TAG#v}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+          # Increment patch version
+          PATCH=$((PATCH + 1))
+
+          # If starting fresh (0.0.1), make it 0.1.0
+          if [ "$MAJOR" = "0" ] && [ "$MINOR" = "0" ] && [ "$PATCH" = "1" ]; then
+            MINOR=1
+            PATCH=0
+          fi
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          VERSION_CODE=$(git rev-list --count HEAD)
+
+          echo "VERSION=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "New version: $NEW_VERSION (code: $VERSION_CODE)"
 
       - name: Decode Keystore
         env:
@@ -43,20 +69,6 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew assembleRelease bundleRelease
-
-      - name: Get version from tag
-        id: version
-        env:
-          INPUT_VERSION: ${{ github.event.inputs.version }}
-          GH_REF: ${{ github.ref }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "VERSION=$INPUT_VERSION" >> "$GITHUB_OUTPUT"
-          else
-            VERSION="${GH_REF#refs/tags/v}"
-            echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Rename artifacts
         env:
@@ -78,9 +90,10 @@ jobs:
           path: app/build/outputs/bundle/release/salaty-*.aab
 
       - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: Salaty v${{ steps.version.outputs.VERSION }}
           files: |
             app/build/outputs/apk/release/salaty-*.apk
             app/build/outputs/bundle/release/salaty-*.aab
