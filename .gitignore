@@ -77,3 +77,6 @@ lint/tmp/
 # Misc
 *.DS_Store
 .kotlin/
+
+# Icon generator output
+IconKitchen-Output/
