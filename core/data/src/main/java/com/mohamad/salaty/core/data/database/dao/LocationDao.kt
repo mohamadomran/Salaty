@@ -27,6 +27,9 @@ interface LocationDao {
     @Query("SELECT * FROM saved_locations WHERE id = :id")
     suspend fun getLocationById(id: Long): LocationEntity?
 
+    @Query("SELECT * FROM saved_locations WHERE id = :id")
+    fun getLocationByIdFlow(id: Long): Flow<LocationEntity?>
+
     @Query("SELECT * FROM saved_locations WHERE isDefault = 1 LIMIT 1")
     suspend fun getDefaultLocation(): LocationEntity?
 

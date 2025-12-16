@@ -10,17 +10,11 @@
     <string name="qada_prayer_singular">prayer</string>
     <string name="qada_prayer_plural">prayers</string>
 
-    <!-- By Prayer Section -->
-    <string name="qada_by_prayer">By Prayer</string>
-    <string name="qada_decrease">Decrease</string>
-    <string name="qada_increase">Increase</string>
+    <!-- Missed Prayers Section -->
+    <string name="qada_missed_prayers">Missed Prayers</string>
+    <string name="qada_no_missed">All caught up!</string>
+    <string name="qada_no_missed_description">You have no missed prayers to make up. Keep up the great work!</string>
 
-    <!-- FAB -->
-    <string name="qada_complete_action">Complete Qada</string>
-
-    <!-- Dialog -->
-    <string name="qada_complete_dialog_title">Complete Qada</string>
-    <string name="qada_complete_dialog_message">Mark one %1$s Qada prayer as completed?</string>
-    <string name="qada_complete">Complete</string>
-    <string name="qada_cancel">Cancel</string>
+    <!-- Actions -->
+    <string name="qada_complete_action">Mark Complete</string>
 </resources>

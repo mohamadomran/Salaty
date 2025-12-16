@@ -1,0 +1,22 @@
+Salaty is a beautiful and comprehensive Islamic prayer app designed to help Muslims maintain their daily prayers.
+
+Features:
+• Accurate prayer times based on your location
+• Multiple calculation methods (Muslim World League, ISNA, Egypt, etc.)
+• Prayer tracking - mark prayers as completed
+• Qibla compass to find the direction of Mecca
+• Home screen widgets (compact & full)
+• Prayer notifications with customizable sounds
+• Statistics and streaks to track your progress
+• Qada (makeup prayers) management
+• Support for both Shafi and Hanafi madhab
+• Dark mode support
+• Available in English and Arabic
+
+Privacy-focused:
+• No ads
+• No tracking
+• Location used only for prayer time calculations
+• All data stored locally on your device
+
+Open source and free forever.

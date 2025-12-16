@@ -11,11 +11,12 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 /**
- * Main app UI state including theme and onboarding status.
+ * Main app UI state including theme, language, and onboarding status.
  */
 data class MainUiState(
     val themeMode: String = "system",
     val dynamicColors: Boolean = true,
+    val language: String = "en",
     val onboardingCompleted: Boolean? = null // null = loading
 )
 
@@ -47,6 +48,7 @@ class MainViewModel @Inject constructor(
             MainUiState(
                 themeMode = prefs.themeMode,
                 dynamicColors = prefs.dynamicColors,
+                language = prefs.language,
                 onboardingCompleted = prefs.onboardingCompleted
             )
         }

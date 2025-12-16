@@ -2,17 +2,13 @@ package com.mohamad.salaty.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.BarChart
-import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -28,11 +24,9 @@ import androidx.navigation.compose.rememberNavController
 import com.mohamad.salaty.core.designsystem.component.SalatyNavigationBar
 import com.mohamad.salaty.core.designsystem.component.SalatyNavigationBarItem
 import com.mohamad.salaty.feature.compass.QiblaCompassScreen
+import com.mohamad.salaty.feature.dashboard.DashboardScreen
 import com.mohamad.salaty.feature.home.HomeScreen
-import com.mohamad.salaty.feature.qada.QadaScreen
 import com.mohamad.salaty.feature.settings.SettingsScreen
-import com.mohamad.salaty.feature.statistics.StatisticsScreen
-import com.mohamad.salaty.feature.tracking.TrackingScreen
 
 /**
  * Navigation Routes
@@ -50,25 +44,11 @@ sealed class Screen(
         selectedIcon = Icons.Filled.Home
     )
 
-    data object Tracking : Screen(
-        route = "tracking",
-        label = "Tracking",
-        icon = Icons.Outlined.Checklist,
-        selectedIcon = Icons.Filled.Checklist
-    )
-
-    data object Qada : Screen(
-        route = "qada",
-        label = "Qada",
-        icon = Icons.Outlined.Replay,
-        selectedIcon = Icons.Filled.Replay
-    )
-
-    data object Statistics : Screen(
-        route = "statistics",
-        label = "Stats",
-        icon = Icons.Outlined.BarChart,
-        selectedIcon = Icons.Filled.BarChart
+    data object Dashboard : Screen(
+        route = "dashboard",
+        label = "Dashboard",
+        icon = Icons.Outlined.Dashboard,
+        selectedIcon = Icons.Filled.Dashboard
     )
 
     data object Compass : Screen(
@@ -86,7 +66,7 @@ sealed class Screen(
     )
 
     companion object {
-        val bottomNavItems = listOf(Home, Tracking, Compass, Qada, Statistics, Settings)
+        val bottomNavItems = listOf(Home, Dashboard, Compass, Settings)
     }
 }
 
@@ -143,14 +123,8 @@ fun SalatyNavHost(
             composable(Screen.Home.route) {
                 HomeScreen()
             }
-            composable(Screen.Tracking.route) {
-                TrackingScreen()
-            }
-            composable(Screen.Qada.route) {
-                QadaScreen()
-            }
-            composable(Screen.Statistics.route) {
-                StatisticsScreen()
+            composable(Screen.Dashboard.route) {
+                DashboardScreen()
             }
             composable(Screen.Compass.route) {
                 QiblaCompassScreen()

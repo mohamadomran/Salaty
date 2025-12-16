@@ -96,7 +96,8 @@ class CompactPrayerWidget : GlanceAppWidget() {
                 WidgetData.Success(
                     prayerName = nextPrayer.first,
                     prayerTime = nextPrayer.second,
-                    minutesUntil = minutesUntil
+                    minutesUntil = minutesUntil,
+                    use24h = prefs.timeFormat24h
                 )
             } else {
                 // All prayers passed, get first prayer for tomorrow
@@ -113,7 +114,8 @@ class CompactPrayerWidget : GlanceAppWidget() {
                 WidgetData.Success(
                     prayerName = fajrTomorrow.first,
                     prayerTime = fajrTomorrow.second,
-                    minutesUntil = minutesUntil
+                    minutesUntil = minutesUntil,
+                    use24h = prefs.timeFormat24h
                 )
             }
         } catch (e: Exception) {
@@ -142,7 +144,8 @@ sealed class WidgetData {
     data class Success(
         val prayerName: PrayerName,
         val prayerTime: LocalDateTime,
-        val minutesUntil: Long
+        val minutesUntil: Long,
+        val use24h: Boolean = false
     ) : WidgetData()
 
     data object NoLocation : WidgetData()
@@ -177,7 +180,9 @@ private fun CompactWidgetContent(data: WidgetData) {
                         )
                         Spacer(modifier = GlanceModifier.height(2.dp))
                         Text(
-                            text = data.prayerTime.format(DateTimeFormatter.ofPattern("h:mm a")),
+                            text = data.prayerTime.format(
+                                DateTimeFormatter.ofPattern(if (data.use24h) "HH:mm" else "h:mm a")
+                            ),
                             style = TextStyle(
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,

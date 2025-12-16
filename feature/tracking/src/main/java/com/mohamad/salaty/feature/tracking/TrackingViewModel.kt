@@ -97,7 +97,8 @@ class TrackingViewModel @Inject constructor(
     }
 
     fun selectDate(date: LocalDate) {
-        _uiState.update { it.copy(selectedDate = date) }
+        // Clear old data immediately to prevent showing stale content with new date
+        _uiState.update { it.copy(selectedDate = date, prayers = emptyList(), isLoading = true) }
         loadRecords()
     }
 

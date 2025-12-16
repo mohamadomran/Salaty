@@ -7,11 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -22,9 +24,13 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Mosque
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Celebration
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -92,6 +98,11 @@ fun OnboardingScreen(
             label = "onboarding_page"
         ) { page ->
             when (page) {
+                OnboardingPage.LANGUAGE -> LanguagePage(
+                    selectedLanguage = uiState.selectedLanguage,
+                    onLanguageSelected = { viewModel.setLanguage(it) },
+                    onNext = { viewModel.nextPage() }
+                )
                 OnboardingPage.WELCOME -> WelcomePage(
                     onNext = { viewModel.nextPage() }
                 )
@@ -149,6 +160,64 @@ private fun PageIndicator(
             )
         }
     }
+}
+
+@Composable
+private fun LanguagePage(
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit,
+    onNext: () -> Unit
+) {
+    val languages = listOf(
+        "en" to stringResource(R.string.onboarding_language_english),
+        "ar" to stringResource(R.string.onboarding_language_arabic)
+    )
+
+    OnboardingPageContent(
+        icon = Icons.Default.Language,
+        title = stringResource(R.string.onboarding_language_title),
+        description = stringResource(R.string.onboarding_language_description),
+        content = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                languages.forEach { (code, label) ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onLanguageSelected(code) },
+                        colors = CardDefaults.cardColors(
+                            containerColor = if (code == selectedLanguage)
+                                MaterialTheme.colorScheme.primaryContainer
+                            else
+                                MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = code == selectedLanguage,
+                                onClick = { onLanguageSelected(code) }
+                            )
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (code == selectedLanguage) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        primaryButton = stringResource(R.string.onboarding_continue),
+        onPrimaryClick = onNext
+    )
 }
 
 @Composable

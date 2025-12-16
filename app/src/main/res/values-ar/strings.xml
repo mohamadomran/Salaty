@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">صلاتي</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_tracking">المتابعة</string>
+    <string name="nav_qada">القضاء</string>
+    <string name="nav_statistics">الإحصائيات</string>
+    <string name="nav_settings">الإعدادات</string>
+
+    <!-- Prayer Names -->
+    <string name="prayer_fajr">الفجر</string>
+    <string name="prayer_sunrise">الشروق</string>
+    <string name="prayer_dhuhr">الظهر</string>
+    <string name="prayer_asr">العصر</string>
+    <string name="prayer_maghrib">المغرب</string>
+    <string name="prayer_isha">العشاء</string>
+
+    <!-- Prayer Status -->
+    <string name="status_pending">معلّق</string>
+    <string name="status_completed">مكتمل</string>
+    <string name="status_delayed">متأخر</string>
+    <string name="status_missed">فائت</string>
+
+    <!-- Home Screen -->
+    <string name="next_prayer">الصلاة القادمة</string>
+    <string name="time_remaining">الوقت المتبقي</string>
+    <string name="prayer_times">مواقيت الصلاة</string>
+    <string name="location">الموقع</string>
+
+    <!-- Tracking Screen -->
+    <string name="daily_tracking">المتابعة اليومية</string>
+    <string name="today">اليوم</string>
+    <string name="completion_rate">نسبة الإنجاز</string>
+
+    <!-- Statistics Screen -->
+    <string name="statistics">الإحصائيات</string>
+    <string name="current_streak">السلسلة الحالية</string>
+    <string name="longest_streak">أطول سلسلة</string>
+    <string name="this_week">هذا الأسبوع</string>
+    <string name="this_month">هذا الشهر</string>
+    <string name="this_year">هذا العام</string>
+
+    <!-- Qada Screen -->
+    <string name="qada_prayers">صلوات القضاء</string>
+    <string name="pending_qada">قضاء معلّق</string>
+    <string name="add_qada">إضافة قضاء</string>
+    <string name="mark_completed">تحديد كمكتمل</string>
+
+    <!-- Settings Screen -->
+    <string name="settings">الإعدادات</string>
+    <string name="prayer_settings">إعدادات الصلاة</string>
+    <string name="calculation_method">طريقة الحساب</string>
+    <string name="madhab">المذهب</string>
+    <string name="madhab_shafi">الشافعي</string>
+    <string name="madhab_hanafi">الحنفي</string>
+    <string name="display_settings">إعدادات العرض</string>
+    <string name="time_format">صيغة الوقت</string>
+    <string name="time_format_12h">12 ساعة</string>
+    <string name="time_format_24h">24 ساعة</string>
+    <string name="theme">المظهر</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="theme_system">تلقائي</string>
+    <string name="language">اللغة</string>
+    <string name="notification_settings">إعدادات الإشعارات</string>
+    <string name="enable_notifications">تفعيل الإشعارات</string>
+    <string name="reminder_before">تذكير قبل الصلاة</string>
+    <string name="minutes">%d دقيقة</string>
+    <string name="data_management">إدارة البيانات</string>
+    <string name="export_data">تصدير البيانات</string>
+    <string name="import_data">استيراد البيانات</string>
+    <string name="about">حول</string>
+    <string name="version">الإصدار</string>
+
+    <!-- Onboarding -->
+    <string name="welcome_title">مرحباً بك في صلاتي</string>
+    <string name="welcome_subtitle">رفيقك في متابعة الصلاة</string>
+    <string name="get_started">ابدأ</string>
+    <string name="setup_location">تحديد الموقع</string>
+    <string name="location_permission_rationale">يحتاج التطبيق إلى موقعك لحساب مواقيت الصلاة بدقة.</string>
+    <string name="grant_permission">منح الإذن</string>
+    <string name="skip">تخطي</string>
+    <string name="next">التالي</string>
+    <string name="finish">إنهاء</string>
+
+    <!-- General -->
+    <string name="loading">جاري التحميل…</string>
+    <string name="error">خطأ</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="cancel">إلغاء</string>
+    <string name="save">حفظ</string>
+    <string name="delete">حذف</string>
+    <string name="confirm">تأكيد</string>
+    <string name="days">أيام</string>
+    <string name="prayers">صلوات</string>
+
+    <!-- Widgets -->
+    <string name="widget_compact_description">يعرض وقت الصلاة القادمة مع العد التنازلي</string>
+    <string name="widget_full_description">يعرض جميع مواقيت صلاة اليوم</string>
+</resources>

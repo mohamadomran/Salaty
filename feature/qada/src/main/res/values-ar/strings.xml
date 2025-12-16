@@ -10,17 +10,11 @@
     <string name="qada_prayer_singular">صلاة</string>
     <string name="qada_prayer_plural">صلوات</string>
 
-    <!-- By Prayer Section -->
-    <string name="qada_by_prayer">حسب الصلاة</string>
-    <string name="qada_decrease">إنقاص</string>
-    <string name="qada_increase">زيادة</string>
+    <!-- Missed Prayers Section -->
+    <string name="qada_missed_prayers">الصلوات الفائتة</string>
+    <string name="qada_no_missed">أحسنت!</string>
+    <string name="qada_no_missed_description">ليس لديك صلوات فائتة. استمر في عملك الرائع!</string>
 
-    <!-- FAB -->
-    <string name="qada_complete_action">إتمام القضاء</string>
-
-    <!-- Dialog -->
-    <string name="qada_complete_dialog_title">إتمام القضاء</string>
-    <string name="qada_complete_dialog_message">تأكيد إتمام صلاة قضاء %1$s؟</string>
-    <string name="qada_complete">إتمام</string>
-    <string name="qada_cancel">إلغاء</string>
+    <!-- Actions -->
+    <string name="qada_complete_action">تم القضاء</string>
 </resources>

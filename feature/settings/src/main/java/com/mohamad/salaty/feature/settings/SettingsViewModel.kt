@@ -37,8 +37,19 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val salatyPreferences: SalatyPreferences,
     private val prayerRepository: PrayerRepository,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
+
+    companion object {
+        private const val ACTION_REFRESH_WIDGETS = "com.mohamad.salaty.REFRESH_WIDGETS"
+    }
+
+    private fun refreshWidgets() {
+        val intent = android.content.Intent(ACTION_REFRESH_WIDGETS)
+        intent.setPackage(context.packageName)
+        context.sendBroadcast(intent)
+    }
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -107,6 +118,46 @@ class SettingsViewModel @Inject constructor(
     }
 
     /**
+     * Search for a location by name and save it.
+     * Uses geocoding to convert name to coordinates.
+     */
+    fun searchAndSaveLocation(locationName: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDetectingLocation = true, error = null) }
+
+            when (val result = locationService.geocodeLocationName(locationName)) {
+                is LocationResult.Success -> {
+                    val location = result.location
+                    prayerRepository.saveLocation(
+                        name = location.name,
+                        latitude = location.latitude,
+                        longitude = location.longitude,
+                        timezone = location.timezone,
+                        setAsDefault = true
+                    )
+                    _uiState.update { it.copy(isDetectingLocation = false) }
+                }
+                is LocationResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            error = result.message
+                        )
+                    }
+                }
+                LocationResult.PermissionDenied -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            error = "Could not find location"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Detect current location using GPS.
      * Requires location permission to be granted.
      */
@@ -161,24 +212,28 @@ class SettingsViewModel @Inject constructor(
     fun setCalculationMethod(method: CalculationMethod) {
         viewModelScope.launch {
             salatyPreferences.setCalculationMethod(method)
+            refreshWidgets()
         }
     }
 
     fun setMadhab(madhab: Madhab) {
         viewModelScope.launch {
             salatyPreferences.setMadhab(madhab)
+            refreshWidgets()
         }
     }
 
     fun setHighLatitudeRule(rule: HighLatitudeRule) {
         viewModelScope.launch {
             salatyPreferences.setHighLatitudeRule(rule.name.lowercase())
+            refreshWidgets()
         }
     }
 
     fun setPrayerAdjustment(prayerName: PrayerName, minutes: Int) {
         viewModelScope.launch {
             salatyPreferences.setPrayerAdjustment(prayerName, minutes)
+            refreshWidgets()
         }
     }
 
@@ -241,6 +296,7 @@ class SettingsViewModel @Inject constructor(
     fun setTimeFormat24h(is24h: Boolean) {
         viewModelScope.launch {
             salatyPreferences.setTimeFormat24h(is24h)
+            refreshWidgets()
         }
     }
 

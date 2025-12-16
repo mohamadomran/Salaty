@@ -25,7 +25,7 @@ import com.mohamad.salaty.core.data.database.entity.QadaCountEntity
         QadaCountEntity::class,
         LocationEntity::class
     ],
-    version = 1,
+    version = 2,  // Added qadaCompleted field to PrayerRecordEntity
     exportSchema = true
 )
 @TypeConverters(Converters::class)

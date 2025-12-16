@@ -9,6 +9,7 @@ kotlin = "2.1.0"
 ksp = "2.1.0-1.0.29"
 agp = "8.13.2"
 coreKtx = "1.15.0"
+appcompat = "1.7.0"
 
 # Compose
 composeBom = "2024.12.01"
@@ -64,6 +65,7 @@ espresso = "3.6.1"
 [libraries]
 # AndroidX Core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 # Compose BOM
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }

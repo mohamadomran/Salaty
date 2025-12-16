@@ -1,5 +1,9 @@
 package com.mohamad.salaty.feature.tracking
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +33,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -243,31 +250,41 @@ private fun TrackingContent(
             }
         }
 
-        // Prayer List
-        SalatyCard(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+        // Prayer List with slide animation
+        AnimatedContent(
+            targetState = uiState.selectedDate to uiState.prayers,
+            transitionSpec = {
+                val direction = if (targetState.first > initialState.first) 1 else -1
+                slideInHorizontally { direction * it } togetherWith
+                    slideOutHorizontally { -direction * it }
+            },
+            label = "prayer_list_animation"
+        ) { (_, prayers) ->
+            SalatyCard(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = stringResource(R.string.tracking_prayers_section),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-
-                uiState.prayers.forEach { prayer ->
-                    PrayerTrackingRow(
-                        prayerName = prayer.prayerName.localizedName(),
-                        status = prayer.status,
-                        onStatusChange = { newStatus ->
-                            onStatusChange(prayer.prayerName, newStatus)
-                        }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.tracking_prayers_section),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
+
+                    prayers.forEach { prayer ->
+                        PrayerTrackingRow(
+                            prayerName = prayer.prayerName.localizedName(),
+                            status = prayer.status,
+                            onStatusChange = { newStatus ->
+                                onStatusChange(prayer.prayerName, newStatus)
+                            }
+                        )
+                    }
                 }
             }
         }

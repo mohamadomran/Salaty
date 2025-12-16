@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dashboard Screen -->
+    <string name="dashboard_title">لوحة التحكم</string>
+    <string name="dashboard_error_title">حدث خطأ ما</string>
+
+    <!-- Tabs -->
+    <string name="dashboard_tab_tracking">المتابعة</string>
+    <string name="dashboard_tab_qada">القضاء</string>
+    <string name="dashboard_tab_stats">الإحصائيات</string>
+
+    <!-- Tracking Tab -->
+    <string name="tracking_today">اليوم</string>
+    <string name="tracking_previous_day">اليوم السابق</string>
+    <string name="tracking_next_day">اليوم التالي</string>
+    <string name="tracking_todays_progress">تقدم اليوم</string>
+    <string name="tracking_days_progress">تقدم اليوم</string>
+    <string name="tracking_prayers_completed">%1$d من %2$d صلوات مكتملة</string>
+    <string name="tracking_prayers_section">الصلوات</string>
+    <string name="tracking_status_done">تمام</string>
+    <string name="tracking_status_late">متأخر</string>
+    <string name="tracking_status_miss">فاتت</string>
+
+    <!-- Qada Tab -->
+    <string name="qada_subtitle">صلوات قضاء تحتاج إلى إتمامها</string>
+    <string name="qada_total_pending">إجمالي المتبقية</string>
+    <string name="qada_prayer_singular">صلاة</string>
+    <string name="qada_prayer_plural">صلوات</string>
+    <string name="qada_missed_prayers">الصلوات الفائتة</string>
+    <string name="qada_no_missed">أحسنت!</string>
+    <string name="qada_no_missed_description">ليس لديك صلوات فائتة للقضاء. استمر في العمل الرائع!</string>
+    <string name="qada_complete_action">تم القضاء</string>
+
+    <!-- Stats Tab -->
+    <string name="statistics_completion_rate">نسبة الإتمام</string>
+    <string name="statistics_current_streak">السلسلة الحالية</string>
+    <string name="statistics_longest_streak">أطول سلسلة</string>
+    <string name="statistics_days">أيام</string>
+    <string name="statistics_perfect_days">أيام مثالية</string>
+    <string name="statistics_perfect_days_description">كل الصلوات الخمس في وقتها</string>
+    <string name="statistics_breakdown">التفصيل</string>
+    <string name="statistics_total_prayers">إجمالي الصلوات</string>
+    <string name="statistics_prayed_on_time">صليت في الوقت</string>
+    <string name="statistics_prayed_late">صليت متأخراً</string>
+    <string name="statistics_missed">فاتت</string>
+</resources>

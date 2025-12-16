@@ -30,6 +30,7 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locale_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Salaty"
@@ -50,7 +51,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Salaty"
+            android:theme="@style/Theme.Salaty.Splash"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -64,6 +65,24 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Widget refresh receiver -->
+        <receiver
+            android:name=".receiver.WidgetRefreshReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mohamad.salaty.REFRESH_WIDGETS" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Mark prayer as completed receiver -->
+        <receiver
+            android:name="com.mohamad.salaty.core.data.notification.MarkPrayerReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.mohamad.salaty.ACTION_MARK_PRAYED" />
             </intent-filter>
         </receiver>
 

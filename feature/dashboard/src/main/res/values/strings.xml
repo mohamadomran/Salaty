@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dashboard Screen -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="dashboard_error_title">Something went wrong</string>
+
+    <!-- Tabs -->
+    <string name="dashboard_tab_tracking">Tracking</string>
+    <string name="dashboard_tab_qada">Qada</string>
+    <string name="dashboard_tab_stats">Stats</string>
+
+    <!-- Tracking Tab -->
+    <string name="tracking_today">Today</string>
+    <string name="tracking_previous_day">Previous day</string>
+    <string name="tracking_next_day">Next day</string>
+    <string name="tracking_todays_progress">Today\'s Progress</string>
+    <string name="tracking_days_progress">Day\'s Progress</string>
+    <string name="tracking_prayers_completed">%1$d of %2$d prayers completed</string>
+    <string name="tracking_prayers_section">Prayers</string>
+    <string name="tracking_status_done">Done</string>
+    <string name="tracking_status_late">Late</string>
+    <string name="tracking_status_miss">Miss</string>
+
+    <!-- Qada Tab -->
+    <string name="qada_subtitle">Makeup prayers you need to complete</string>
+    <string name="qada_total_pending">Total Pending</string>
+    <string name="qada_prayer_singular">prayer</string>
+    <string name="qada_prayer_plural">prayers</string>
+    <string name="qada_missed_prayers">Missed Prayers</string>
+    <string name="qada_no_missed">All caught up!</string>
+    <string name="qada_no_missed_description">You have no missed prayers to make up. Keep up the great work!</string>
+    <string name="qada_complete_action">Mark Complete</string>
+
+    <!-- Stats Tab -->
+    <string name="statistics_completion_rate">Completion Rate</string>
+    <string name="statistics_current_streak">Current Streak</string>
+    <string name="statistics_longest_streak">Longest Streak</string>
+    <string name="statistics_days">days</string>
+    <string name="statistics_perfect_days">Perfect Days</string>
+    <string name="statistics_perfect_days_description">all 5 prayers on time</string>
+    <string name="statistics_breakdown">Breakdown</string>
+    <string name="statistics_total_prayers">Total Prayers</string>
+    <string name="statistics_prayed_on_time">Prayed On Time</string>
+    <string name="statistics_prayed_late">Prayed Late</string>
+    <string name="statistics_missed">Missed</string>
+</resources>

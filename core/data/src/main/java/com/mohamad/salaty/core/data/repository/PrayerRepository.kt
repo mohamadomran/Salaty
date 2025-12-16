@@ -209,9 +209,86 @@ class PrayerRepository @Inject constructor(
         return prayerRecordDao.getPerfectDays()
     }
 
+    /**
+     * Calculate current streak (consecutive perfect days ending today or yesterday).
+     */
+    suspend fun getCurrentStreak(): Int {
+        val perfectDays = prayerRecordDao.getPerfectDays().first().sorted()
+        if (perfectDays.isEmpty()) return 0
+
+        val today = LocalDate.now()
+        val yesterday = today.minusDays(1)
+
+        // Check if streak ends at today or yesterday
+        val lastPerfectDay = perfectDays.lastOrNull() ?: return 0
+        if (lastPerfectDay != today && lastPerfectDay != yesterday) {
+            return 0 // No recent streak
+        }
+
+        // Count backwards from the last perfect day
+        var streak = 0
+        var expectedDate = lastPerfectDay
+        for (date in perfectDays.reversed()) {
+            if (date == expectedDate) {
+                streak++
+                expectedDate = date.minusDays(1)
+            } else if (date.isBefore(expectedDate)) {
+                break // Gap found, streak ends
+            }
+        }
+
+        return streak
+    }
+
+    /**
+     * Calculate longest streak (longest consecutive perfect days).
+     */
+    suspend fun getLongestStreak(): Int {
+        val perfectDays = prayerRecordDao.getPerfectDays().first().sorted()
+        if (perfectDays.isEmpty()) return 0
+
+        var longestStreak = 1
+        var currentStreak = 1
+        var previousDate = perfectDays.first()
+
+        for (i in 1 until perfectDays.size) {
+            val currentDate = perfectDays[i]
+            if (currentDate == previousDate.plusDays(1)) {
+                currentStreak++
+                longestStreak = maxOf(longestStreak, currentStreak)
+            } else {
+                currentStreak = 1
+            }
+            previousDate = currentDate
+        }
+
+        return longestStreak
+    }
+
     // ============================================================================
     // QADA (MAKEUP PRAYERS)
     // ============================================================================
+
+    /**
+     * Get all missed prayers that haven't been made up yet.
+     */
+    fun getMissedPrayersNotCompleted(): Flow<List<PrayerRecordEntity>> {
+        return prayerRecordDao.getMissedPrayersNotCompleted()
+    }
+
+    /**
+     * Get count of missed prayers not yet made up.
+     */
+    fun getMissedPrayersCount(): Flow<Int> {
+        return prayerRecordDao.getMissedPrayersCount()
+    }
+
+    /**
+     * Mark a missed prayer as made up (qada completed).
+     */
+    suspend fun markQadaCompleted(recordId: Long) {
+        prayerRecordDao.markQadaCompleted(recordId, LocalDateTime.now().toString())
+    }
 
     /**
      * Get all Qada counts.
@@ -274,6 +351,32 @@ class PrayerRepository @Inject constructor(
      */
     fun getDefaultLocation(): Flow<LocationEntity?> {
         return locationDao.getDefaultLocationFlow()
+    }
+
+    /**
+     * Observe the currently active location.
+     *
+     * Returns a Flow that emits whenever the current location changes.
+     * Uses selectedLocationId from preferences if set, otherwise falls back to default location.
+     */
+    fun observeCurrentLocation(): Flow<LocationEntity?> {
+        return preferences.userPreferences.flatMapLatest { prefs ->
+            val locationId = prefs.selectedLocationId
+            if (locationId != null) {
+                // Observe specific location by ID
+                locationDao.getLocationByIdFlow(locationId)
+            } else {
+                // Fall back to default location
+                locationDao.getDefaultLocationFlow()
+            }
+        }
+    }
+
+    /**
+     * Check if a location is configured.
+     */
+    suspend fun hasLocation(): Boolean {
+        return locationDao.getDefaultLocation() != null
     }
 
     /**

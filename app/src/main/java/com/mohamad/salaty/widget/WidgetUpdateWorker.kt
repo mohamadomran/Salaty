@@ -46,6 +46,7 @@ class WidgetUpdateWorker @AssistedInject constructor(
 
     companion object {
         private const val WORK_NAME = "widget_update_worker"
+        private const val ONE_TIME_WORK_NAME = "widget_update_immediate"
 
         /**
          * Schedule periodic widget updates.
@@ -73,6 +74,17 @@ class WidgetUpdateWorker @AssistedInject constructor(
             } catch (e: Exception) {
                 Timber.e(e, "Failed to update widgets immediately")
             }
+        }
+
+        /**
+         * Schedule an immediate one-time widget update via WorkManager.
+         * Useful when called from modules that can't directly access widget classes.
+         */
+        fun scheduleImmediateUpdate(context: Context) {
+            val workRequest = androidx.work.OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
+                .build()
+            WorkManager.getInstance(context).enqueue(workRequest)
+            Timber.d("Immediate widget update scheduled")
         }
     }
 }

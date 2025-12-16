@@ -89,4 +89,16 @@ interface PrayerRecordDao {
     // Recent records for home screen
     @Query("SELECT * FROM prayer_records ORDER BY date DESC, prayerName LIMIT :limit")
     fun getRecentRecords(limit: Int = 35): Flow<List<PrayerRecordEntity>>
+
+    // Qada (missed prayers) - get all missed prayers not yet made up
+    @Query("SELECT * FROM prayer_records WHERE status = 'MISSED' AND qadaCompleted = 0 ORDER BY date DESC, prayerName")
+    fun getMissedPrayersNotCompleted(): Flow<List<PrayerRecordEntity>>
+
+    // Count missed prayers not yet made up
+    @Query("SELECT COUNT(*) FROM prayer_records WHERE status = 'MISSED' AND qadaCompleted = 0")
+    fun getMissedPrayersCount(): Flow<Int>
+
+    // Mark a missed prayer as made up (qada completed)
+    @Query("UPDATE prayer_records SET qadaCompleted = 1, updatedAt = :updatedAt WHERE id = :id")
+    suspend fun markQadaCompleted(id: Long, updatedAt: String)
 }

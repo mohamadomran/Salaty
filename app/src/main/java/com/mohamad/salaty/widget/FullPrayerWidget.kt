@@ -93,7 +93,8 @@ class FullPrayerWidget : GlanceAppWidget() {
             FullWidgetData.Success(
                 locationName = location.name,
                 prayerTimes = prayerTimes,
-                nextPrayer = nextPrayer
+                nextPrayer = nextPrayer,
+                use24h = prefs.timeFormat24h
             )
         } catch (e: Exception) {
             FullWidgetData.Error(e.message ?: "Error loading prayer times")
@@ -121,7 +122,8 @@ sealed class FullWidgetData {
     data class Success(
         val locationName: String,
         val prayerTimes: DailyPrayerTimes,
-        val nextPrayer: PrayerName?
+        val nextPrayer: PrayerName?,
+        val use24h: Boolean = false
     ) : FullWidgetData()
 
     data object NoLocation : FullWidgetData()
@@ -157,19 +159,22 @@ private fun FullWidgetContent(data: FullWidgetData) {
                         PrayerTimeRow(
                             name = "Fajr",
                             time = data.prayerTimes.fajr,
-                            isNext = data.nextPrayer == PrayerName.FAJR
+                            isNext = data.nextPrayer == PrayerName.FAJR,
+                            use24h = data.use24h
                         )
                         Spacer(modifier = GlanceModifier.height(4.dp))
                         PrayerTimeRow(
                             name = "Sunrise",
                             time = data.prayerTimes.sunrise,
-                            isNext = data.nextPrayer == PrayerName.SUNRISE
+                            isNext = data.nextPrayer == PrayerName.SUNRISE,
+                            use24h = data.use24h
                         )
                         Spacer(modifier = GlanceModifier.height(4.dp))
                         PrayerTimeRow(
                             name = "Dhuhr",
                             time = data.prayerTimes.dhuhr,
-                            isNext = data.nextPrayer == PrayerName.DHUHR
+                            isNext = data.nextPrayer == PrayerName.DHUHR,
+                            use24h = data.use24h
                         )
                     }
 
@@ -180,19 +185,22 @@ private fun FullWidgetContent(data: FullWidgetData) {
                         PrayerTimeRow(
                             name = "Asr",
                             time = data.prayerTimes.asr,
-                            isNext = data.nextPrayer == PrayerName.ASR
+                            isNext = data.nextPrayer == PrayerName.ASR,
+                            use24h = data.use24h
                         )
                         Spacer(modifier = GlanceModifier.height(4.dp))
                         PrayerTimeRow(
                             name = "Maghrib",
                             time = data.prayerTimes.maghrib,
-                            isNext = data.nextPrayer == PrayerName.MAGHRIB
+                            isNext = data.nextPrayer == PrayerName.MAGHRIB,
+                            use24h = data.use24h
                         )
                         Spacer(modifier = GlanceModifier.height(4.dp))
                         PrayerTimeRow(
                             name = "Isha",
                             time = data.prayerTimes.isha,
-                            isNext = data.nextPrayer == PrayerName.ISHA
+                            isNext = data.nextPrayer == PrayerName.ISHA,
+                            use24h = data.use24h
                         )
                     }
                 }
@@ -235,7 +243,8 @@ private fun FullWidgetContent(data: FullWidgetData) {
 private fun PrayerTimeRow(
     name: String,
     time: LocalDateTime,
-    isNext: Boolean
+    isNext: Boolean,
+    use24h: Boolean = false
 ) {
     Row(
         modifier = GlanceModifier.fillMaxWidth(),
@@ -252,7 +261,7 @@ private fun PrayerTimeRow(
         )
 
         Text(
-            text = time.format(DateTimeFormatter.ofPattern("h:mm a")),
+            text = time.format(DateTimeFormatter.ofPattern(if (use24h) "HH:mm" else "h:mm a")),
             style = TextStyle(
                 fontSize = 12.sp,
                 fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal,

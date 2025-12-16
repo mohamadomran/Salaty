@@ -41,12 +41,19 @@
     <string name="settings_prayer_notifications_subtitle">تلقي إشعارات لمواقيت الصلاة</string>
     <string name="settings_per_prayer_settings">إعدادات كل صلاة</string>
     <string name="settings_per_prayer_settings_subtitle">تخصيص إعدادات كل صلاة</string>
+    <string name="settings_notification_sound">صوت الإشعار</string>
+    <string name="settings_notification_sound_subtitle">اختيار صوت الإشعار</string>
+    <string name="settings_sound_default">الافتراضي</string>
+    <string name="settings_sound_silent">صامت</string>
     <string name="settings_vibrate">الاهتزاز</string>
     <string name="settings_vibrate_subtitle">اهتزاز عند الإشعار</string>
     <string name="settings_notification_description">تفعيل أو تعطيل الإشعارات لكل صلاة</string>
 
     <!-- Display Section -->
     <string name="settings_section_display">العرض</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_language_english">English (الإنجليزية)</string>
+    <string name="settings_language_arabic">العربية</string>
     <string name="settings_theme">المظهر</string>
     <string name="settings_theme_light">فاتح</string>
     <string name="settings_theme_dark">داكن</string>
@@ -64,6 +71,11 @@
     <string name="settings_permission_title">مطلوب إذن الموقع</string>
     <string name="settings_permission_message">مطلوب إذن الموقع لاكتشاف موقعك الحالي تلقائياً لحساب مواقيت الصلاة بدقة. يرجى منح الإذن لاستخدام هذه الميزة.</string>
     <string name="settings_grant_permission">منح الإذن</string>
+
+    <!-- Location Search -->
+    <string name="settings_search_location_hint">أدخل اسم المدينة، مثل: مكة، لندن</string>
+    <string name="settings_searching">جاري البحث…</string>
+    <string name="settings_search">بحث</string>
 
     <!-- Common Buttons -->
     <string name="settings_cancel">إلغاء</string>

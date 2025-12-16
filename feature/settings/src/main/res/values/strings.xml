@@ -41,12 +41,19 @@
     <string name="settings_prayer_notifications_subtitle">Get notified for prayer times</string>
     <string name="settings_per_prayer_settings">Per-Prayer Settings</string>
     <string name="settings_per_prayer_settings_subtitle">Configure individual prayers</string>
+    <string name="settings_notification_sound">Notification Sound</string>
+    <string name="settings_notification_sound_subtitle">Choose notification sound</string>
+    <string name="settings_sound_default">Default</string>
+    <string name="settings_sound_silent">Silent</string>
     <string name="settings_vibrate">Vibrate</string>
     <string name="settings_vibrate_subtitle">Vibrate on notification</string>
     <string name="settings_notification_description">Enable or disable notifications for each prayer</string>
 
     <!-- Display Section -->
     <string name="settings_section_display">Display</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_english">English</string>
+    <string name="settings_language_arabic">العربية (Arabic)</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
@@ -64,6 +71,11 @@
     <string name="settings_permission_title">Location Permission Needed</string>
     <string name="settings_permission_message">Location permission is required to automatically detect your current location for accurate prayer times. Please grant the permission to use this feature.</string>
     <string name="settings_grant_permission">Grant Permission</string>
+
+    <!-- Location Search -->
+    <string name="settings_search_location_hint">Enter city name, e.g., Mecca, London</string>
+    <string name="settings_searching">Searching…</string>
+    <string name="settings_search">Search</string>
 
     <!-- Common Buttons -->
     <string name="settings_cancel">Cancel</string>

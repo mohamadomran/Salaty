@@ -3,6 +3,8 @@ package com.mohamad.salaty.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mohamad.salaty.core.data.calendar.HijriDateConverter
+import com.mohamad.salaty.core.data.location.LocationResult
+import com.mohamad.salaty.core.data.location.LocationService
 import com.mohamad.salaty.core.data.repository.PrayerRepository
 import com.mohamad.salaty.core.domain.model.DailyPrayerTimes
 import com.mohamad.salaty.core.domain.model.HijriDate
@@ -33,7 +35,12 @@ data class HomeUiState(
     val prayerStatuses: Map<PrayerName, PrayerStatus> = emptyMap(),
     val hasLocation: Boolean = false,
     val isLoading: Boolean = true,
-    val error: String? = null
+    val error: String? = null,
+    val use24hFormat: Boolean = false,
+    // Location setup state
+    val isDetectingLocation: Boolean = false,
+    val locationQuery: String = "",
+    val locationError: String? = null
 ) {
     val formattedCountdown: String
         get() {
@@ -48,15 +55,60 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val prayerRepository: PrayerRepository,
-    private val hijriDateConverter: HijriDateConverter
+    private val hijriDateConverter: HijriDateConverter,
+    private val locationService: LocationService,
+    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
+
+    companion object {
+        private const val ACTION_REFRESH_WIDGETS = "com.mohamad.salaty.REFRESH_WIDGETS"
+    }
+
+    private fun refreshWidgets() {
+        val intent = android.content.Intent(ACTION_REFRESH_WIDGETS)
+        intent.setPackage(context.packageName)
+        context.sendBroadcast(intent)
+    }
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
+        observeLocation()
+        observePreferences()
         loadData()
         startCountdownTimer()
+    }
+
+    /**
+     * Observe user preferences for time format changes.
+     */
+    private fun observePreferences() {
+        viewModelScope.launch {
+            prayerRepository.userPreferences.collect { prefs ->
+                _uiState.update { it.copy(use24hFormat = prefs.timeFormat24h) }
+            }
+        }
+    }
+
+    /**
+     * Observe location changes reactively.
+     * When location is added/changed, refresh prayer times.
+     */
+    private fun observeLocation() {
+        viewModelScope.launch {
+            prayerRepository.observeCurrentLocation().collect { location ->
+                val hasLocation = location != null
+                val currentHasLocation = _uiState.value.hasLocation
+
+                _uiState.update { it.copy(hasLocation = hasLocation) }
+
+                // Refresh prayer times when location changes (was null -> now has location)
+                if (hasLocation && !currentHasLocation) {
+                    loadData()
+                }
+            }
+        }
     }
 
     private fun loadData() {
@@ -76,9 +128,6 @@ class HomeViewModel @Inject constructor(
                 // Get seconds until next prayer
                 val secondsUntil = prayerRepository.getSecondsUntilNextPrayer()
 
-                // Check if location exists
-                val hasLocation = prayerTimes != null
-
                 _uiState.update {
                     it.copy(
                         prayerTimes = prayerTimes,
@@ -86,7 +135,6 @@ class HomeViewModel @Inject constructor(
                         currentPrayer = current,
                         nextPrayer = next,
                         secondsUntilNextPrayer = secondsUntil,
-                        hasLocation = hasLocation,
                         isLoading = false
                     )
                 }
@@ -155,5 +203,93 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         loadData()
+    }
+
+    // Location setup methods
+    fun updateLocationQuery(query: String) {
+        _uiState.update { it.copy(locationQuery = query, locationError = null) }
+    }
+
+    fun detectLocation() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDetectingLocation = true, locationError = null) }
+
+            when (val result = locationService.detectLocation()) {
+                is LocationResult.Success -> {
+                    // Save location and set as default
+                    val locationId = prayerRepository.saveLocation(
+                        name = result.location.name,
+                        latitude = result.location.latitude,
+                        longitude = result.location.longitude,
+                        timezone = result.location.timezone,
+                        setAsDefault = true
+                    )
+                    _uiState.update { it.copy(isDetectingLocation = false) }
+                    // Refresh widgets with new location
+                    refreshWidgets()
+                    // observeLocation will trigger refresh
+                }
+                is LocationResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            locationError = result.message
+                        )
+                    }
+                }
+                LocationResult.PermissionDenied -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            locationError = "Location permission denied"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    fun searchAndSetLocation() {
+        val query = _uiState.value.locationQuery.trim()
+        if (query.isEmpty()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDetectingLocation = true, locationError = null) }
+
+            when (val result = locationService.geocodeLocationName(query)) {
+                is LocationResult.Success -> {
+                    // Save location and set as default
+                    val locationId = prayerRepository.saveLocation(
+                        name = result.location.name,
+                        latitude = result.location.latitude,
+                        longitude = result.location.longitude,
+                        timezone = result.location.timezone,
+                        setAsDefault = true
+                    )
+                    _uiState.update {
+                        it.copy(isDetectingLocation = false, locationQuery = "")
+                    }
+                    // Refresh widgets with new location
+                    refreshWidgets()
+                    // observeLocation will trigger refresh
+                }
+                is LocationResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            locationError = result.message
+                        )
+                    }
+                }
+                LocationResult.PermissionDenied -> {
+                    _uiState.update {
+                        it.copy(
+                            isDetectingLocation = false,
+                            locationError = "Could not find location"
+                        )
+                    }
+                }
+            }
+        }
     }
 }

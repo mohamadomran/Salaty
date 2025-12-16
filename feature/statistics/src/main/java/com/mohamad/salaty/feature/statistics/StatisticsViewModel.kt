@@ -67,6 +67,10 @@ class StatisticsViewModel @Inject constructor(
             try {
                 val (startDate, endDate) = getDateRange(_uiState.value.selectedTimeRange)
 
+                // Load streaks
+                val currentStreak = prayerRepository.getCurrentStreak()
+                val longestStreak = prayerRepository.getLongestStreak()
+
                 combine(
                     prayerRepository.getTotalCount(startDate, endDate),
                     prayerRepository.getPrayedCount(startDate, endDate),
@@ -86,6 +90,8 @@ class StatisticsViewModel @Inject constructor(
                             prayedOnTime = data.prayed,
                             missed = data.missed,
                             perfectDays = data.perfectDays,
+                            currentStreak = currentStreak,
+                            longestStreak = longestStreak,
                             isLoading = false
                         )
                     }

@@ -61,11 +61,15 @@ class PrayerNotificationWorker @AssistedInject constructor(
             return Result.success()
         }
 
+        // Get sound option from preferences
+        val soundOption = NotificationSoundOption.fromKey(prefs.notificationSound)
+
         // Show the notification
         notificationHelper.showPrayerNotification(
             prayer = prayerName,
             timeString = prayerTimeString,
-            vibrate = prefs.notificationVibrate
+            vibrate = prefs.notificationVibrate,
+            soundOption = soundOption
         )
 
         return Result.success()

@@ -1,5 +1,10 @@
 package com.mohamad.salaty.feature.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,12 +23,13 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
@@ -32,20 +38,22 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.SettingsBrightness
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -53,7 +61,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -89,7 +96,7 @@ import java.util.TimeZone
  * Settings Screen - App Configuration
  *
  * Manage app settings and preferences.
- * Material Design 3 Expressive UI.
+ * Material Design 3 Expressive UI with inline accordions.
  */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -151,15 +158,19 @@ private fun SettingsContent(
         }
     }
 
-    // Dialog states
-    var showCalculationMethodDialog by remember { mutableStateOf(false) }
-    var showMadhabDialog by remember { mutableStateOf(false) }
-    var showHighLatitudeDialog by remember { mutableStateOf(false) }
+    // Expanded states for inline accordions
+    var calculationMethodExpanded by remember { mutableStateOf(false) }
+    var madhabExpanded by remember { mutableStateOf(false) }
+    var highLatitudeExpanded by remember { mutableStateOf(false) }
+    var adjustmentsExpanded by remember { mutableStateOf(false) }
+    var notificationSettingsExpanded by remember { mutableStateOf(false) }
+    var notificationSoundExpanded by remember { mutableStateOf(false) }
+    var languageExpanded by remember { mutableStateOf(false) }
+    var themeExpanded by remember { mutableStateOf(false) }
+
+    // Dialog states (only for complex dialogs)
     var showLocationDialog by remember { mutableStateOf(false) }
     var showAddLocationDialog by remember { mutableStateOf(false) }
-    var showAdjustmentsDialog by remember { mutableStateOf(false) }
-    var showNotificationSettingsDialog by remember { mutableStateOf(false) }
-    var showThemeDialog by remember { mutableStateOf(false) }
     var showPermissionRationaleDialog by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -177,119 +188,396 @@ private fun SettingsContent(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-        // Location Section
-        SettingsSection(title = stringResource(R.string.settings_section_location)) {
-            SettingsClickableItem(
-                icon = Icons.Default.LocationOn,
-                title = stringResource(R.string.settings_current_location),
-                subtitle = uiState.currentLocation?.name ?: stringResource(R.string.settings_location_not_set),
-                onClick = { showLocationDialog = true }
-            )
-        }
-
-        // Prayer Calculation Section
-        SettingsSection(title = stringResource(R.string.settings_section_prayer_calculation)) {
-            SettingsClickableItem(
-                icon = Icons.Default.Calculate,
-                title = stringResource(R.string.settings_calculation_method),
-                subtitle = uiState.preferences.calculationMethod.displayName,
-                onClick = { showCalculationMethodDialog = true }
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            SettingsClickableItem(
-                icon = Icons.Default.Schedule,
-                title = stringResource(R.string.settings_madhab),
-                subtitle = uiState.preferences.madhab.displayName,
-                onClick = { showMadhabDialog = true }
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            SettingsClickableItem(
-                icon = Icons.Default.MyLocation,
-                title = stringResource(R.string.settings_high_latitude_rule),
-                subtitle = HighLatitudeRule.entries.find {
-                    it.name.lowercase() == uiState.preferences.highLatitudeRule
-                }?.displayName ?: stringResource(R.string.settings_theme_system),
-                onClick = { showHighLatitudeDialog = true }
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            SettingsClickableItem(
-                icon = Icons.Default.Tune,
-                title = stringResource(R.string.settings_time_adjustments),
-                subtitle = stringResource(R.string.settings_time_adjustments_subtitle),
-                onClick = { showAdjustmentsDialog = true }
-            )
-        }
-
-        // Notifications Section
-        SettingsSection(title = stringResource(R.string.settings_section_notifications)) {
-            SettingsSwitchItem(
-                icon = Icons.Default.Notifications,
-                title = stringResource(R.string.settings_prayer_notifications),
-                subtitle = stringResource(R.string.settings_prayer_notifications_subtitle),
-                checked = uiState.preferences.notificationsEnabled,
-                onCheckedChange = viewModel::setNotificationsEnabled
-            )
-            if (uiState.preferences.notificationsEnabled) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            // Location Section
+            SettingsSection(title = stringResource(R.string.settings_section_location)) {
                 SettingsClickableItem(
-                    icon = Icons.Default.NotificationsActive,
-                    title = stringResource(R.string.settings_per_prayer_settings),
-                    subtitle = stringResource(R.string.settings_per_prayer_settings_subtitle),
-                    onClick = { showNotificationSettingsDialog = true }
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                SettingsSwitchItem(
-                    icon = Icons.Default.Vibration,
-                    title = stringResource(R.string.settings_vibrate),
-                    subtitle = stringResource(R.string.settings_vibrate_subtitle),
-                    checked = uiState.preferences.notificationVibrate,
-                    onCheckedChange = viewModel::setNotificationVibrate
+                    icon = Icons.Default.LocationOn,
+                    title = stringResource(R.string.settings_current_location),
+                    subtitle = uiState.currentLocation?.name ?: stringResource(R.string.settings_location_not_set),
+                    onClick = { showLocationDialog = true }
                 )
             }
-        }
 
-        // Display Section
-        SettingsSection(title = stringResource(R.string.settings_section_display)) {
-            SettingsClickableItem(
-                icon = when (uiState.preferences.themeMode) {
-                    "light" -> Icons.Default.LightMode
-                    "dark" -> Icons.Default.DarkMode
-                    else -> Icons.Default.SettingsBrightness
-                },
-                title = stringResource(R.string.settings_theme),
-                subtitle = when (uiState.preferences.themeMode) {
-                    "light" -> stringResource(R.string.settings_theme_light)
-                    "dark" -> stringResource(R.string.settings_theme_dark)
-                    else -> stringResource(R.string.settings_theme_system)
-                },
-                onClick = { showThemeDialog = true }
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            SettingsSwitchItem(
-                icon = Icons.Default.DarkMode,
-                title = stringResource(R.string.settings_dynamic_colors),
-                subtitle = stringResource(R.string.settings_dynamic_colors_subtitle),
-                checked = uiState.preferences.dynamicColors,
-                onCheckedChange = viewModel::setDynamicColors
-            )
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            SettingsSwitchItem(
-                icon = Icons.Default.AccessTime,
-                title = stringResource(R.string.settings_24hour_format),
-                subtitle = stringResource(R.string.settings_24hour_format_subtitle),
-                checked = uiState.preferences.timeFormat24h,
-                onCheckedChange = viewModel::setTimeFormat24h
-            )
-        }
+            // Prayer Calculation Section
+            SettingsSection(title = stringResource(R.string.settings_section_prayer_calculation)) {
+                // Calculation Method - Expandable
+                SettingsExpandableItem(
+                    icon = Icons.Default.Calculate,
+                    title = stringResource(R.string.settings_calculation_method),
+                    subtitle = uiState.preferences.calculationMethod.displayName,
+                    expanded = calculationMethodExpanded,
+                    onToggle = { calculationMethodExpanded = !calculationMethodExpanded }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .selectableGroup()
+                            .padding(start = 40.dp, end = 16.dp, bottom = 8.dp)
+                    ) {
+                        CalculationMethod.entries.forEach { method ->
+                            RadioOptionRow(
+                                text = method.displayName,
+                                description = method.description,
+                                selected = method == uiState.preferences.calculationMethod,
+                                onClick = {
+                                    viewModel.setCalculationMethod(method)
+                                    calculationMethodExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
-        // About Section
-        SettingsSection(title = stringResource(R.string.settings_section_about)) {
-            SettingsClickableItem(
-                title = stringResource(R.string.settings_version),
-                subtitle = "1.0.0",
-                onClick = { }
-            )
-        }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Madhab - Expandable
+                SettingsExpandableItem(
+                    icon = Icons.Default.Schedule,
+                    title = stringResource(R.string.settings_madhab),
+                    subtitle = uiState.preferences.madhab.displayName,
+                    expanded = madhabExpanded,
+                    onToggle = { madhabExpanded = !madhabExpanded }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .selectableGroup()
+                            .padding(start = 40.dp, end = 16.dp, bottom = 8.dp)
+                    ) {
+                        Madhab.entries.forEach { madhab ->
+                            RadioOptionRow(
+                                text = madhab.displayName,
+                                description = madhab.description,
+                                selected = madhab == uiState.preferences.madhab,
+                                onClick = {
+                                    viewModel.setMadhab(madhab)
+                                    madhabExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // High Latitude Rule - Expandable
+                val currentHighLatRule = HighLatitudeRule.entries.find {
+                    it.name.lowercase() == uiState.preferences.highLatitudeRule
+                } ?: HighLatitudeRule.MIDDLE_OF_THE_NIGHT
+
+                SettingsExpandableItem(
+                    icon = Icons.Default.MyLocation,
+                    title = stringResource(R.string.settings_high_latitude_rule),
+                    subtitle = currentHighLatRule.displayName,
+                    expanded = highLatitudeExpanded,
+                    onToggle = { highLatitudeExpanded = !highLatitudeExpanded }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .selectableGroup()
+                            .padding(start = 40.dp, end = 16.dp, bottom = 8.dp)
+                    ) {
+                        HighLatitudeRule.entries.forEach { rule ->
+                            RadioOptionRow(
+                                text = rule.displayName,
+                                description = rule.description,
+                                selected = rule == currentHighLatRule,
+                                onClick = {
+                                    viewModel.setHighLatitudeRule(rule)
+                                    highLatitudeExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Time Adjustments - Expandable
+                SettingsExpandableItem(
+                    icon = Icons.Default.Tune,
+                    title = stringResource(R.string.settings_time_adjustments),
+                    subtitle = stringResource(R.string.settings_time_adjustments_subtitle),
+                    expanded = adjustmentsExpanded,
+                    onToggle = { adjustmentsExpanded = !adjustmentsExpanded }
+                ) {
+                    Column(
+                        modifier = Modifier.padding(start = 40.dp, end = 16.dp, bottom = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.settings_adjustments_description),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        PrayerName.ordered.forEach { prayer ->
+                            val currentAdjustment = uiState.preferences.getAdjustment(prayer)
+                            AdjustmentRow(
+                                prayerName = prayer.localizedName(),
+                                adjustment = currentAdjustment,
+                                onIncrease = { viewModel.setPrayerAdjustment(prayer, currentAdjustment + 1) },
+                                onDecrease = { viewModel.setPrayerAdjustment(prayer, currentAdjustment - 1) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Notifications Section
+            SettingsSection(title = stringResource(R.string.settings_section_notifications)) {
+                SettingsSwitchItem(
+                    icon = Icons.Default.Notifications,
+                    title = stringResource(R.string.settings_prayer_notifications),
+                    subtitle = stringResource(R.string.settings_prayer_notifications_subtitle),
+                    checked = uiState.preferences.notificationsEnabled,
+                    onCheckedChange = viewModel::setNotificationsEnabled
+                )
+
+                if (uiState.preferences.notificationsEnabled) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // Per-Prayer Notifications - Expandable
+                    SettingsExpandableItem(
+                        icon = Icons.Default.NotificationsActive,
+                        title = stringResource(R.string.settings_per_prayer_settings),
+                        subtitle = stringResource(R.string.settings_per_prayer_settings_subtitle),
+                        expanded = notificationSettingsExpanded,
+                        onToggle = { notificationSettingsExpanded = !notificationSettingsExpanded }
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(start = 40.dp, end = 16.dp, bottom = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            PrayerName.ordered.forEach { prayer ->
+                                val isEnabled = uiState.preferences.isNotificationEnabled(prayer)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = prayer.localizedName(),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                    Switch(
+                                        checked = isEnabled,
+                                        onCheckedChange = { viewModel.setPrayerNotificationEnabled(prayer, it) }
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // Notification Sound - Expandable
+                    val currentSoundLabel = when (uiState.preferences.notificationSound) {
+                        "silent" -> stringResource(R.string.settings_sound_silent)
+                        else -> stringResource(R.string.settings_sound_default)
+                    }
+
+                    SettingsExpandableItem(
+                        icon = Icons.Default.VolumeUp,
+                        title = stringResource(R.string.settings_notification_sound),
+                        subtitle = currentSoundLabel,
+                        expanded = notificationSoundExpanded,
+                        onToggle = { notificationSoundExpanded = !notificationSoundExpanded }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .selectableGroup()
+                                .padding(start = 40.dp, end = 16.dp, bottom = 8.dp)
+                        ) {
+                            val soundOptions = listOf(
+                                "default" to stringResource(R.string.settings_sound_default),
+                                "silent" to stringResource(R.string.settings_sound_silent)
+                            )
+                            soundOptions.forEach { (key, label) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .selectable(
+                                            selected = key == uiState.preferences.notificationSound,
+                                            onClick = {
+                                                viewModel.setNotificationSound(key)
+                                                notificationSoundExpanded = false
+                                            },
+                                            role = Role.RadioButton
+                                        )
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    RadioButton(
+                                        selected = key == uiState.preferences.notificationSound,
+                                        onClick = null
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    SettingsSwitchItem(
+                        icon = Icons.Default.Vibration,
+                        title = stringResource(R.string.settings_vibrate),
+                        subtitle = stringResource(R.string.settings_vibrate_subtitle),
+                        checked = uiState.preferences.notificationVibrate,
+                        onCheckedChange = viewModel::setNotificationVibrate
+                    )
+                }
+            }
+
+            // Display Section
+            SettingsSection(title = stringResource(R.string.settings_section_display)) {
+                // Language - Expandable
+                SettingsExpandableItem(
+                    icon = Icons.Default.Translate,
+                    title = stringResource(R.string.settings_language),
+                    subtitle = when (uiState.preferences.language) {
+                        "ar" -> stringResource(R.string.settings_language_arabic)
+                        else -> stringResource(R.string.settings_language_english)
+                    },
+                    expanded = languageExpanded,
+                    onToggle = { languageExpanded = !languageExpanded }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .selectableGroup()
+                            .padding(start = 40.dp, end = 16.dp, bottom = 8.dp)
+                    ) {
+                        val languages = listOf(
+                            "en" to stringResource(R.string.settings_language_english),
+                            "ar" to stringResource(R.string.settings_language_arabic)
+                        )
+                        languages.forEach { (code, label) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = code == uiState.preferences.language,
+                                        onClick = {
+                                            viewModel.setLanguage(code)
+                                            languageExpanded = false
+                                        },
+                                        role = Role.RadioButton
+                                    )
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = code == uiState.preferences.language,
+                                    onClick = null
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Theme - Expandable
+                SettingsExpandableItem(
+                    icon = when (uiState.preferences.themeMode) {
+                        "light" -> Icons.Default.LightMode
+                        "dark" -> Icons.Default.DarkMode
+                        else -> Icons.Default.SettingsBrightness
+                    },
+                    title = stringResource(R.string.settings_theme),
+                    subtitle = when (uiState.preferences.themeMode) {
+                        "light" -> stringResource(R.string.settings_theme_light)
+                        "dark" -> stringResource(R.string.settings_theme_dark)
+                        else -> stringResource(R.string.settings_theme_system)
+                    },
+                    expanded = themeExpanded,
+                    onToggle = { themeExpanded = !themeExpanded }
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .selectableGroup()
+                            .padding(start = 40.dp, end = 16.dp, bottom = 8.dp)
+                    ) {
+                        val themes = listOf(
+                            Triple("system", stringResource(R.string.settings_theme_system), Icons.Default.SettingsBrightness),
+                            Triple("light", stringResource(R.string.settings_theme_light), Icons.Default.LightMode),
+                            Triple("dark", stringResource(R.string.settings_theme_dark), Icons.Default.DarkMode)
+                        )
+                        themes.forEach { (value, label, icon) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .selectable(
+                                        selected = value == uiState.preferences.themeMode,
+                                        onClick = {
+                                            viewModel.setThemeMode(value)
+                                            themeExpanded = false
+                                        },
+                                        role = Role.RadioButton
+                                    )
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = value == uiState.preferences.themeMode,
+                                    onClick = null
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                SettingsSwitchItem(
+                    icon = Icons.Default.DarkMode,
+                    title = stringResource(R.string.settings_dynamic_colors),
+                    subtitle = stringResource(R.string.settings_dynamic_colors_subtitle),
+                    checked = uiState.preferences.dynamicColors,
+                    onCheckedChange = viewModel::setDynamicColors
+                )
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                SettingsSwitchItem(
+                    icon = Icons.Default.AccessTime,
+                    title = stringResource(R.string.settings_24hour_format),
+                    subtitle = stringResource(R.string.settings_24hour_format_subtitle),
+                    checked = uiState.preferences.timeFormat24h,
+                    onCheckedChange = viewModel::setTimeFormat24h
+                )
+            }
+
+            // About Section
+            SettingsSection(title = stringResource(R.string.settings_section_about)) {
+                SettingsInfoItem(
+                    title = stringResource(R.string.settings_version),
+                    subtitle = "1.0.0"
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -303,42 +591,7 @@ private fun SettingsContent(
         )
     }
 
-    // Dialogs
-    if (showCalculationMethodDialog) {
-        CalculationMethodDialog(
-            currentMethod = uiState.preferences.calculationMethod,
-            onMethodSelected = {
-                viewModel.setCalculationMethod(it)
-                showCalculationMethodDialog = false
-            },
-            onDismiss = { showCalculationMethodDialog = false }
-        )
-    }
-
-    if (showMadhabDialog) {
-        MadhabDialog(
-            currentMadhab = uiState.preferences.madhab,
-            onMadhabSelected = {
-                viewModel.setMadhab(it)
-                showMadhabDialog = false
-            },
-            onDismiss = { showMadhabDialog = false }
-        )
-    }
-
-    if (showHighLatitudeDialog) {
-        HighLatitudeRuleDialog(
-            currentRule = HighLatitudeRule.entries.find {
-                it.name.lowercase() == uiState.preferences.highLatitudeRule
-            } ?: HighLatitudeRule.MIDDLE_OF_THE_NIGHT,
-            onRuleSelected = {
-                viewModel.setHighLatitudeRule(it)
-                showHighLatitudeDialog = false
-            },
-            onDismiss = { showHighLatitudeDialog = false }
-        )
-    }
-
+    // Dialogs (only complex ones that need dialogs)
     if (showLocationDialog) {
         LocationDialog(
             locations = uiState.locations,
@@ -392,203 +645,28 @@ private fun SettingsContent(
     }
 
     if (showAddLocationDialog) {
+        val initialLocationCount = remember { uiState.locations.size }
+
         AddLocationDialog(
-            onSave = { name, lat, lon, tz ->
-                viewModel.saveLocation(name, lat, lon, tz, true)
-                showAddLocationDialog = false
+            isSearching = uiState.isDetectingLocation,
+            onSearch = { locationName ->
+                viewModel.searchAndSaveLocation(locationName)
             },
             onDismiss = { showAddLocationDialog = false }
         )
-    }
 
-    if (showAdjustmentsDialog) {
-        AdjustmentsDialog(
-            preferences = uiState.preferences,
-            onAdjustmentChanged = viewModel::setPrayerAdjustment,
-            onDismiss = { showAdjustmentsDialog = false }
-        )
-    }
-
-    if (showNotificationSettingsDialog) {
-        NotificationSettingsDialog(
-            preferences = uiState.preferences,
-            onPrayerNotificationChanged = viewModel::setPrayerNotificationEnabled,
-            onDismiss = { showNotificationSettingsDialog = false }
-        )
-    }
-
-    if (showThemeDialog) {
-        ThemeDialog(
-            currentTheme = uiState.preferences.themeMode,
-            onThemeSelected = {
-                viewModel.setThemeMode(it)
-                showThemeDialog = false
-            },
-            onDismiss = { showThemeDialog = false }
-        )
+        // Close dialog when search succeeds (location count increases)
+        LaunchedEffect(uiState.locations.size) {
+            if (uiState.locations.size > initialLocationCount) {
+                showAddLocationDialog = false
+            }
+        }
     }
 }
 
 // ============================================================================
-// DIALOGS
+// DIALOGS (Complex flows that need modal interaction)
 // ============================================================================
-
-@Composable
-private fun CalculationMethodDialog(
-    currentMethod: CalculationMethod,
-    onMethodSelected: (CalculationMethod) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Calculation Method") },
-        text = {
-            Column(
-                modifier = Modifier
-                    .selectableGroup()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                CalculationMethod.entries.forEach { method ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = method == currentMethod,
-                                onClick = { onMethodSelected(method) },
-                                role = Role.RadioButton
-                            )
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = method == currentMethod,
-                            onClick = null
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = method.displayName,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = method.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-private fun MadhabDialog(
-    currentMadhab: Madhab,
-    onMadhabSelected: (Madhab) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Madhab (School of Thought)") },
-        text = {
-            Column(modifier = Modifier.selectableGroup()) {
-                Madhab.entries.forEach { madhab ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = madhab == currentMadhab,
-                                onClick = { onMadhabSelected(madhab) },
-                                role = Role.RadioButton
-                            )
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = madhab == currentMadhab,
-                            onClick = null
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = madhab.displayName,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = madhab.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-private fun HighLatitudeRuleDialog(
-    currentRule: HighLatitudeRule,
-    onRuleSelected: (HighLatitudeRule) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("High Latitude Rule") },
-        text = {
-            Column(modifier = Modifier.selectableGroup()) {
-                HighLatitudeRule.entries.forEach { rule ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = rule == currentRule,
-                                onClick = { onRuleSelected(rule) },
-                                role = Role.RadioButton
-                            )
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = rule == currentRule,
-                            onClick = null
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = rule.displayName,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(
-                                text = rule.description,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
 
 @Composable
 private fun LocationDialog(
@@ -603,7 +681,7 @@ private fun LocationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Locations") },
+        title = { Text(stringResource(R.string.settings_locations_title)) },
         text = {
             Column {
                 // Detect Location Button
@@ -619,7 +697,7 @@ private fun LocationDialog(
                             strokeWidth = 2.dp
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Detecting...")
+                        Text(stringResource(R.string.settings_detecting))
                     } else {
                         Icon(
                             imageVector = Icons.Default.MyLocation,
@@ -627,7 +705,7 @@ private fun LocationDialog(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Detect My Location")
+                        Text(stringResource(R.string.settings_detect_location))
                     }
                 }
 
@@ -637,7 +715,7 @@ private fun LocationDialog(
 
                 if (locations.isEmpty()) {
                     Text(
-                        text = "No locations saved. Detect your location or add one manually.",
+                        text = stringResource(R.string.settings_no_locations),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -645,7 +723,7 @@ private fun LocationDialog(
                     )
                 } else {
                     Text(
-                        text = "Saved Locations",
+                        text = stringResource(R.string.settings_saved_locations),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -685,7 +763,7 @@ private fun LocationDialog(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Delete,
-                                        contentDescription = "Delete",
+                                        contentDescription = stringResource(R.string.settings_delete),
                                         tint = MaterialTheme.colorScheme.error
                                     )
                                 }
@@ -703,12 +781,12 @@ private fun LocationDialog(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Add Manually")
+                Text(stringResource(R.string.settings_add_manually))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close")
+                Text(stringResource(R.string.settings_close))
             }
         }
     )
@@ -716,314 +794,77 @@ private fun LocationDialog(
 
 @Composable
 private fun AddLocationDialog(
-    onSave: (name: String, latitude: Double, longitude: Double, timezone: String) -> Unit,
+    isSearching: Boolean,
+    onSearch: (locationName: String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var latitude by remember { mutableStateOf("") }
-    var longitude by remember { mutableStateOf("") }
-    val timezone = remember { TimeZone.getDefault().id }
-
+    var locationName by remember { mutableStateOf("") }
     var nameError by remember { mutableStateOf(false) }
-    var latError by remember { mutableStateOf(false) }
-    var lonError by remember { mutableStateOf(false) }
 
     AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add Location") },
+        onDismissRequest = { if (!isSearching) onDismiss() },
+        title = { Text(stringResource(R.string.settings_add_location)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedTextField(
-                    value = name,
+                    value = locationName,
                     onValueChange = {
-                        name = it
+                        locationName = it
                         nameError = false
                     },
-                    label = { Text("Location Name") },
-                    placeholder = { Text("e.g., Home, Work, Mosque") },
+                    label = { Text(stringResource(R.string.settings_location_name)) },
+                    placeholder = { Text(stringResource(R.string.settings_search_location_hint)) },
                     isError = nameError,
                     supportingText = if (nameError) {
-                        { Text("Name is required") }
+                        { Text(stringResource(R.string.settings_location_name_required)) }
                     } else null,
                     singleLine = true,
+                    enabled = !isSearching,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                OutlinedTextField(
-                    value = latitude,
-                    onValueChange = {
-                        latitude = it
-                        latError = false
-                    },
-                    label = { Text("Latitude") },
-                    placeholder = { Text("e.g., 43.6532") },
-                    isError = latError,
-                    supportingText = if (latError) {
-                        { Text("Invalid latitude (-90 to 90)") }
-                    } else null,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = longitude,
-                    onValueChange = {
-                        longitude = it
-                        lonError = false
-                    },
-                    label = { Text("Longitude") },
-                    placeholder = { Text("e.g., -79.3832") },
-                    isError = lonError,
-                    supportingText = if (lonError) {
-                        { Text("Invalid longitude (-180 to 180)") }
-                    } else null,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Text(
-                    text = "Timezone: $timezone",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                if (isSearching) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.settings_searching),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
             }
         },
         confirmButton = {
             TextButton(
                 onClick = {
-                    var hasError = false
-                    if (name.isBlank()) {
+                    if (locationName.isBlank()) {
                         nameError = true
-                        hasError = true
+                    } else {
+                        onSearch(locationName.trim())
                     }
-                    val lat = latitude.toDoubleOrNull()
-                    if (lat == null || lat < -90 || lat > 90) {
-                        latError = true
-                        hasError = true
-                    }
-                    val lon = longitude.toDoubleOrNull()
-                    if (lon == null || lon < -180 || lon > 180) {
-                        lonError = true
-                        hasError = true
-                    }
-                    if (!hasError) {
-                        onSave(name.trim(), lat!!, lon!!, timezone)
-                    }
-                }
+                },
+                enabled = !isSearching
             ) {
-                Text("Save")
+                Text(stringResource(R.string.settings_search))
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-private fun AdjustmentsDialog(
-    preferences: UserPreferences,
-    onAdjustmentChanged: (PrayerName, Int) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Time Adjustments") },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isSearching
             ) {
-                Text(
-                    text = "Adjust prayer times by +/- minutes",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                PrayerName.ordered.forEach { prayer ->
-                    val currentAdjustment = preferences.getAdjustment(prayer)
-                    AdjustmentRow(
-                        prayerName = prayer.localizedName(),
-                        adjustment = currentAdjustment,
-                        onIncrease = { onAdjustmentChanged(prayer, currentAdjustment + 1) },
-                        onDecrease = { onAdjustmentChanged(prayer, currentAdjustment - 1) }
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Done")
-            }
-        }
-    )
-}
-
-@Composable
-private fun AdjustmentRow(
-    prayerName: String,
-    adjustment: Int,
-    onIncrease: () -> Unit,
-    onDecrease: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = prayerName,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            IconButton(
-                onClick = onDecrease,
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Remove,
-                    contentDescription = "Decrease",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            Text(
-                text = if (adjustment >= 0) "+$adjustment" else "$adjustment",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = if (adjustment != 0) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.width(48.dp),
-                textAlign = TextAlign.Center
-            )
-
-            IconButton(
-                onClick = onIncrease,
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Increase",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun NotificationSettingsDialog(
-    preferences: UserPreferences,
-    onPrayerNotificationChanged: (PrayerName, Boolean) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Prayer Notifications") },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "Enable or disable notifications for each prayer",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                PrayerName.ordered.forEach { prayer ->
-                    val isEnabled = preferences.isNotificationEnabled(prayer)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = prayer.localizedName(),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Switch(
-                            checked = isEnabled,
-                            onCheckedChange = { onPrayerNotificationChanged(prayer, it) }
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Done")
-            }
-        }
-    )
-}
-
-@Composable
-private fun ThemeDialog(
-    currentTheme: String,
-    onThemeSelected: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val themes = listOf(
-        Triple("system", "System default", Icons.Default.SettingsBrightness),
-        Triple("light", "Light", Icons.Default.LightMode),
-        Triple("dark", "Dark", Icons.Default.DarkMode)
-    )
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Theme") },
-        text = {
-            Column(modifier = Modifier.selectableGroup()) {
-                themes.forEach { (value, label, icon) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = value == currentTheme,
-                                onClick = { onThemeSelected(value) },
-                                role = Role.RadioButton
-                            )
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = value == currentTheme,
-                            onClick = null
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = label,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.settings_cancel))
             }
         }
     )
@@ -1057,6 +898,62 @@ private fun SettingsSection(
             ) {
                 content()
             }
+        }
+    }
+}
+
+@Composable
+private fun SettingsExpandableItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onToggle)
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Icon(
+                imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            content()
         }
     }
 }
@@ -1100,10 +997,39 @@ private fun SettingsClickableItem(
         }
 
         Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            imageVector = Icons.Default.ExpandMore,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun SettingsInfoItem(
+    title: String,
+    subtitle: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -1147,5 +1073,101 @@ private fun SettingsSwitchItem(
             checked = checked,
             onCheckedChange = onCheckedChange
         )
+    }
+}
+
+@Composable
+private fun RadioOptionRow(
+    text: String,
+    description: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectable(
+                selected = selected,
+                onClick = onClick,
+                role = Role.RadioButton
+            )
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = null
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun AdjustmentRow(
+    prayerName: String,
+    adjustment: Int,
+    onIncrease: () -> Unit,
+    onDecrease: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = prayerName,
+            style = MaterialTheme.typography.bodyLarge
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            IconButton(
+                onClick = onDecrease,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Remove,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Text(
+                text = if (adjustment >= 0) "+$adjustment" else "$adjustment",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = if (adjustment != 0) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.width(48.dp),
+                textAlign = TextAlign.Center
+            )
+
+            IconButton(
+                onClick = onIncrease,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
     }
 }

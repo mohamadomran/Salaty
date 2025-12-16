@@ -20,6 +20,7 @@ data class PrayerRecordEntity(
     val status: PrayerStatus,
     val prayedAt: LocalDateTime? = null,
     val notes: String? = null,
+    val qadaCompleted: Boolean = false,  // Track if missed prayer was made up
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime = LocalDateTime.now()
 )

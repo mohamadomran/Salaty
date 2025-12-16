@@ -6,6 +6,11 @@
     <string name="home_set_location_title">حدد موقعك</string>
     <string name="home_set_location_description">نحتاج إلى موقعك لحساب مواقيت الصلاة بدقة.</string>
     <string name="home_set_location_button">تحديد الموقع</string>
+    <string name="home_use_gps">استخدام GPS</string>
+    <string name="home_or">أو</string>
+    <string name="home_enter_location">أدخل المدينة أو العنوان</string>
+    <string name="home_search">بحث</string>
+    <string name="home_detecting_location">جاري اكتشاف الموقع…</string>
     <string name="home_prayer_times_title">مواقيت الصلاة</string>
     <string name="home_next_prayer">الصلاة القادمة</string>
     <string name="home_remaining">متبقي</string>

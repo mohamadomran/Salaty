@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Language Page -->
+    <string name="onboarding_language_title">اختر اللغة</string>
+    <string name="onboarding_language_description">اختر لغتك المفضلة للتطبيق.</string>
+    <string name="onboarding_language_english">English</string>
+    <string name="onboarding_language_arabic">العربية</string>
+
     <!-- Welcome Page -->
     <string name="onboarding_welcome_title">مرحباً بك في صلاتي</string>
     <string name="onboarding_welcome_description">رفيقك لمواقيت الصلاة والمتابعة اليومية. دعنا نساعدك في الإعداد في بضع خطوات.</string>

@@ -11,7 +11,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
@@ -190,14 +192,72 @@ class LocationService @Inject constructor(
     }
 
     /**
+     * Geocode a location name to coordinates.
+     *
+     * @param locationName The name of the location (city, address, etc.)
+     * @return LocationResult with coordinates if successful
+     */
+    suspend fun geocodeLocationName(locationName: String): LocationResult {
+        if (locationName.isBlank()) {
+            return LocationResult.Error("Location name is required")
+        }
+
+        return withContext(Dispatchers.IO) {
+            try {
+                val geocoder = Geocoder(context, Locale.getDefault())
+
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocationName(locationName, 1)
+
+                if (addresses.isNullOrEmpty()) {
+                    return@withContext LocationResult.Error("Location not found. Try a different name or add coordinates manually.")
+                }
+
+                val address = addresses[0]
+                val name = buildLocationName(address).ifEmpty { locationName }
+                val timezone = getTimezone(address.latitude, address.longitude)
+
+                LocationResult.Success(
+                    DetectedLocation(
+                        name = name,
+                        latitude = address.latitude,
+                        longitude = address.longitude,
+                        timezone = timezone
+                    )
+                )
+            } catch (e: Exception) {
+                LocationResult.Error("Failed to find location: ${e.message}")
+            }
+        }
+    }
+
+    /**
      * Get timezone for the given coordinates.
      *
-     * Note: This uses the device's default timezone. For more accurate timezone
-     * detection based on coordinates, a third-party API would be needed.
+     * Uses a hybrid approach:
+     * 1. First, try to use device timezone if it matches the longitude-based estimate
+     * 2. Otherwise, estimate based on longitude (works offline)
+     *
+     * Each 15° of longitude = 1 hour offset from UTC.
      */
     private fun getTimezone(latitude: Double, longitude: Double): String {
-        // For now, use the device's default timezone
-        // A more sophisticated approach would use a timezone API or database
-        return TimeZone.getDefault().id
+        val deviceTimezone = TimeZone.getDefault()
+        val deviceOffset = deviceTimezone.rawOffset / (1000 * 60 * 60) // hours
+
+        // Estimate timezone offset from longitude (each 15° = 1 hour)
+        val estimatedOffset = (longitude / 15.0).toInt()
+
+        // If device timezone matches the estimated offset (within 2 hours), use device timezone
+        // This handles daylight saving time and proper timezone IDs
+        return if (kotlin.math.abs(deviceOffset - estimatedOffset) <= 2) {
+            deviceTimezone.id
+        } else {
+            // Use GMT offset format for locations far from device timezone
+            when {
+                estimatedOffset == 0 -> "GMT"
+                estimatedOffset > 0 -> "GMT+$estimatedOffset"
+                else -> "GMT$estimatedOffset"
+            }
+        }
     }
 }

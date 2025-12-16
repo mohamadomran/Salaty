@@ -2,7 +2,7 @@ package com.mohamad.salaty.feature.qada
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mohamad.salaty.core.data.database.entity.QadaCountEntity
+import com.mohamad.salaty.core.data.database.entity.PrayerRecordEntity
 import com.mohamad.salaty.core.data.repository.PrayerRepository
 import com.mohamad.salaty.core.domain.model.PrayerName
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,18 +15,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * UI state for a single Qada item.
+ * UI state for a missed prayer item (qada).
  */
-data class QadaItem(
+data class MissedPrayerItem(
+    val id: Long,
     val prayerName: PrayerName,
-    val count: Int
+    val date: java.time.LocalDate
 )
 
 /**
  * UI state for the Qada screen.
  */
 data class QadaUiState(
-    val qadaItems: List<QadaItem> = emptyList(),
+    val missedPrayers: List<MissedPrayerItem> = emptyList(),
     val totalCount: Int = 0,
     val isLoading: Boolean = true,
     val error: String? = null
@@ -41,25 +42,31 @@ class QadaViewModel @Inject constructor(
     val uiState: StateFlow<QadaUiState> = _uiState.asStateFlow()
 
     init {
-        loadQadaCounts()
+        loadMissedPrayers()
     }
 
-    private fun loadQadaCounts() {
+    private fun loadMissedPrayers() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             try {
                 combine(
-                    prayerRepository.getAllQadaCounts(),
-                    prayerRepository.getTotalQadaCount()
-                ) { counts, total ->
-                    Pair(counts, total)
-                }.collect { (counts, total) ->
-                    val items = buildQadaList(counts)
+                    prayerRepository.getMissedPrayersNotCompleted(),
+                    prayerRepository.getMissedPrayersCount()
+                ) { prayers, count ->
+                    Pair(prayers, count)
+                }.collect { (prayers, count) ->
+                    val items = prayers.map { record ->
+                        MissedPrayerItem(
+                            id = record.id,
+                            prayerName = record.prayerName,
+                            date = record.date
+                        )
+                    }
                     _uiState.update {
                         it.copy(
-                            qadaItems = items,
-                            totalCount = total,
+                            missedPrayers = items,
+                            totalCount = count,
                             isLoading = false
                         )
                     }
@@ -68,43 +75,19 @@ class QadaViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load Qada counts"
+                        error = e.message ?: "Failed to load missed prayers"
                     )
                 }
             }
         }
     }
 
-    private fun buildQadaList(counts: List<QadaCountEntity>): List<QadaItem> {
-        val countMap = counts.associateBy { it.prayerName }
-
-        return PrayerName.obligatory.map { prayer ->
-            QadaItem(
-                prayerName = prayer,
-                count = countMap[prayer]?.count ?: 0
-            )
-        }
-    }
-
-    fun incrementQada(prayerName: PrayerName) {
+    /**
+     * Mark a missed prayer as made up (qada completed).
+     */
+    fun markAsCompleted(recordId: Long) {
         viewModelScope.launch {
-            prayerRepository.incrementQada(prayerName)
+            prayerRepository.markQadaCompleted(recordId)
         }
-    }
-
-    fun decrementQada(prayerName: PrayerName) {
-        viewModelScope.launch {
-            prayerRepository.decrementQada(prayerName)
-        }
-    }
-
-    fun setQadaCount(prayerName: PrayerName, count: Int) {
-        viewModelScope.launch {
-            prayerRepository.setQadaCount(prayerName, count.coerceAtLeast(0))
-        }
-    }
-
-    fun markOneAsCompleted(prayerName: PrayerName) {
-        decrementQada(prayerName)
     }
 }

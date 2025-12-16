@@ -11,8 +11,23 @@ import androidx.core.app.NotificationManagerCompat
 import com.mohamad.salaty.core.designsystem.getLocalizedName
 import com.mohamad.salaty.core.domain.model.PrayerName
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Singleton
+
+/**
+ * Supported notification sound options.
+ */
+enum class NotificationSoundOption(val key: String, val displayName: String) {
+    DEFAULT("default", "Default"),
+    SILENT("silent", "Silent");
+
+    companion object {
+        fun fromKey(key: String): NotificationSoundOption {
+            return entries.find { it.key == key } ?: DEFAULT
+        }
+    }
+}
 
 /**
  * Helper class for creating and displaying prayer notifications.
@@ -25,11 +40,16 @@ class NotificationHelper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        const val CHANNEL_ID_PRAYER = "prayer_notifications"
+        const val CHANNEL_ID_PRAYER_PREFIX = "prayer_notifications_"
         const val CHANNEL_NAME_PRAYER = "Prayer Times"
         const val CHANNEL_DESCRIPTION_PRAYER = "Notifications for prayer times"
 
         const val NOTIFICATION_ID_BASE = 1000
+
+        // Channel IDs for each sound option
+        fun getChannelId(soundOption: NotificationSoundOption): String {
+            return "$CHANNEL_ID_PRAYER_PREFIX${soundOption.key}"
+        }
     }
 
     init {
@@ -37,22 +57,41 @@ class NotificationHelper @Inject constructor(
     }
 
     /**
-     * Create notification channels for Android 8.0+.
+     * Create notification channels for each sound option (Android 8.0+).
+     * Each sound requires a separate channel because channel settings are immutable.
      */
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                CHANNEL_ID_PRAYER,
-                CHANNEL_NAME_PRAYER,
-                NotificationManager.IMPORTANCE_HIGH
-            ).apply {
-                description = CHANNEL_DESCRIPTION_PRAYER
-                enableVibration(true)
-                enableLights(true)
-            }
-
             val notificationManager = context.getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+
+            NotificationSoundOption.entries.forEach { soundOption ->
+                val channelId = getChannelId(soundOption)
+                val channelName = when (soundOption) {
+                    NotificationSoundOption.DEFAULT -> "Prayer Times"
+                    NotificationSoundOption.SILENT -> "Prayer Times (Silent)"
+                }
+
+                val channel = NotificationChannel(
+                    channelId,
+                    channelName,
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description = CHANNEL_DESCRIPTION_PRAYER
+                    enableLights(true)
+
+                    when (soundOption) {
+                        NotificationSoundOption.SILENT -> {
+                            setSound(null, null)
+                            enableVibration(false)
+                        }
+                        NotificationSoundOption.DEFAULT -> {
+                            enableVibration(true)
+                        }
+                    }
+                }
+
+                notificationManager.createNotificationChannel(channel)
+            }
         }
     }
 
@@ -62,11 +101,13 @@ class NotificationHelper @Inject constructor(
      * @param prayer The prayer name
      * @param timeString The formatted time string (e.g., "5:30 AM")
      * @param vibrate Whether to vibrate
+     * @param soundOption The sound option to use (determines notification channel)
      */
     fun showPrayerNotification(
         prayer: PrayerName,
         timeString: String,
-        vibrate: Boolean = true
+        vibrate: Boolean = true,
+        soundOption: NotificationSoundOption = NotificationSoundOption.DEFAULT
     ) {
         val notificationId = NOTIFICATION_ID_BASE + prayer.ordinal
 
@@ -79,10 +120,27 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Create "Mark as Prayed" action
+        val markPrayedIntent = MarkPrayerReceiver.createIntent(
+            context = context,
+            prayerName = prayer,
+            date = LocalDate.now(),
+            notificationId = notificationId
+        )
+        val markPrayedPendingIntent = PendingIntent.getBroadcast(
+            context,
+            notificationId + 100, // Use different request code
+            markPrayedIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val prayerDisplayName = prayer.getLocalizedName(context)
         val prayerArabicName = PrayerName.arabicName(prayer)
 
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID_PRAYER)
+        // Use the appropriate channel based on sound option
+        val channelId = getChannelId(soundOption)
+
+        val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("$prayerDisplayName ($prayerArabicName)")
             .setContentText("It's time for $prayerDisplayName prayer • $timeString")
@@ -90,9 +148,20 @@ class NotificationHelper @Inject constructor(
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .addAction(
+                android.R.drawable.ic_menu_send,
+                "Mark as Prayed",
+                markPrayedPendingIntent
+            )
             .apply {
-                if (vibrate) {
+                if (vibrate && soundOption != NotificationSoundOption.SILENT) {
                     setVibrate(longArrayOf(0, 500, 200, 500))
+                }
+                // For pre-Android O, set sound explicitly
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    if (soundOption == NotificationSoundOption.SILENT) {
+                        setSound(null)
+                    }
                 }
             }
             .build()

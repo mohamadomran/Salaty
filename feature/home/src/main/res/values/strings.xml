@@ -6,6 +6,11 @@
     <string name="home_set_location_title">Set Your Location</string>
     <string name="home_set_location_description">To calculate accurate prayer times, we need your location.</string>
     <string name="home_set_location_button">Set Location</string>
+    <string name="home_use_gps">Use GPS</string>
+    <string name="home_or">or</string>
+    <string name="home_enter_location">Enter city or address</string>
+    <string name="home_search">Search</string>
+    <string name="home_detecting_location">Detecting location…</string>
     <string name="home_prayer_times_title">Prayer Times</string>
     <string name="home_next_prayer">Next Prayer</string>
     <string name="home_remaining">remaining</string>

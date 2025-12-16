@@ -2,15 +2,13 @@ package com.mohamad.salaty.feature.compass
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mohamad.salaty.core.data.database.dao.LocationDao
-import com.mohamad.salaty.core.data.preferences.SalatyPreferences
 import com.mohamad.salaty.core.data.qibla.QiblaCalculator
+import com.mohamad.salaty.core.data.repository.PrayerRepository
 import com.mohamad.salaty.core.data.sensor.CompassSensor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,8 +33,7 @@ data class QiblaCompassUiState(
 class QiblaCompassViewModel @Inject constructor(
     private val compassSensor: CompassSensor,
     private val qiblaCalculator: QiblaCalculator,
-    private val preferences: SalatyPreferences,
-    private val locationDao: LocationDao
+    private val prayerRepository: PrayerRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QiblaCompassUiState())
@@ -44,7 +41,8 @@ class QiblaCompassViewModel @Inject constructor(
 
     init {
         checkCompassAvailability()
-        loadLocationAndStartCompass()
+        observeLocation()
+        startCompassUpdates()
     }
 
     private fun checkCompassAvailability() {
@@ -52,49 +50,40 @@ class QiblaCompassViewModel @Inject constructor(
         _uiState.update { it.copy(isCompassAvailable = isAvailable) }
     }
 
-    private fun loadLocationAndStartCompass() {
+    /**
+     * Observe location changes reactively from PrayerRepository.
+     * This will update Qibla bearing whenever location changes.
+     */
+    private fun observeLocation() {
         viewModelScope.launch {
-            // Get user's selected location from preferences
-            val prefs = preferences.userPreferences.first()
-            val locationId = prefs.selectedLocationId
+            prayerRepository.observeCurrentLocation().collect { location ->
+                if (location != null) {
+                    val qiblaBearing = qiblaCalculator.calculateQiblaDirection(
+                        location.latitude,
+                        location.longitude
+                    ).toFloat()
 
-            // Get location from database
-            val location = if (locationId != null) {
-                locationDao.getLocationById(locationId)
-            } else {
-                // Fall back to default location if no selection
-                locationDao.getDefaultLocation()
-            }
-
-            if (location != null) {
-                val qiblaBearing = qiblaCalculator.calculateQiblaDirection(
-                    location.latitude,
-                    location.longitude
-                ).toFloat()
-
-                val distance = qiblaCalculator.calculateDistanceToKaaba(
-                    location.latitude,
-                    location.longitude
-                )
-
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        hasLocation = true,
-                        locationName = location.name,
-                        qiblaBearing = qiblaBearing,
-                        distanceToKaaba = distance
+                    val distance = qiblaCalculator.calculateDistanceToKaaba(
+                        location.latitude,
+                        location.longitude
                     )
-                }
 
-                // Start compass updates
-                startCompassUpdates()
-            } else {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        hasLocation = false
-                    )
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            hasLocation = true,
+                            locationName = location.name,
+                            qiblaBearing = qiblaBearing,
+                            distanceToKaaba = distance
+                        )
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            hasLocation = false
+                        )
+                    }
                 }
             }
         }

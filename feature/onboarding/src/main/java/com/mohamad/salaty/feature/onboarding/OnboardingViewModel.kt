@@ -17,6 +17,7 @@ import javax.inject.Inject
  * Onboarding page definitions
  */
 enum class OnboardingPage {
+    LANGUAGE,
     WELCOME,
     LOCATION,
     NOTIFICATIONS,
@@ -27,7 +28,8 @@ enum class OnboardingPage {
  * UI state for onboarding
  */
 data class OnboardingUiState(
-    val currentPage: OnboardingPage = OnboardingPage.WELCOME,
+    val currentPage: OnboardingPage = OnboardingPage.LANGUAGE,
+    val selectedLanguage: String = "en",
     val isLocationDetecting: Boolean = false,
     val locationDetected: Boolean = false,
     val locationName: String? = null,
@@ -50,6 +52,7 @@ class OnboardingViewModel @Inject constructor(
     fun nextPage() {
         _uiState.update { state ->
             val nextPage = when (state.currentPage) {
+                OnboardingPage.LANGUAGE -> OnboardingPage.WELCOME
                 OnboardingPage.WELCOME -> OnboardingPage.LOCATION
                 OnboardingPage.LOCATION -> OnboardingPage.NOTIFICATIONS
                 OnboardingPage.NOTIFICATIONS -> OnboardingPage.COMPLETE
@@ -65,12 +68,23 @@ class OnboardingViewModel @Inject constructor(
     fun previousPage() {
         _uiState.update { state ->
             val prevPage = when (state.currentPage) {
-                OnboardingPage.WELCOME -> OnboardingPage.WELCOME
+                OnboardingPage.LANGUAGE -> OnboardingPage.LANGUAGE
+                OnboardingPage.WELCOME -> OnboardingPage.LANGUAGE
                 OnboardingPage.LOCATION -> OnboardingPage.WELCOME
                 OnboardingPage.NOTIFICATIONS -> OnboardingPage.LOCATION
                 OnboardingPage.COMPLETE -> OnboardingPage.NOTIFICATIONS
             }
             state.copy(currentPage = prevPage)
+        }
+    }
+
+    /**
+     * Set app language
+     */
+    fun setLanguage(language: String) {
+        viewModelScope.launch {
+            preferences.setLanguage(language)
+            _uiState.update { it.copy(selectedLanguage = language) }
         }
     }
 

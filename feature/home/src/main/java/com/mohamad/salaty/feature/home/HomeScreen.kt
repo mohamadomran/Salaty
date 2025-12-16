@@ -1,5 +1,6 @@
 package com.mohamad.salaty.feature.home
 
+import android.Manifest
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,15 +13,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +41,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.mohamad.salaty.feature.home.R
 import com.mohamad.salaty.core.designsystem.component.SalatyCard
 import com.mohamad.salaty.core.designsystem.component.SalatyElevatedCard
@@ -49,19 +62,29 @@ import java.time.format.DateTimeFormatter
  * Shows current prayer times with countdown to next prayer.
  * Material Design 3 Expressive UI.
  */
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel(),
-    onSetupLocation: () -> Unit = {}
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Location permission state
+    val locationPermission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+
+    // Auto-detect location when permission is granted
+    LaunchedEffect(locationPermission.status.isGranted) {
+        if (locationPermission.status.isGranted && !uiState.hasLocation && !uiState.isDetectingLocation) {
+            viewModel.detectLocation()
+        }
+    }
+
     when {
-        uiState.isLoading -> {
+        uiState.isLoading && uiState.hasLocation -> {
             LoadingContent(modifier)
         }
-        uiState.error != null -> {
+        uiState.error != null && uiState.hasLocation -> {
             ErrorContent(
                 error = uiState.error!!,
                 onRetry = viewModel::refresh,
@@ -70,7 +93,18 @@ fun HomeScreen(
         }
         !uiState.hasLocation -> {
             NoLocationContent(
-                onSetupLocation = onSetupLocation,
+                locationQuery = uiState.locationQuery,
+                isDetecting = uiState.isDetectingLocation,
+                locationError = uiState.locationError,
+                onQueryChange = viewModel::updateLocationQuery,
+                onDetectLocation = {
+                    if (locationPermission.status.isGranted) {
+                        viewModel.detectLocation()
+                    } else {
+                        locationPermission.launchPermissionRequest()
+                    }
+                },
+                onSearchLocation = viewModel::searchAndSetLocation,
                 modifier = modifier
             )
         }
@@ -81,6 +115,7 @@ fun HomeScreen(
                 nextPrayer = uiState.nextPrayer,
                 currentPrayer = uiState.currentPrayer,
                 countdown = uiState.formattedCountdown,
+                use24hFormat = uiState.use24hFormat,
                 modifier = modifier
             )
         }
@@ -144,9 +179,16 @@ private fun ErrorContent(
 
 @Composable
 private fun NoLocationContent(
-    onSetupLocation: () -> Unit,
+    locationQuery: String,
+    isDetecting: Boolean,
+    locationError: String?,
+    onQueryChange: (String) -> Unit,
+    onDetectLocation: () -> Unit,
+    onSearchLocation: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -179,17 +221,85 @@ private fun NoLocationContent(
                     textAlign = TextAlign.Center
                 )
 
-                FilledTonalButton(
-                    onClick = onSetupLocation,
-                    modifier = Modifier.padding(top = 8.dp)
+                // GPS Button
+                Button(
+                    onClick = onDetectLocation,
+                    enabled = !isDetecting,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    if (isDetecting) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.MyLocation,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                     Spacer(modifier = Modifier.size(8.dp))
-                    Text(stringResource(R.string.home_set_location_button))
+                    Text(
+                        if (isDetecting) stringResource(R.string.home_detecting_location)
+                        else stringResource(R.string.home_use_gps)
+                    )
+                }
+
+                // Divider with "or"
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(R.string.home_or),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    HorizontalDivider(modifier = Modifier.weight(1f))
+                }
+
+                // Manual location entry
+                OutlinedTextField(
+                    value = locationQuery,
+                    onValueChange = onQueryChange,
+                    label = { Text(stringResource(R.string.home_enter_location)) },
+                    singleLine = true,
+                    enabled = !isDetecting,
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(
+                            onClick = {
+                                keyboardController?.hide()
+                                onSearchLocation()
+                            },
+                            enabled = locationQuery.isNotBlank() && !isDetecting
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = stringResource(R.string.home_search)
+                            )
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            keyboardController?.hide()
+                            onSearchLocation()
+                        }
+                    )
+                )
+
+                // Error message
+                if (locationError != null) {
+                    Text(
+                        text = locationError,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
@@ -203,8 +313,10 @@ private fun PrayerTimesContent(
     nextPrayer: PrayerName?,
     currentPrayer: PrayerName?,
     countdown: String,
+    use24hFormat: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val timePattern = if (use24hFormat) "HH:mm" else "hh:mm a"
     val currentDate = prayerTimes.date
     val now = LocalTime.now()
 
@@ -279,7 +391,7 @@ private fun PrayerTimesContent(
                     )
 
                     Text(
-                        text = nextPrayerTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                        text = nextPrayerTime.format(DateTimeFormatter.ofPattern(timePattern)),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -328,7 +440,8 @@ private fun PrayerTimesContent(
                         name = prayer.localizedName(),
                         time = prayerTime,
                         isNext = isNext,
-                        isPassed = isPassed
+                        isPassed = isPassed,
+                        timePattern = timePattern
                     )
 
                     if (index < PrayerName.ordered.size - 1) {
@@ -348,7 +461,8 @@ private fun PrayerTimeRow(
     name: String,
     time: LocalTime,
     isNext: Boolean,
-    isPassed: Boolean
+    isPassed: Boolean,
+    timePattern: String = "hh:mm a"
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -367,7 +481,7 @@ private fun PrayerTimeRow(
         )
 
         Text(
-            text = time.format(DateTimeFormatter.ofPattern("hh:mm a")),
+            text = time.format(DateTimeFormatter.ofPattern(timePattern)),
             style = MaterialTheme.typography.bodyLarge,
             fontWeight = if (isNext) FontWeight.Bold else FontWeight.Normal,
             color = when {
