@@ -26,7 +26,8 @@ data class QiblaCompassUiState(
     val compassAccuracy: Int = 0,
     val distanceToKaaba: Double = 0.0,
     val isCompassAvailable: Boolean = true,
-    val needsCalibration: Boolean = false
+    val needsCalibration: Boolean = false,
+    val magneticDeclination: Float = 0f // Difference between magnetic north and true north
 )
 
 @HiltViewModel
@@ -52,7 +53,7 @@ class QiblaCompassViewModel @Inject constructor(
 
     /**
      * Observe location changes reactively from PrayerRepository.
-     * This will update Qibla bearing whenever location changes.
+     * This will update Qibla bearing and magnetic declination whenever location changes.
      */
     private fun observeLocation() {
         viewModelScope.launch {
@@ -68,13 +69,21 @@ class QiblaCompassViewModel @Inject constructor(
                         location.longitude
                     )
 
+                    // Calculate magnetic declination for this location
+                    // This is the correction needed to convert magnetic heading to true heading
+                    val declination = compassSensor.getMagneticDeclination(
+                        location.latitude,
+                        location.longitude
+                    )
+
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             hasLocation = true,
                             locationName = location.name,
                             qiblaBearing = qiblaBearing,
-                            distanceToKaaba = distance
+                            distanceToKaaba = distance,
+                            magneticDeclination = declination
                         )
                     }
                 } else {
@@ -92,9 +101,16 @@ class QiblaCompassViewModel @Inject constructor(
     private fun startCompassUpdates() {
         viewModelScope.launch {
             compassSensor.getCompassHeading().collect { compassData ->
-                _uiState.update {
-                    it.copy(
-                        currentHeading = compassData.azimuth,
+                _uiState.update { state ->
+                    // Apply magnetic declination correction to get true heading
+                    // The raw compass gives magnetic heading, but Qibla bearing is calculated
+                    // using true north, so we need to convert magnetic to true heading
+                    val trueHeading = compassSensor.magneticToTrueHeading(
+                        compassData.azimuth,
+                        state.magneticDeclination
+                    )
+                    state.copy(
+                        currentHeading = trueHeading,
                         compassAccuracy = compassData.accuracy,
                         needsCalibration = compassData.accuracy <= android.hardware.SensorManager.SENSOR_STATUS_ACCURACY_LOW
                     )

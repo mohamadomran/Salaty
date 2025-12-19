@@ -579,6 +579,29 @@ private fun SettingsContent(
                 )
             }
 
+            // Debug Section - Test Notifications
+            SettingsSection(title = "Developer") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.showTestNotification(isReminder = false) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Test Prayer", style = MaterialTheme.typography.labelMedium)
+                    }
+                    Button(
+                        onClick = { viewModel.showTestNotification(isReminder = true) },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Test Reminder", style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
 

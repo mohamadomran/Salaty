@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.mohamad.salaty.core.data.database.entity.LocationEntity
 import com.mohamad.salaty.core.data.location.LocationResult
 import com.mohamad.salaty.core.data.location.LocationService
+import com.mohamad.salaty.core.data.notification.NotificationHelper
 import com.mohamad.salaty.core.data.preferences.SalatyPreferences
 import com.mohamad.salaty.core.data.preferences.UserPreferences
 import com.mohamad.salaty.core.data.repository.PrayerRepository
@@ -38,6 +39,7 @@ class SettingsViewModel @Inject constructor(
     private val salatyPreferences: SalatyPreferences,
     private val prayerRepository: PrayerRepository,
     private val locationService: LocationService,
+    private val notificationHelper: NotificationHelper,
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : ViewModel() {
 
@@ -302,5 +304,20 @@ class SettingsViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    // ============================================================================
+    // DEBUG / TESTING
+    // ============================================================================
+
+    /**
+     * Show a test notification for debugging purposes.
+     * @param isReminder Whether to show reminder-style or prayer-time style notification
+     */
+    fun showTestNotification(isReminder: Boolean = false) {
+        notificationHelper.showTestNotification(
+            isReminder = isReminder,
+            minutesBefore = _uiState.value.preferences.notificationMinutesBefore.takeIf { it > 0 } ?: 15
+        )
     }
 }

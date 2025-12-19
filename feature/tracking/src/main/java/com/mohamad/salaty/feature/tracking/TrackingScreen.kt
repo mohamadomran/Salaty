@@ -250,16 +250,16 @@ private fun TrackingContent(
             }
         }
 
-        // Prayer List with slide animation
+        // Prayer List with slide animation (only on date changes, not on status updates)
         AnimatedContent(
-            targetState = uiState.selectedDate to uiState.prayers,
+            targetState = uiState.selectedDate,
             transitionSpec = {
-                val direction = if (targetState.first > initialState.first) 1 else -1
+                val direction = if (targetState > initialState) 1 else -1
                 slideInHorizontally { direction * it } togetherWith
                     slideOutHorizontally { -direction * it }
             },
             label = "prayer_list_animation"
-        ) { (_, prayers) ->
+        ) { _ ->
             SalatyCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -276,7 +276,7 @@ private fun TrackingContent(
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    prayers.forEach { prayer ->
+                    uiState.prayers.forEach { prayer ->
                         PrayerTrackingRow(
                             prayerName = prayer.prayerName.localizedName(),
                             status = prayer.status,

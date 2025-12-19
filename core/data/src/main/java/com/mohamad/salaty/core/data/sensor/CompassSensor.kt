@@ -1,6 +1,7 @@
 package com.mohamad.salaty.core.data.sensor
 
 import android.content.Context
+import android.hardware.GeomagneticField
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -16,7 +17,7 @@ import kotlin.math.roundToInt
 /**
  * Data class representing compass sensor data.
  *
- * @param azimuth The device's heading in degrees (0-360), where 0 is North
+ * @param azimuth The device's heading in degrees (0-360), where 0 is North (magnetic or true based on context)
  * @param accuracy The sensor accuracy level
  */
 data class CompassData(
@@ -137,5 +138,41 @@ class CompassSensor @Inject constructor(
             SensorManager.SENSOR_STATUS_UNRELIABLE -> "Unreliable"
             else -> "Unknown"
         }
+    }
+
+    /**
+     * Calculate magnetic declination for a given location.
+     *
+     * Magnetic declination is the angle between magnetic north and true north.
+     * This must be added to the magnetic heading to get the true heading.
+     *
+     * @param latitude Location latitude in degrees
+     * @param longitude Location longitude in degrees
+     * @param altitude Location altitude in meters (0 if unknown)
+     * @return Declination angle in degrees (positive = east, negative = west)
+     */
+    fun getMagneticDeclination(latitude: Double, longitude: Double, altitude: Float = 0f): Float {
+        val geoField = GeomagneticField(
+            latitude.toFloat(),
+            longitude.toFloat(),
+            altitude,
+            System.currentTimeMillis()
+        )
+        return geoField.declination
+    }
+
+    /**
+     * Convert magnetic heading to true heading using declination.
+     *
+     * @param magneticHeading The magnetic heading in degrees (0-360)
+     * @param declination The magnetic declination in degrees
+     * @return True heading in degrees (0-360)
+     */
+    fun magneticToTrueHeading(magneticHeading: Float, declination: Float): Float {
+        var trueHeading = magneticHeading + declination
+        // Normalize to 0-360
+        while (trueHeading < 0) trueHeading += 360f
+        while (trueHeading >= 360) trueHeading -= 360f
+        return trueHeading
     }
 }

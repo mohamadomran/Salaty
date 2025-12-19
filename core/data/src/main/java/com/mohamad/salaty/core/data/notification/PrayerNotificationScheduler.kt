@@ -76,7 +76,13 @@ class PrayerNotificationScheduler @Inject constructor(
     }
 
     /**
-     * Schedule notification for a specific prayer.
+     * Schedule notifications for a specific prayer.
+     *
+     * If minutesBefore > 0, schedules TWO notifications:
+     * 1. A reminder notification at (prayerTime - minutesBefore)
+     * 2. The prayer time notification at exactly prayerTime
+     *
+     * If minutesBefore == 0, schedules only the prayer time notification.
      */
     private fun schedulePrayerNotification(
         prayer: PrayerName,
@@ -86,15 +92,6 @@ class PrayerNotificationScheduler @Inject constructor(
         use24h: Boolean
     ) {
         val prayerTime = prayerTimes.getTime(prayer)
-        val notificationTime = prayerTime.minusMinutes(minutesBefore.toLong())
-
-        // Skip if notification time has already passed
-        if (notificationTime.isBefore(now)) {
-            return
-        }
-
-        // Calculate delay until notification
-        val delay = Duration.between(now, notificationTime)
 
         // Format the prayer time for display
         val timeString = if (use24h) {
@@ -103,25 +100,55 @@ class PrayerNotificationScheduler @Inject constructor(
             prayerTime.format(timeFormatter12h)
         }
 
-        // Create input data for the worker
-        val inputData = Data.Builder()
-            .putString(PrayerNotificationWorker.KEY_PRAYER_NAME, prayer.name)
-            .putString(PrayerNotificationWorker.KEY_PRAYER_TIME, timeString)
-            .build()
+        // Schedule reminder notification (X minutes before) if configured
+        if (minutesBefore > 0) {
+            val reminderTime = prayerTime.minusMinutes(minutesBefore.toLong())
+            if (!reminderTime.isBefore(now)) {
+                val reminderDelay = Duration.between(now, reminderTime)
 
-        // Create the work request
-        val workRequest = OneTimeWorkRequestBuilder<PrayerNotificationWorker>()
-            .setInitialDelay(delay.toMillis(), TimeUnit.MILLISECONDS)
-            .setInputData(inputData)
-            .addTag(NOTIFICATION_WORK_TAG)
-            .build()
+                val reminderInputData = Data.Builder()
+                    .putString(PrayerNotificationWorker.KEY_PRAYER_NAME, prayer.name)
+                    .putString(PrayerNotificationWorker.KEY_PRAYER_TIME, timeString)
+                    .putBoolean(PrayerNotificationWorker.KEY_IS_REMINDER, true)
+                    .putInt(PrayerNotificationWorker.KEY_MINUTES_BEFORE, minutesBefore)
+                    .build()
 
-        // Schedule the work
-        workManager.enqueueUniqueWork(
-            PrayerNotificationWorker.getWorkName(prayer),
-            ExistingWorkPolicy.REPLACE,
-            workRequest
-        )
+                val reminderRequest = OneTimeWorkRequestBuilder<PrayerNotificationWorker>()
+                    .setInitialDelay(reminderDelay.toMillis(), TimeUnit.MILLISECONDS)
+                    .setInputData(reminderInputData)
+                    .addTag(NOTIFICATION_WORK_TAG)
+                    .build()
+
+                workManager.enqueueUniqueWork(
+                    PrayerNotificationWorker.getWorkName(prayer, isReminder = true),
+                    ExistingWorkPolicy.REPLACE,
+                    reminderRequest
+                )
+            }
+        }
+
+        // Schedule prayer time notification (at exact prayer time)
+        if (!prayerTime.isBefore(now)) {
+            val prayerDelay = Duration.between(now, prayerTime)
+
+            val prayerInputData = Data.Builder()
+                .putString(PrayerNotificationWorker.KEY_PRAYER_NAME, prayer.name)
+                .putString(PrayerNotificationWorker.KEY_PRAYER_TIME, timeString)
+                .putBoolean(PrayerNotificationWorker.KEY_IS_REMINDER, false)
+                .build()
+
+            val prayerRequest = OneTimeWorkRequestBuilder<PrayerNotificationWorker>()
+                .setInitialDelay(prayerDelay.toMillis(), TimeUnit.MILLISECONDS)
+                .setInputData(prayerInputData)
+                .addTag(NOTIFICATION_WORK_TAG)
+                .build()
+
+            workManager.enqueueUniqueWork(
+                PrayerNotificationWorker.getWorkName(prayer, isReminder = false),
+                ExistingWorkPolicy.REPLACE,
+                prayerRequest
+            )
+        }
     }
 
     /**

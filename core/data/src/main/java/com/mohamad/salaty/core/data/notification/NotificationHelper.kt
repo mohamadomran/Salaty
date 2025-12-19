@@ -102,14 +102,24 @@ class NotificationHelper @Inject constructor(
      * @param timeString The formatted time string (e.g., "5:30 AM")
      * @param vibrate Whether to vibrate
      * @param soundOption The sound option to use (determines notification channel)
+     * @param isReminder Whether this is a reminder notification (before prayer time)
+     * @param minutesBefore How many minutes before prayer (only used if isReminder is true)
      */
     fun showPrayerNotification(
         prayer: PrayerName,
         timeString: String,
         vibrate: Boolean = true,
-        soundOption: NotificationSoundOption = NotificationSoundOption.DEFAULT
+        soundOption: NotificationSoundOption = NotificationSoundOption.DEFAULT,
+        isReminder: Boolean = false,
+        minutesBefore: Int = 0
     ) {
-        val notificationId = NOTIFICATION_ID_BASE + prayer.ordinal
+        // Use different notification IDs for reminder vs prayer time notifications
+        // to allow both to be visible at the same time
+        val notificationId = if (isReminder) {
+            NOTIFICATION_ID_BASE + prayer.ordinal + 100 // Offset for reminders
+        } else {
+            NOTIFICATION_ID_BASE + prayer.ordinal
+        }
 
         // Create intent to open app when notification is tapped
         val intent = getLaunchIntent()
@@ -121,7 +131,7 @@ class NotificationHelper @Inject constructor(
         )
 
         // Create "Mark as Prayed" action
-        val markPrayedIntent = MarkPrayerReceiver.createIntent(
+        val markPrayedIntent = MarkPrayerReceiver.createPrayedIntent(
             context = context,
             prayerName = prayer,
             date = LocalDate.now(),
@@ -129,29 +139,59 @@ class NotificationHelper @Inject constructor(
         )
         val markPrayedPendingIntent = PendingIntent.getBroadcast(
             context,
-            notificationId + 100, // Use different request code
+            notificationId + 200, // Use different request code
             markPrayedIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Create "Mark as Missed" action
+        val markMissedIntent = MarkPrayerReceiver.createMissedIntent(
+            context = context,
+            prayerName = prayer,
+            date = LocalDate.now(),
+            notificationId = notificationId
+        )
+        val markMissedPendingIntent = PendingIntent.getBroadcast(
+            context,
+            notificationId + 300, // Use different request code
+            markMissedIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val prayerDisplayName = prayer.getLocalizedName(context)
         val prayerArabicName = PrayerName.arabicName(prayer)
 
+        // Create different messages for reminder vs prayer time
+        val (title, content) = if (isReminder) {
+            val title = "$prayerDisplayName in $minutesBefore min"
+            val content = "$prayerDisplayName ($prayerArabicName) prayer at $timeString"
+            title to content
+        } else {
+            val title = "$prayerDisplayName ($prayerArabicName)"
+            val content = "It's time for $prayerDisplayName prayer • $timeString"
+            title to content
+        }
+
         // Use the appropriate channel based on sound option
         val channelId = getChannelId(soundOption)
 
         val notification = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("$prayerDisplayName ($prayerArabicName)")
-            .setContentText("It's time for $prayerDisplayName prayer • $timeString")
+            .setContentTitle(title)
+            .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .addAction(
                 android.R.drawable.ic_menu_send,
-                "Mark as Prayed",
+                "✓ Prayed",
                 markPrayedPendingIntent
+            )
+            .addAction(
+                android.R.drawable.ic_menu_close_clear_cancel,
+                "✗ Missed",
+                markMissedPendingIntent
             )
             .apply {
                 if (vibrate && soundOption != NotificationSoundOption.SILENT) {
@@ -188,6 +228,32 @@ class NotificationHelper @Inject constructor(
         PrayerName.obligatory.forEach { prayer ->
             cancelPrayerNotification(prayer)
         }
+    }
+
+    /**
+     * Show a test notification for debugging purposes.
+     * Uses Fajr prayer as a sample, with the current time.
+     *
+     * @param isReminder Whether to show a reminder-style notification
+     * @param minutesBefore Minutes before prayer (for reminder text)
+     */
+    fun showTestNotification(
+        isReminder: Boolean = false,
+        minutesBefore: Int = 15
+    ) {
+        val testPrayer = PrayerName.FAJR
+        val testTimeString = java.time.LocalTime.now()
+            .plusMinutes(if (isReminder) minutesBefore.toLong() else 0)
+            .format(java.time.format.DateTimeFormatter.ofPattern("h:mm a"))
+
+        showPrayerNotification(
+            prayer = testPrayer,
+            timeString = testTimeString,
+            vibrate = true,
+            soundOption = NotificationSoundOption.DEFAULT,
+            isReminder = isReminder,
+            minutesBefore = minutesBefore
+        )
     }
 
     /**

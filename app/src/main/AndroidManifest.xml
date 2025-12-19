@@ -77,12 +77,13 @@
             </intent-filter>
         </receiver>
 
-        <!-- Mark prayer as completed receiver -->
+        <!-- Mark prayer status receiver (prayed/missed) -->
         <receiver
             android:name="com.mohamad.salaty.core.data.notification.MarkPrayerReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.mohamad.salaty.ACTION_MARK_PRAYED" />
+                <action android:name="com.mohamad.salaty.ACTION_MARK_MISSED" />
             </intent-filter>
         </receiver>
 
